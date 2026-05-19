@@ -7,10 +7,10 @@ Execute `docs/CODEX_MASTER_PLAN.md` in order until the final milestone is comple
 ## Current Context
 
 - Current milestone: Milestone 7.
-- Current issue: Issue 023 / release health audit implementation.
+- Current issue: Milestone 7 / next issue planning.
 - Existing durable docs: `CONTEXT.md` and `docs/adr/`.
 - Execution source of truth: `docs/CODEX_MASTER_PLAN.md`.
-- Completed baseline: Issues 001-022 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, basic admin/debug views, full-text extraction foundation, model-call logging, AI evaluation adapter foundation, Chinese translation draft foundation, summary block draft foundation, reader home/board listing foundation, reader detail/language view foundation, local saved/read-later foundation, admin source policy edit foundation, admin failure queue foundation, admin raw-entry hide/restore foundation, PostgreSQL reader search foundation, reader feedback capture foundation, reader-safe related items foundation, reader-safe digest preview foundation, bounded digest feedback quality penalty, event-local Admin Feedback Review, and local manual PostgreSQL Backup Snapshot and Restore Drill foundation in place. Issue 023 planning, Release Gate terminology, and ADR 0027 are in place; implementation is next.
+- Completed baseline: Issues 001-023 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, basic admin/debug views, full-text extraction foundation, model-call logging, AI evaluation adapter foundation, Chinese translation draft foundation, summary block draft foundation, reader home/board listing foundation, reader detail/language view foundation, local saved/read-later foundation, admin source policy edit foundation, admin failure queue foundation, admin raw-entry hide/restore foundation, PostgreSQL reader search foundation, reader feedback capture foundation, reader-safe related items foundation, reader-safe digest preview foundation, bounded digest feedback quality penalty, event-local Admin Feedback Review, local manual PostgreSQL Backup Snapshot and Restore Drill foundation, and local non-deploying Release Health Audit foundation in place.
 
 ## Execution Approach
 

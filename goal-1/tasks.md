@@ -1482,3 +1482,32 @@ Completion notes:
 - Added Release Gate terminology, ADR 0027, `docs/architecture/issue-023-plan.md`, and `docs/logs/2026-05-20-issue-023.md`.
 - Updated `docs/CODEX_MASTER_PLAN.md` so Issue 023 implementation is next.
 - Deferred release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, and production backup automation.
+
+## Task 42: Milestone 7 / Issue 023 Release Health Audit Foundation
+
+Status: Done
+
+Scope:
+- Add script-contract tests for the release audit command and forbidden deployment operations.
+- Add a root package script for running the local Release Health Audit.
+- Implement a local audit script that runs existing checks and health probes with clear failure output.
+- Add `docs/ops/release-health-audit.md` with prerequisites, expected evidence, failure handling, rollback references, and limitations.
+- Update README, master plan, goal plan, and implementation log.
+- Run the Release Health Audit locally against the current Compose stack.
+- Do not add release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credential, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation.
+
+Verification:
+- `pnpm --filter @reno-news/db test`
+- `pnpm release:audit:local`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 023 on 2026-05-20.
+- Added script-contract tests for the release audit command and forbidden deployment operations.
+- Added root script `release:audit:local`.
+- Added `scripts/release-health-audit.mjs` for local package checks, worker checks, Compose service status, direct/Caddy health probes, and backup/restore readiness checks.
+- Added `docs/ops/release-health-audit.md`.
+- Updated README, Issue 023 plan, implementation log, master plan, and goal plan.
+- Verified `pnpm --filter @reno-news/db test`.
+- Verified `pnpm release:audit:local`; it ran `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, `pnpm build`, worker tests, `uv lock --check`, Compose service status, direct/Caddy health endpoints, and backup/restore readiness checks, then ended with `Release Health Audit OK`.
+- Did not add release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credential, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation.

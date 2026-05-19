@@ -93,3 +93,51 @@ test("backup and restore drill scripts stay local and disposable", async () => {
   assert.match(restoreScript, /RESTORE_DATABASE" = "\$PRIMARY_DATABASE"/);
   assert.doesNotMatch(restoreScript, /cron|systemd|aws|s3|gsutil|wal/i);
 });
+
+test("release health audit stays local and non-deploying", async () => {
+  const packageJson = JSON.parse(
+    await readFile(join(process.cwd(), "../../package.json"), "utf8")
+  ) as { scripts: Record<string, string> };
+  const auditScript = await readFile(
+    join(process.cwd(), "../../scripts/release-health-audit.mjs"),
+    "utf8"
+  );
+  const runbook = await readFile(
+    join(process.cwd(), "../../docs/ops/release-health-audit.md"),
+    "utf8"
+  );
+
+  assert.equal(
+    packageJson.scripts["release:audit:local"],
+    "node scripts/release-health-audit.mjs"
+  );
+
+  for (const expectedCheck of [
+    "pnpm install --frozen-lockfile",
+    "pnpm lint",
+    "pnpm test",
+    "pnpm build",
+    "uv --project services/worker run python -m unittest discover -s services/worker/tests",
+    "uv lock --check",
+    "docker compose -f",
+    "ps --format json",
+    "http://localhost:3000/healthz",
+    "http://localhost:3001/healthz",
+    "http://localhost:3002/healthz",
+    "http://localhost:8080/healthz",
+    "http://localhost:8080/api/healthz",
+    "http://localhost:8080/worker/healthz",
+    "docs/ops/backup-restore.md",
+    "scripts/db-backup.sh",
+    "scripts/db-restore-drill.sh"
+  ]) {
+    assert.match(auditScript, new RegExp(expectedCheck.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  assert.match(runbook, /Failure Handling/);
+  assert.match(runbook, /Limitations/);
+  assert.doesNotMatch(
+    auditScript,
+    /docker compose (pull|push|up)|git push|gh release|scp|ssh|webhook|alertmanager|uptime/i
+  );
+});

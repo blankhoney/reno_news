@@ -27,22 +27,22 @@ This is a Release Gate, not a production release workflow. It deliberately does 
 
 ## TDD Plan
 
-1. [ ] Add script-contract tests for the release audit command and forbidden deployment operations.
-2. [ ] Add a root package script for running the local Release Health Audit.
-3. [ ] Implement a local audit script that runs existing checks and health probes with clear failure output.
-4. [ ] Add `docs/ops/release-health-audit.md` with prerequisites, command, expected evidence, failure handling, and limitations.
-5. [ ] Update README with the local release audit entrypoint.
-6. [ ] Run the Release Health Audit locally against the current Compose stack.
-7. [ ] Update master plan, goal plan, and implementation log.
+1. [x] Add script-contract tests for the release audit command and forbidden deployment operations.
+2. [x] Add a root package script for running the local Release Health Audit.
+3. [x] Implement a local audit script that runs existing checks and health probes with clear failure output.
+4. [x] Add `docs/ops/release-health-audit.md` with prerequisites, command, expected evidence, failure handling, and limitations.
+5. [x] Update README with the local release audit entrypoint.
+6. [x] Run the Release Health Audit locally against the current Compose stack.
+7. [x] Update master plan, goal plan, and implementation log.
 
 ## Acceptance Criteria
 
-- [ ] A local operator can run one command from the repo root to perform the Release Health Audit.
-- [ ] The audit verifies existing package checks, worker checks, Compose service status, and direct/Caddy health endpoints.
-- [ ] The audit verifies backup/restore readiness without creating a production backup schedule or mutating the primary database.
-- [ ] The audit fails clearly when a required check or health probe fails.
-- [ ] The runbook documents prerequisites, expected evidence, failure handling, rollback references, and limitations.
-- [ ] No release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credential, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation is added.
+- [x] A local operator can run one command from the repo root to perform the Release Health Audit.
+- [x] The audit verifies existing package checks, worker checks, Compose service status, and direct/Caddy health endpoints.
+- [x] The audit verifies backup/restore readiness without creating a production backup schedule or mutating the primary database.
+- [x] The audit fails clearly when a required check or health probe fails.
+- [x] The runbook documents prerequisites, expected evidence, failure handling, rollback references, and limitations.
+- [x] No release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credential, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation is added.
 
 ## Research References
 
