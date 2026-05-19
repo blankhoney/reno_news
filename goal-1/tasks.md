@@ -415,3 +415,47 @@ Completion notes:
 - Verified full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, `uv lock --check`, Compose service status, and direct/Caddy health smoke.
 - Ran a deferred-scope scan and found no added reader UI, search, digest generation, public publishing, browser automation, or non-RSS adapter implementation.
 - Found no blocker to planning the next Milestone 3 issue.
+
+## Task 13: Milestone 3 / Issue 009 Planning And ADR
+
+Status: Done
+
+Scope:
+- Re-read Milestone 3 summary block research and current OpenAI guidance.
+- Re-read local AI evaluation and translation boundaries.
+- Define the next Milestone 3 issue without implementing summary code.
+- Add Summary Block terminology to `CONTEXT.md`.
+- Add an ADR for summary block/ranking/publishing separation.
+- Add Issue 009 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 009 is the active issue.
+- Do not implement summary code in this planning task.
+
+Verification:
+- `docs/architecture/issue-009-plan.md` exists and maps Milestone 3 summary block focus to concrete tasks and acceptance criteria.
+- ADR 0013 records the summary block/ranking/publishing boundary.
+- `CONTEXT.md` defines Summary Block.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 009 and does not start search, reader UI, digest generation, public publishing, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next vertical slice: fake-adapter summary block draft for one evaluated item.
+- Deferred reader UI, search, digest generation, public publishing, browser automation, multi-provider routing, and non-RSS adapters.
+
+## Task 14: Milestone 3 / Issue 009 Summary Block Draft Foundation
+
+Status: Pending
+
+Scope:
+- Add SQL migration for `summary_blocks`.
+- Add versioned summary block output schema.
+- Add provider-neutral summary adapter interface and deterministic fake adapter.
+- Add missing extraction and missing AI evaluation prefilter skip path.
+- Add model-call logging for success, failure, and skipped summary generation.
+- Store one-sentence summary, detailed summary, why-it-matters, source note, China relevance, and related topic hints.
+- Add OpenAI adapter boundary without requiring live API tests.
+
+Verification:
+- Pending until implementation starts.
+
+Completion notes:
+- Pending.

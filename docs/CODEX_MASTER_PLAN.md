@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 3 |
-| Current Issue | Next Milestone 3 issue |
+| Current Issue | Issue 009 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -62,7 +62,7 @@ MVP v0.1 is frozen.
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
-| Milestone 3 | AI Pipeline | In Progress | Issue 008 done; next issue planning needed |
+| Milestone 3 | AI Pipeline | In Progress | Issue 009 planned; implementation next |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
@@ -607,6 +607,49 @@ Validated:
 Known limitations:
 - No reader UI, search indexing, digest generation, public translation publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapter was added.
 
+#### Issue 009: Add summary block draft foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | |
+
+Goal
+
+Generate structured summary blocks for one evaluated item while keeping ranking, publishing, digest generation, and reader UI out of scope.
+
+Required Tasks
+
+- [x] Re-read Milestone 3 summary block research and current OpenAI guidance.
+- [x] Add Summary Block terminology to `CONTEXT.md`.
+- [x] Add ADR for summary block/ranking/publishing separation.
+- [x] Add Issue 009 technical plan.
+- [ ] Add SQL migration for `summary_blocks`.
+- [ ] Add versioned summary block output schema.
+- [ ] Add provider-neutral summary adapter interface.
+- [ ] Add deterministic fake adapter for tests.
+- [ ] Add missing extraction and missing AI evaluation prefilter skip path.
+- [ ] Add model-call logging for success, failure, and skipped summary generation.
+- [ ] Store one-sentence summary, detailed summary, why-it-matters, source note, China relevance, and related topic hints.
+- [ ] Add OpenAI adapter boundary without requiring live API tests.
+
+Acceptance Criteria
+
+- [ ] One evaluated item can produce summary blocks through a fake adapter and be stored without network access.
+- [ ] Every attempted summary generation creates a model-call record.
+- [ ] Summary output includes one-sentence summary, detailed summary, why-it-matters, source note, China relevance, and related topic hints.
+- [ ] Prefilter skips missing extraction or missing AI evaluation without calling the adapter.
+- [ ] No reader UI, search, digest generation, public publishing, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use fake adapters for tests.
+Do not require `OPENAI_API_KEY` for local verification.
+Do not expose summary blocks to readers, search, or digests in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -663,7 +706,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 3 issue.
+Continue Issue 009 implementation.
+Keep Issue 009 to summary block draft storage, prefiltering, model-call logging, and adapter boundary tests.
 Do not implement search, reader UI, digest generation, public publishing, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
@@ -931,6 +975,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 3 issue.
+Continue Issue 009 implementation.
 Do not implement search, reader UI, digest generation, public publishing, browser automation, or non-RSS adapters yet.
 ```

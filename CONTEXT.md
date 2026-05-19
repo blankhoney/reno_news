@@ -112,6 +112,10 @@ _Avoid_: Published translation, reader copy
 A bounded original/translated text pair used to preserve alignment between source text and Chinese output.
 _Avoid_: Paragraph when the boundary may not match the source paragraph exactly
 
+**Summary Block**:
+A structured, model-generated explanatory draft for a candidate or content item, such as one-sentence summary, detailed summary, why it matters, source note, and China relevance.
+_Avoid_: Digest, published article body, ranking score
+
 **Personal Space**:
 A reader-owned area for saved items, read-later items, annotations, and personal reading status.
 _Avoid_: Public pool, recommendation signal
@@ -139,6 +143,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - An **AI Evaluation** belongs to one extracted **Candidate Item** at the current MVP stage, and may later be attached to a normalized **Content Item**.
 - A **Content Item** may have zero or more **Translations**.
 - A **Translation Draft** contains one or more **Translation Segments** and must pass publishing policy before it can become reader-facing.
+- A **Summary Block** explains an evaluated item but does not itself publish, rank, index, or place the item.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.
 - **Feedback** belongs to one **Reader** and one **Content Item**.
 - A **Digest** contains selected **Published Items**.
