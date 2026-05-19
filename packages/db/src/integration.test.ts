@@ -34,6 +34,9 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     const translationTables = await pool.query<{ count: string }>(
       "select count(*) from information_schema.tables where table_schema = 'public' and table_name = 'translations'"
     );
+    const summaryBlockTables = await pool.query<{ count: string }>(
+      "select count(*) from information_schema.tables where table_schema = 'public' and table_name = 'summary_blocks'"
+    );
 
     assert.equal(Number(boards.rows[0].count), 5);
     assert.equal(Number(sources.rows[0].count), 5);
@@ -42,6 +45,7 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     assert.equal(Number(extractionTables.rows[0].count), 2);
     assert.equal(Number(aiTables.rows[0].count), 2);
     assert.equal(Number(translationTables.rows[0].count), 1);
+    assert.equal(Number(summaryBlockTables.rows[0].count), 1);
 
     await assert.rejects(
       pool.query(
@@ -85,6 +89,11 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     await assert.rejects(
       pool.query(
         "with mc as (insert into model_calls (provider, model, purpose, schema_version, status) values ('test', 'test', 'translation', 'v1', 'success') returning id) insert into translations (raw_entry_id, model_call_id, target_language, schema_version, status, translated_text, segments_json, quality_flags_json) select re.id, mc.id, 'zh-Hans', 'v1', 'published', 'text', '[]'::jsonb, '[]'::jsonb from raw_entries re cross join mc limit 1"
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "with re as (select id from raw_entries limit 1), eval_mc as (insert into model_calls (provider, model, purpose, schema_version, status) values ('test', 'test', 'ai_evaluation', 'v1', 'success') returning id), eval as (insert into ai_evaluations (raw_entry_id, model_call_id, schema_version, scores_json, rationale_json, evidence_json, summary_json) select re.id, eval_mc.id, 'v1', '{}'::jsonb, '{}'::jsonb, '[]'::jsonb, '{}'::jsonb from re cross join eval_mc returning id, raw_entry_id), summary_mc as (insert into model_calls (provider, model, purpose, schema_version, status) values ('test', 'test', 'summary_blocks', 'v1', 'success') returning id) insert into summary_blocks (raw_entry_id, ai_evaluation_id, model_call_id, schema_version, status, one_sentence, detailed_summary, why_it_matters, source_note, china_relevance, related_topics_json) select eval.raw_entry_id, eval.id, summary_mc.id, 'v1', 'published', 'one', 'details', 'why', 'source', 'china', '[]'::jsonb from eval cross join summary_mc"
       )
     );
   } finally {

@@ -12,8 +12,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 
 | Field | Value |
 |---|---|
-| Current Milestone | Milestone 3 |
-| Current Issue | Issue 009 |
+| Current Milestone | Milestone 4 |
+| Current Issue | Next Milestone 4 issue |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -62,8 +62,8 @@ MVP v0.1 is frozen.
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
-| Milestone 3 | AI Pipeline | In Progress | Issue 009 planned; implementation next |
-| Milestone 4 | Reader UI | Not Started | home, board, article pages |
+| Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
+| Milestone 4 | Reader UI | Not Started | next issue planning needed |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
@@ -611,11 +611,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -627,28 +627,46 @@ Required Tasks
 - [x] Add Summary Block terminology to `CONTEXT.md`.
 - [x] Add ADR for summary block/ranking/publishing separation.
 - [x] Add Issue 009 technical plan.
-- [ ] Add SQL migration for `summary_blocks`.
-- [ ] Add versioned summary block output schema.
-- [ ] Add provider-neutral summary adapter interface.
-- [ ] Add deterministic fake adapter for tests.
-- [ ] Add missing extraction and missing AI evaluation prefilter skip path.
-- [ ] Add model-call logging for success, failure, and skipped summary generation.
-- [ ] Store one-sentence summary, detailed summary, why-it-matters, source note, China relevance, and related topic hints.
-- [ ] Add OpenAI adapter boundary without requiring live API tests.
+- [x] Add SQL migration for `summary_blocks`.
+- [x] Add versioned summary block output schema.
+- [x] Add provider-neutral summary adapter interface.
+- [x] Add deterministic fake adapter for tests.
+- [x] Add missing extraction and missing AI evaluation prefilter skip path.
+- [x] Add model-call logging for success, failure, and skipped summary generation.
+- [x] Store one-sentence summary, detailed summary, why-it-matters, source note, China relevance, and related topic hints.
+- [x] Add OpenAI adapter boundary without requiring live API tests.
 
 Acceptance Criteria
 
-- [ ] One evaluated item can produce summary blocks through a fake adapter and be stored without network access.
-- [ ] Every attempted summary generation creates a model-call record.
-- [ ] Summary output includes one-sentence summary, detailed summary, why-it-matters, source note, China relevance, and related topic hints.
-- [ ] Prefilter skips missing extraction or missing AI evaluation without calling the adapter.
-- [ ] No reader UI, search, digest generation, public publishing, browser automation, or non-RSS adapter is added.
+- [x] One evaluated item can produce summary blocks through a fake adapter and be stored without network access.
+- [x] Every attempted summary generation creates a model-call record.
+- [x] Summary output includes one-sentence summary, detailed summary, why-it-matters, source note, China relevance, and related topic hints.
+- [x] Prefilter skips missing extraction or missing AI evaluation without calling the adapter.
+- [x] No reader UI, search, digest generation, public publishing, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Use fake adapters for tests.
 Do not require `OPENAI_API_KEY` for local verification.
 Do not expose summary blocks to readers, search, or digests in this issue.
+
+**Implementation Note**
+
+Implemented:
+- `summary_blocks` SQL migration.
+- Versioned summary block output schema and provider-neutral adapter result contract.
+- Worker prefilter for missing extraction text and missing AI evaluation.
+- Model-call logging for success, skipped, and failure outcomes.
+- Structured persistence for one-sentence summary, detailed summary, why-it-matters, source note, China relevance, and related topic hints.
+- Injectable OpenAI Responses adapter boundary using Structured Outputs, without live API tests.
+
+Validated:
+- Migration and seed integration tests include summary block table existence and status constraint.
+- Worker tests cover fake-adapter success, missing extraction skip, missing evaluation skip, adapter failure logging, and OpenAI boundary request/parse behavior.
+- Full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, Compose service status, health smoke, and `uv lock --check`.
+
+Known limitations:
+- No reader UI, search indexing, digest generation, public publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapter was added.
 
 ---
 
@@ -706,9 +724,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Continue Issue 009 implementation.
-Keep Issue 009 to summary block draft storage, prefiltering, model-call logging, and adapter boundary tests.
-Do not implement search, reader UI, digest generation, public publishing, browser automation, or non-RSS adapters yet.
+Plan the first Milestone 4 reader UI issue.
+Keep Milestone 4 to reader UI over existing stored data; do not implement search, digest generation, public publishing workflow, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -975,6 +992,6 @@ Focus:
 Current required next action:
 
 ```text
-Continue Issue 009 implementation.
-Do not implement search, reader UI, digest generation, public publishing, browser automation, or non-RSS adapters yet.
+Plan the first Milestone 4 reader UI issue.
+Do not implement search, digest generation, public publishing workflow, browser automation, or non-RSS adapters yet.
 ```

@@ -101,6 +101,15 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 - `status` is constrained to `draft`; public publishing is a later workflow.
 - Stores translated title, translated text, aligned segment JSON, and quality flag JSON.
 
+## Summary Blocks
+
+`summary_blocks`
+
+- Stores worker-generated explanatory draft blocks for one raw entry.
+- Links each summary block to the raw entry, optional extraction, required AI evaluation, optional translation draft, and model call.
+- `status` is constrained to `draft`; ranking, digest inclusion, and public publishing are later workflows.
+- Stores one-sentence summary, detailed summary, why-it-matters text, source note, China relevance, and related topic JSON.
+
 ## Status Boundaries
 
 The constrained status fields are deliberately broad MVP values. They are not AI, extraction, or publishing workflows by themselves.

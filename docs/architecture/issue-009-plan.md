@@ -54,12 +54,20 @@ Use the Responses API with Structured Outputs for the production adapter boundar
 
 ## TDD Plan
 
-1. Add migration tests for `summary_blocks` table existence and constrained status.
-2. Add schema fixture tests for summary block output shape.
-3. Add worker tests for fake-adapter success, missing extraction skip, missing evaluation skip, and adapter failure logging.
-4. Implement SQL migration and persistence helpers.
-5. Implement provider-neutral summary adapter interface and fake adapter.
-6. Add OpenAI Responses adapter boundary without requiring live API tests.
+1. [x] Add migration tests for `summary_blocks` table existence and constrained status.
+2. [x] Add schema fixture tests for summary block output shape.
+3. [x] Add worker tests for fake-adapter success, missing extraction skip, missing evaluation skip, and adapter failure logging.
+4. [x] Implement SQL migration and persistence helpers.
+5. [x] Implement provider-neutral summary adapter interface and fake adapter.
+6. [x] Add OpenAI Responses adapter boundary without requiring live API tests.
+
+## Implemented Boundary
+
+- `infra/db/migrations/0007_summary_blocks.sql` adds `summary_blocks`.
+- `services/worker/src/reno_worker/summary_blocks.py` owns summary prefiltering, adapter execution, model-call logging, and draft persistence.
+- The fake adapter keeps tests deterministic and network-free.
+- The OpenAI Responses boundary is an injectable client adapter that builds a `text.format` JSON Schema request and parses structured output text.
+- Local verification does not require `OPENAI_API_KEY`.
 
 ## Acceptance Criteria
 
