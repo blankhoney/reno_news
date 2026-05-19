@@ -1370,3 +1370,31 @@ Completion notes:
 - Rebuilt web after local dev smoke and confirmed `apps/web/next-env.d.ts` has no diff.
 - Ran deferred-scope scan and found only documentation boundary references plus one existing worker test string for browser automation; no deferred implementation was added.
 - Did not add auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or lifecycle mutation from Feedback Review.
+
+## Task 39: Milestone 7 / Issue 022 Backup And Restore Drill Planning And ADR
+
+Status: Done
+
+Scope:
+- Re-read Milestone 7 backup, restore, release audit, and health-check boundaries.
+- Research current PostgreSQL `pg_dump` custom-format backup guidance, PostgreSQL `pg_restore` behavior, and Docker Compose non-interactive exec guidance.
+- Add Backup Snapshot, Restore Drill, Operational Runbook, and Release Audit terminology to `CONTEXT.md`.
+- Add ADR 0026 for starting backup/restore with logical PostgreSQL dumps.
+- Add Issue 022 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 022 implementation is next.
+- Do not implement backup scripts, restore scripts, production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `CONTEXT.md` defines Backup Snapshot, Restore Drill, Operational Runbook, and Release Audit.
+- ADR 0026 records the logical PostgreSQL dump and disposable restore drill boundary.
+- `docs/architecture/issue-022-plan.md` maps backup/restore drill work to concrete tasks and acceptance criteria.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 022 implementation and preserves the deferred-scope boundary.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest first Milestone 7 slice: local manual PostgreSQL Backup Snapshot and Restore Drill.
+- Chose `pg_dump -Fc` and `pg_restore --exit-on-error` through the existing Docker Compose PostgreSQL service as the first verifiable path.
+- Chose a disposable restore target and explicitly excluded mutation of the primary project database.
+- Added Backup Snapshot, Restore Drill, Operational Runbook, and Release Audit terminology, ADR 0026, `docs/architecture/issue-022-plan.md`, and `docs/logs/2026-05-20-issue-022.md`.
+- Updated `docs/CODEX_MASTER_PLAN.md` so Issue 022 implementation is next.
+- Deferred production backup automation, remote object storage, WAL/PITR, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, and non-RSS adapters.

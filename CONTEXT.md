@@ -196,6 +196,22 @@ _Avoid_: Cron schedule, email cadence, reader session
 A policy-visible item selected for inclusion in a Digest.
 _Avoid_: Ranking winner, recommendation, feedback target
 
+**Backup Snapshot**:
+A point-in-time export of project state needed for recovery, starting with the PostgreSQL database.
+_Avoid_: Continuous replication, release artifact, cache copy
+
+**Restore Drill**:
+A controlled verification that a Backup Snapshot can recreate required state in a disposable target.
+_Avoid_: Production restore, migration test, seed reset
+
+**Operational Runbook**:
+A documented operator procedure for backup, restore, release, or incident checks.
+_Avoid_: Product spec, architecture plan, automated workflow
+
+**Release Audit**:
+A pre-release check that verifies health, data safety, scope boundaries, and documented rollback paths.
+_Avoid_: Code review, CI status only, product launch plan
+
 ## Relationships
 
 - An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
@@ -227,6 +243,10 @@ _Avoid_: Ranking winner, recommendation, feedback target
 - A **Feedback Review** can change whether one **Feedback** event remains eligible for a **Quality Feedback Penalty**, but it must not change item lifecycle by itself.
 - A **Digest** contains selected **Digest Items** from one **Digest Window**.
 - A **Digest Item** must still be a policy-visible **Published Item** and must not expose private extraction text, translation drafts, feedback events, or admin diagnostics.
+- A **Backup Snapshot** is useful only when a **Restore Drill** proves it can recreate the expected database state.
+- A **Restore Drill** must use a disposable target and must not mutate the primary project database.
+- An **Operational Runbook** records repeatable operator steps; implementation may automate local commands only after the runbook boundary is explicit.
+- A **Release Audit** checks readiness evidence but does not add product features by itself.
 
 ## Example dialogue
 

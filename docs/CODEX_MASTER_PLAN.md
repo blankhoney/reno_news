@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 7 |
-| Current Issue | Milestone 7 / next issue planning |
+| Current Issue | Issue 022 / backup restore drill implementation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -66,7 +66,7 @@ MVP v0.1 is frozen.
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
 | Milestone 6 | Search, Feedback, Digest | Done | Issues 016-021 done |
-| Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
+| Milestone 7 | Backup, Monitoring, Release Audit | In Progress | Issue 022 planned; implementation next |
 
 Status values:
 
@@ -1443,6 +1443,46 @@ Validated:
 Known limitations:
 - Feedback Review is event-local and intentionally does not add auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or raw-entry lifecycle mutation.
 
+#### Issue 022: Add backup and restore drill foundation
+
+| Field | Value |
+|---|---|
+| Status | Planned |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | TBD |
+| PR / Commit | pending |
+
+Goal
+
+Let an operator create a local PostgreSQL Backup Snapshot and run a Restore Drill into a disposable database target without adding production scheduling, remote storage, monitoring, alerting, or release automation.
+
+Required Tasks
+
+- [x] Research PostgreSQL `pg_dump` custom-format backups, `pg_restore`, and Docker Compose non-interactive exec behavior.
+- [x] Add Backup Snapshot, Restore Drill, Operational Runbook, and Release Audit terminology to `CONTEXT.md`.
+- [x] Add ADR for starting Milestone 7 backup/restore with logical PostgreSQL dumps.
+- [x] Add Issue 022 technical plan and implementation log.
+- [ ] Add script-contract tests for backup and restore drill command boundaries.
+- [ ] Add local backup script or package script for timestamped custom-format dumps.
+- [ ] Add local restore-drill script or package script for disposable database restore verification.
+- [ ] Add `docs/ops/backup-restore.md`.
+- [ ] Update README, master plan, goal plan, and implementation log.
+- [ ] Run a local backup/restore drill and clean up the disposable restore target and dump file.
+
+Acceptance Criteria
+
+- [ ] A local operator can create a timestamped PostgreSQL custom-format Backup Snapshot.
+- [ ] A local operator can run a Restore Drill into a disposable database target.
+- [ ] The Restore Drill verifies expected MVP tables or counts before reporting success.
+- [ ] The runbook documents cleanup and clearly states that this is not production scheduling or PITR.
+- [ ] The primary project database is not dropped, overwritten, or mutated by the Restore Drill.
+- [ ] No cron/systemd timer, remote object storage, monitoring integration, alerting, production credentials, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Keep Issue 022 local and manual. Do not add production automation, WAL/PITR, cloud storage, monitoring integrations, or release workflow until a later issue explicitly scopes them.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1499,8 +1539,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the first Milestone 7 issue: backup, monitoring, and release audit.
-Do not implement production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters until the next issue is explicitly scoped.
+Implement Issue 022: backup and Restore Drill foundation.
+Do not implement production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters beyond the local manual backup/restore drill explicitly scoped in Issue 022.
 ---
 ## 9. Codex Operating Rules
 
@@ -1766,6 +1806,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the first Milestone 7 issue: backup, monitoring, and release audit.
-Do not implement production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters until the next issue is explicitly scoped.
+Implement Issue 022: backup and Restore Drill foundation.
+Do not implement production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters beyond the local manual backup/restore drill explicitly scoped in Issue 022.
 ```
