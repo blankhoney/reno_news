@@ -1,0 +1,11 @@
+[project]
+name = "reno-news-worker"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+reno-worker = "reno_worker.server:main"
+
+[tool.uv]
+package = true

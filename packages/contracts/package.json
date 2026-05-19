@@ -1,0 +1,11 @@
+{
+  "name": "@reno-news/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "test": "tsx src/index.test.ts",
+    "build": "tsc --noEmit"
+  }
+}

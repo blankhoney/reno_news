@@ -1,0 +1,16 @@
+{
+  "name": "@reno-news/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "lint": "tsc --noEmit",
+    "test": "tsx src/app.test.ts",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fastify": "^5.7.0"
+  },
+  "devDependencies": {}
+}

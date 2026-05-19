@@ -1,0 +1,13 @@
+:8080 {
+	handle_path /api/* {
+		reverse_proxy api:3001
+	}
+
+	handle_path /worker/* {
+		reverse_proxy worker:3002
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

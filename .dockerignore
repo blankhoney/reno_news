@@ -1,0 +1,9 @@
+.git
+.DS_Store
+.pnpm-store
+node_modules
+apps/*/.next
+services/worker/.venv
+services/worker/__pycache__
+services/worker/**/__pycache__
+services/worker/**/*.pyc
