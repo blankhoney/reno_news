@@ -24,21 +24,21 @@ This is not a release approval workflow. The implementation must not deploy, pub
 
 ## TDD Plan
 
-1. [ ] Add script-contract or documentation-contract tests for the Production Audit report sections and forbidden operational behavior.
-2. [ ] Add `docs/ops/production-audit.md` with an evidence matrix covering local checks, data safety, runtime health, disk guardrails, deployment governance gaps, security gaps, and deferred product scope.
-3. [ ] Cross-reference existing runbooks: `docs/ops/release-health-audit.md`, `docs/ops/backup-restore.md`, and `docs/ops/disk-usage.md`.
-4. [ ] Update README with the Production Audit report location and its non-approval boundary.
-5. [ ] Update `docs/CODEX_MASTER_PLAN.md`, the goal plan, this issue plan, and the implementation log after implementation.
-6. [ ] Run the Release Health Audit and Disk Usage Guard locally before marking the audit report complete.
-7. [ ] Verify no production deployment, remote monitoring, alerting, credential, auth/RBAC, Admin identity, audit log, destructive cleanup, or deferred feature implementation was added.
+1. [x] Add script-contract or documentation-contract tests for the Production Audit report sections and forbidden operational behavior.
+2. [x] Add `docs/ops/production-audit.md` with an evidence matrix covering local checks, data safety, runtime health, disk guardrails, deployment governance gaps, security gaps, and deferred product scope.
+3. [x] Cross-reference existing runbooks: `docs/ops/release-health-audit.md`, `docs/ops/backup-restore.md`, and `docs/ops/disk-usage.md`.
+4. [x] Update README with the Production Audit report location and its non-approval boundary.
+5. [x] Update `docs/CODEX_MASTER_PLAN.md`, the goal plan, this issue plan, and the implementation log after implementation.
+6. [x] Run the Release Health Audit and Disk Usage Guard locally before marking the audit report complete.
+7. [x] Verify no production deployment, remote monitoring, alerting, credential, auth/RBAC, Admin identity, audit log, destructive cleanup, or deferred feature implementation was added.
 
 ## Acceptance Criteria
 
-- [ ] `docs/ops/production-audit.md` exists and separates evidence, residual gaps, and explicit non-goals.
-- [ ] The report cites local evidence from the Release Health Audit, backup/restore runbook and drill, Disk Usage Guard, Compose health checks, and scope-boundary scans.
-- [ ] Residual Production Gaps are explicit and include no production deployment target, no protected deployment environment, no remote monitoring or alerting, no production backup schedule or PITR, no production secret management, no auth/RBAC, no Admin identity, and no audit logs.
-- [ ] The report clearly states that it is not a deployment approval, release workflow, GitHub release, image push, remote monitor, alerting integration, security certification, or production backup policy.
-- [ ] The implementation does not add production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+- [x] `docs/ops/production-audit.md` exists and separates evidence, residual gaps, and explicit non-goals.
+- [x] The report cites local evidence from the Release Health Audit, backup/restore runbook and drill, Disk Usage Guard, Compose health checks, and scope-boundary scans.
+- [x] Residual Production Gaps are explicit and include no production deployment target, no protected deployment environment, no remote monitoring or alerting, no production backup schedule or PITR, no production secret management, no auth/RBAC, no Admin identity, and no audit logs.
+- [x] The report clearly states that it is not a deployment approval, release workflow, GitHub release, image push, remote monitor, alerting integration, security certification, or production backup policy.
+- [x] The implementation does not add production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
 
 ## Research References
 

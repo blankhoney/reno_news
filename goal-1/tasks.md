@@ -1644,3 +1644,32 @@ Completion notes:
 - Ran a code-surface deferred-scope scan across scripts, infra, apps, packages, and services; found no production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search service, persisted digest table, browser automation, non-RSS adapter, cron/systemd, WAL, or PITR implementation.
 - Worktree contains only unrelated untracked repo-local skill files plus `AGENTS.md` and `skills-lock.json`, and this Check-Debug Loop 15 task-log update.
 - Found no blocker to starting Issue 025 implementation.
+
+## Task 46: Milestone 7 / Issue 025 Production Audit Report Foundation
+
+Status: Done
+
+Scope:
+- Add documentation-contract tests for Production Audit report sections and forbidden operational behavior.
+- Add `docs/ops/production-audit.md` with evidence matrix, residual production gaps, non-goals, and runbook references.
+- Update README, Issue 025 plan, implementation log, master plan, and goal plan.
+- Run Release Health Audit and Disk Usage Guard locally before closing the report.
+- Do not add production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+
+Verification:
+- `pnpm --filter @reno-news/db test`
+- `pnpm release:audit:local`
+- `pnpm disk:check:local`
+- Deferred-scope scan across code surfaces.
+
+Completion notes:
+- Completed Issue 025 on 2026-05-20.
+- Added a red documentation-contract test for the Production Audit report, then made it pass with `docs/ops/production-audit.md`.
+- Added Production Audit report sections for evidence matrix, Residual Production Gaps, explicit non-goals, runbook references, and production launch boundary.
+- Updated README, Issue 025 plan, implementation log, master plan, and goal plan.
+- Verified red/green `pnpm --filter @reno-news/db test`.
+- Verified `pnpm release:audit:local`; it ran frozen install, lint, tests, build, worker tests, worker lock check, Compose service status, direct/Caddy health probes, and backup/restore readiness, then ended with `Release Health Audit OK`.
+- Verified `pnpm disk:check:local`; it reported Docker disk usage and empty local `backups/`, then ended with `Disk Usage Guard OK`.
+- Confirmed `apps/web/next-env.d.ts` has no diff and no local backup dump files exist.
+- Ran a code-surface deferred-scope scan across scripts, infra, apps, packages, and services; found no production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search service, persisted digest table, browser automation, non-RSS adapter, cron/systemd, WAL, or PITR implementation.
+- Did not add production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.

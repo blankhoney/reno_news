@@ -186,3 +186,58 @@ test("disk usage guard stays read-only and log-bounded", async () => {
     /docker system prune|docker volume rm|docker rm|rm -rf|unlink|rmdir|writeFile|fs\.rm/i
   );
 });
+
+test("production audit report stays evidence-only and non-approving", async () => {
+  const packageJson = JSON.parse(
+    await readFile(join(process.cwd(), "../../package.json"), "utf8")
+  ) as { scripts: Record<string, string> };
+  const report = await readFile(
+    join(process.cwd(), "../../docs/ops/production-audit.md"),
+    "utf8"
+  );
+
+  for (const heading of [
+    "# Production Audit",
+    "## Evidence Matrix",
+    "## Residual Production Gaps",
+    "## Explicit Non-Goals",
+    "## Runbook References",
+    "## Production Launch Boundary"
+  ]) {
+    assert.match(report, new RegExp(heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  for (const expectedEvidence of [
+    "pnpm release:audit:local",
+    "pnpm disk:check:local",
+    "docs/ops/release-health-audit.md",
+    "docs/ops/backup-restore.md",
+    "docs/ops/disk-usage.md",
+    "http://localhost:8080/api/healthz"
+  ]) {
+    assert.match(report, new RegExp(expectedEvidence.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  for (const residualGap of [
+    "No production deployment target",
+    "No protected deployment environment",
+    "No remote monitoring or alerting",
+    "No production backup schedule or PITR",
+    "No production secret management",
+    "No auth/RBAC",
+    "No Admin identity",
+    "No audit logs"
+  ]) {
+    assert.match(report, new RegExp(residualGap.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  assert.match(report, /not a deployment approval/i);
+  assert.doesNotMatch(
+    report,
+    /docker compose (pull|push|up)|git push|gh release|scp|ssh|webhook|alertmanager|uptime/i
+  );
+
+  for (const scriptName of Object.keys(packageJson.scripts)) {
+    assert.doesNotMatch(scriptName, /deploy|publish|push/i);
+  }
+});

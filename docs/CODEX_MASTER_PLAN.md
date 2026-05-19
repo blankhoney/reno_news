@@ -13,8 +13,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 7 |
-| Current Issue | Milestone 7 / Issue 025 Production Audit Report |
-| Overall Status | In Progress |
+| Current Issue | Final review and closeout |
+| Overall Status | Review Needed |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
 | Blockers | None |
@@ -66,7 +66,7 @@ MVP v0.1 is frozen.
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
 | Milestone 6 | Search, Feedback, Digest | Done | Issues 016-021 done |
-| Milestone 7 | Backup, Monitoring, Release Audit | In Progress | Issues 022-024 done; Issue 025 planning done |
+| Milestone 7 | Backup, Monitoring, Release Audit | Done | Issues 022-025 done |
 
 Status values:
 
@@ -1618,11 +1618,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At |  |
-| PR / Commit |  |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -1634,22 +1634,38 @@ Required Tasks
 - [x] Add Production Audit Finding and Residual Production Gap terminology to `CONTEXT.md`.
 - [x] Add ADR for treating Production Audit as an evidence report, not deployment approval.
 - [x] Add Issue 025 technical plan and implementation log.
-- [ ] Add documentation-contract tests for Production Audit report sections and forbidden operational behavior.
-- [ ] Add `docs/ops/production-audit.md` with evidence matrix, residual gaps, non-goals, and runbook references.
-- [ ] Update README, master plan, goal plan, and implementation log.
-- [ ] Run local Release Health Audit and Disk Usage Guard before closing the report.
+- [x] Add documentation-contract tests for Production Audit report sections and forbidden operational behavior.
+- [x] Add `docs/ops/production-audit.md` with evidence matrix, residual gaps, non-goals, and runbook references.
+- [x] Update README, master plan, goal plan, and implementation log.
+- [x] Run local Release Health Audit and Disk Usage Guard before closing the report.
 
 Acceptance Criteria
 
-- [ ] `docs/ops/production-audit.md` separates readiness evidence, residual production gaps, and explicit non-goals.
-- [ ] The report cites current local evidence from release audit, backup/restore, disk guard, health checks, and scope-boundary scans.
-- [ ] Residual Production Gaps include missing production deployment target, protected deployment environment, remote monitoring/alerting, production backup schedule/PITR, production secret management, auth/RBAC, Admin identity, and audit logs.
-- [ ] The report states that it is not deployment approval, a release workflow, GitHub release, image push, remote monitor, alerting integration, security certification, or production backup policy.
-- [ ] No production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation is added.
+- [x] `docs/ops/production-audit.md` separates readiness evidence, residual production gaps, and explicit non-goals.
+- [x] The report cites current local evidence from release audit, backup/restore, disk guard, health checks, and scope-boundary scans.
+- [x] Residual Production Gaps include missing production deployment target, protected deployment environment, remote monitoring/alerting, production backup schedule/PITR, production secret management, auth/RBAC, Admin identity, and audit logs.
+- [x] The report states that it is not deployment approval, a release workflow, GitHub release, image push, remote monitor, alerting integration, security certification, or production backup policy.
+- [x] No production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation is added.
 
 Notes
 
 Keep Issue 025 as local evidence and gap documentation. Do not turn production audit into a launch approval workflow, production deployment design, security certification, or remote operations system.
+
+**Completion Note**
+
+Implemented:
+- Documentation-contract tests for Production Audit report structure, required local evidence, residual gaps, and forbidden operational behavior.
+- `docs/ops/production-audit.md` with an evidence matrix, Residual Production Gaps, explicit non-goals, runbook references, and production launch boundary.
+- README, Issue 025 plan, implementation log, master plan, and goal plan updates.
+
+Validated:
+- Red/green `pnpm --filter @reno-news/db test`.
+- `pnpm release:audit:local` completed successfully and ended with `Release Health Audit OK`.
+- `pnpm disk:check:local` completed successfully and ended with `Disk Usage Guard OK`.
+- Code-surface deferred-scope scan found no production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search service, persisted digest table, browser automation, non-RSS adapter, cron/systemd, WAL, or PITR implementation.
+
+Known limitations:
+- This is evidence and residual-gap documentation only. It intentionally does not approve production launch, deploy, publish images, create releases, call remote monitors, send alerts, create production credentials, add auth/RBAC, introduce Admin identity, create audit logs, automate destructive cleanup, or automate production backups.
 
 ---
 
@@ -1707,7 +1723,7 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 025 Production Audit report.
+Run final review and closeout.
 Do not implement production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
 ---
 ## 9. Codex Operating Rules
@@ -1974,6 +1990,6 @@ Focus:
 Current required next action:
 
 ```text
-Implement Issue 025 Production Audit report.
+Run final review and closeout.
 Do not implement production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
 ```
