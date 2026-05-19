@@ -398,3 +398,20 @@ Completion notes:
 - Added versioned translation output schema, provider-neutral adapter contract, deterministic fake adapter, translation policy and rights prefilter skip path, model-call logging, structured translation draft persistence, and injectable OpenAI Responses adapter boundary.
 - Covered fake-adapter success, missing extraction skip, disabled translation policy skip, blocked-rights skip, adapter failure logging, and OpenAI boundary request/parse behavior.
 - Did not add reader UI, search indexing, digest generation, public translation publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapters.
+
+## Check-Debug Loop 4
+
+Status: Done
+
+Run after Tasks 10-12:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit docs, code, tests, and running behavior against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 10-12 on 2026-05-20.
+- Re-read goal input, plan, and tasks.
+- Close-read Issue 007 and Issue 008 schema, worker paths, tests, planning docs, ADRs, domain terminology, and master plan updates during each task review.
+- Verified full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, `uv lock --check`, Compose service status, and direct/Caddy health smoke.
+- Ran a deferred-scope scan and found no added reader UI, search, digest generation, public publishing, browser automation, or non-RSS adapter implementation.
+- Found no blocker to planning the next Milestone 3 issue.
