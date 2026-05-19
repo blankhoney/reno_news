@@ -1398,3 +1398,26 @@ Completion notes:
 - Added Backup Snapshot, Restore Drill, Operational Runbook, and Release Audit terminology, ADR 0026, `docs/architecture/issue-022-plan.md`, and `docs/logs/2026-05-20-issue-022.md`.
 - Updated `docs/CODEX_MASTER_PLAN.md` so Issue 022 implementation is next.
 - Deferred production backup automation, remote object storage, WAL/PITR, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, and non-RSS adapters.
+
+## Check-Debug Loop 13
+
+Status: Done
+
+Run after Tasks 37-39:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit Issue 021 planning and implementation, Issue 022 planning, docs, tests, running services, smoke cleanup, and deferred-scope boundaries against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 37-39 on 2026-05-20.
+- Re-read goal input, plan, recent task history, recent commits, and current worktree state.
+- Confirmed Issue 021 is complete and `docs/CODEX_MASTER_PLAN.md` points to Issue 022 backup and Restore Drill implementation.
+- Verified `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, and `pnpm build`.
+- Verified DB integration with `pnpm --filter @reno-news/db test:integration`.
+- Verified worker tests with `uv --project services/worker run python -m unittest discover -s services/worker/tests` and worker lock consistency with `uv lock --check`.
+- Verified Compose service status plus direct and Caddy-proxied health endpoints for web, API, and worker.
+- Confirmed Issue 021 smoke raw entries remain deleted.
+- Confirmed local current-code smoke ports `3100` and `3102` are not listening.
+- Confirmed `apps/web/next-env.d.ts` has no diff after the final web build.
+- Ran deferred-scope scan across code directories. Found only one existing worker test string for browser automation; no production backup automation, monitoring integration, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, cron/systemd timer, object storage, WAL archiving, or point-in-time recovery implementation was added.
+- Found no blocker to starting Issue 022 implementation.
