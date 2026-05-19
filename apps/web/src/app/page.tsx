@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { getReaderBoards, getReaderItems, type ReaderItemCard } from "./readerApi";
+import {
+  getReaderBoards,
+  getReaderItems,
+  readerItemPath,
+  type ReaderItemCard
+} from "./readerApi";
 
 export default async function Home() {
   const [boards, items] = await Promise.all([getReaderBoards(), getReaderItems()]);
@@ -45,7 +50,7 @@ export function ReaderItemList({ items }: { items: ReaderItemCard[] }) {
             <span>{item.sourceTitle}</span>
           </div>
           <h3>
-            <a href={item.url}>{item.title}</a>
+            <Link href={readerItemPath(item.id)}>{item.title}</Link>
           </h3>
           {item.summary ? <p>{item.summary}</p> : null}
           <time dateTime={item.publishedAt ?? item.createdAt}>

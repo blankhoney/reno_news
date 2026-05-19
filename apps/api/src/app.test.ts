@@ -4,6 +4,7 @@ import type {
   RawEntryRecord,
   RawEntryRepository,
   ReaderBoard,
+  ReaderItemDetail,
   ReaderItemCard,
   ReaderRepository,
   SourceRepository,
@@ -85,10 +86,26 @@ const readerItem: ReaderItemCard = {
   createdAt: "2026-05-20T00:00:00.000Z"
 };
 
+const readerItemDetail: ReaderItemDetail = {
+  ...readerItem,
+  detailSummary: "Detailed reader item summary.",
+  whyItMatters: "Why this item matters.",
+  sourceNote: "Source note.",
+  chinaRelevance: "China relevance.",
+  relatedTopics: ["AI"],
+  originalTitle: "Sample AI item Original",
+  originalText: "",
+  originalTextMode: "none",
+  chineseTitle: "Sample AI item",
+  chineseText: "Detailed reader item summary.",
+  chineseTextMode: "summary_only"
+};
+
 function fakeReaderRepository(overrides: Partial<ReaderRepository> = {}): ReaderRepository {
   return {
     listReaderBoards: async () => [readerBoard],
     listReaderItems: async () => [readerItem],
+    getReaderItemDetail: async () => readerItemDetail,
     close: async () => undefined,
     ...overrides
   };
@@ -408,4 +425,52 @@ test("GET /reader/items passes optional board filter", async () => {
   assert.equal(response.statusCode, 200);
   assert.equal(receivedBoardSlug, "ai");
   assert.deepEqual(response.json(), { items: [readerItem] });
+});
+
+test("GET /reader/items/:id returns reader item detail", async () => {
+  let receivedId: number | undefined;
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        getReaderItemDetail: async (id) => {
+          receivedId = id;
+          return readerItemDetail;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/items/1"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(receivedId, 1);
+  assert.deepEqual(response.json(), { item: readerItemDetail });
+});
+
+test("GET /reader/items/:id returns 404 for missing reader item detail", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        getReaderItemDetail: async () => null
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/items/999"
+  });
+
+  assert.equal(response.statusCode, 404);
 });

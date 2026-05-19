@@ -189,3 +189,272 @@ test("reader repository lists boards and policy-filtered item cards", async () =
     await repository.close();
   }
 });
+
+test("reader repository returns rights-filtered item detail", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+
+    const fullText =
+      "This original text is allowed for public full-text reader display.";
+    const excerptText = `${"Public excerpt text. ".repeat(80)}Tail text that should be hidden.`;
+    const hiddenTranslation = "Hidden translation draft full text.";
+    const fullTextId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-full",
+      title: "Reader detail full item",
+      sourceUrl: "https://example.invalid/reader-detail-full.xml",
+      rightsStatus: "public_fulltext_allowed",
+      sourceEnabled: true,
+      extractedText: fullText,
+      translatedTitle: "中文详情标题",
+      translatedText: hiddenTranslation
+    });
+    const excerptId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-excerpt",
+      title: "Reader detail excerpt item",
+      sourceUrl: "https://example.invalid/reader-detail-excerpt.xml",
+      rightsStatus: "public_excerpt_allowed",
+      sourceEnabled: true,
+      extractedText: excerptText
+    });
+    const blockedId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-blocked",
+      title: "Reader detail blocked item",
+      sourceUrl: "https://example.invalid/reader-detail-blocked.xml",
+      rightsStatus: "blocked",
+      sourceEnabled: true
+    });
+    const disabledId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-disabled",
+      title: "Reader detail disabled source item",
+      sourceUrl: "https://example.invalid/reader-detail-disabled.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: false
+    });
+
+    const fullDetail = await repository.getReaderItemDetail(fullTextId);
+    const excerptDetail = await repository.getReaderItemDetail(excerptId);
+
+    assert.ok(fullDetail);
+    assert.equal(fullDetail.originalTextMode, "full");
+    assert.equal(fullDetail.originalText, fullText);
+    assert.equal(fullDetail.chineseTitle, "中文详情标题");
+    assert.equal(fullDetail.chineseText, "Detailed reader detail summary.");
+    assert.equal(fullDetail.chineseTextMode, "summary_only");
+    assert.notEqual(fullDetail.chineseText, hiddenTranslation);
+    assert.equal("translatedText" in fullDetail, false);
+    assert.deepEqual(fullDetail.relatedTopics, ["AI", "Policy"]);
+
+    assert.ok(excerptDetail);
+    assert.equal(excerptDetail.originalTextMode, "excerpt");
+    assert.ok(excerptDetail.originalText.length <= 803);
+    assert.notEqual(excerptDetail.originalText, excerptText);
+
+    assert.equal(await repository.getReaderItemDetail(blockedId), null);
+    assert.equal(await repository.getReaderItemDetail(disabledId), null);
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
+type ReaderDetailFixtureInput = {
+  externalId: string;
+  title: string;
+  sourceUrl: string;
+  rightsStatus: string;
+  sourceEnabled: boolean;
+  extractedText?: string;
+  translatedTitle?: string;
+  translatedText?: string;
+};
+
+async function createReaderDetailFixture(
+  pool: Pool,
+  input: ReaderDetailFixtureInput
+): Promise<number> {
+  const source = await pool.query<{ id: number }>(
+    `
+    insert into sources (board_id, source_type, title, url, enabled)
+    values (
+      (select id from boards where slug = 'ai'),
+      'rss',
+      $1,
+      $2,
+      $3
+    )
+    returning id::int
+    `,
+    [`Source for ${input.title}`, input.sourceUrl, input.sourceEnabled]
+  );
+  const rawEntry = await pool.query<{ id: number }>(
+    `
+    insert into raw_entries (
+      source_id,
+      external_id,
+      url,
+      title,
+      summary_raw,
+      published_at,
+      raw_payload_json,
+      canonical_hash,
+      lifecycle_status,
+      processing_stage,
+      rights_status
+    )
+    values ($1, $2, $3, $4, $5, '2026-05-20T00:00:00Z', '{"readerDetailFixture": true}'::jsonb, $2, 'ready', 'extracted', $6)
+    returning id::int
+    `,
+    [
+      source.rows[0].id,
+      input.externalId,
+      `https://example.invalid/items/${input.externalId}`,
+      input.title,
+      "Raw reader detail summary.",
+      input.rightsStatus
+    ]
+  );
+  const rawEntryId = rawEntry.rows[0].id;
+  let extractionId: number | null = null;
+
+  if (input.extractedText) {
+    const attempt = await pool.query<{ id: number }>(
+      "insert into raw_entry_extraction_attempts (raw_entry_id, status, completed_at) values ($1, 'success', now()) returning id::int",
+      [rawEntryId]
+    );
+    const extraction = await pool.query<{ id: number }>(
+      `
+      insert into raw_entry_extractions (
+        raw_entry_id,
+        attempt_id,
+        extractor_name,
+        extractor_version,
+        final_url,
+        title,
+        language,
+        extracted_text,
+        text_length,
+        extraction_confidence
+      )
+      values ($1, $2, 'fixture', '1', $3, $4, 'en', $5, $6, 0.9000)
+      returning id::int
+      `,
+      [
+        rawEntryId,
+        attempt.rows[0].id,
+        `https://example.invalid/items/${input.externalId}`,
+        `${input.title} Original`,
+        input.extractedText,
+        input.extractedText.length
+      ]
+    );
+    extractionId = extraction.rows[0].id;
+  }
+
+  const evaluationModelCall = await pool.query<{ id: number }>(
+    "insert into model_calls (provider, model, purpose, schema_version, status) values ('fixture', 'fixture', 'ai_evaluation', 'v1', 'success') returning id::int"
+  );
+  const evaluation = await pool.query<{ id: number }>(
+    `
+    insert into ai_evaluations (
+      raw_entry_id,
+      extraction_id,
+      model_call_id,
+      schema_version,
+      scores_json,
+      rationale_json,
+      evidence_json,
+      summary_json
+    )
+    values ($1, $2, $3, 'v1', '{}'::jsonb, '{}'::jsonb, '[]'::jsonb, '{}'::jsonb)
+    returning id::int
+    `,
+    [rawEntryId, extractionId, evaluationModelCall.rows[0].id]
+  );
+
+  let translationId: number | null = null;
+  if (input.translatedTitle || input.translatedText) {
+    const translationModelCall = await pool.query<{ id: number }>(
+      "insert into model_calls (provider, model, purpose, schema_version, status) values ('fixture', 'fixture', 'translation', 'v1', 'success') returning id::int"
+    );
+    const translation = await pool.query<{ id: number }>(
+      `
+      insert into translations (
+        raw_entry_id,
+        extraction_id,
+        model_call_id,
+        target_language,
+        schema_version,
+        status,
+        translated_title,
+        translated_text,
+        segments_json,
+        quality_flags_json
+      )
+      values ($1, $2, $3, 'zh-Hans', 'v1', 'draft', $4, $5, '[]'::jsonb, '[]'::jsonb)
+      returning id::int
+      `,
+      [
+        rawEntryId,
+        extractionId,
+        translationModelCall.rows[0].id,
+        input.translatedTitle ?? null,
+        input.translatedText ?? "Draft translation body."
+      ]
+    );
+    translationId = translation.rows[0].id;
+  }
+
+  const summaryModelCall = await pool.query<{ id: number }>(
+    "insert into model_calls (provider, model, purpose, schema_version, status) values ('fixture', 'fixture', 'summary_blocks', 'v1', 'success') returning id::int"
+  );
+  await pool.query(
+    `
+    insert into summary_blocks (
+      raw_entry_id,
+      extraction_id,
+      ai_evaluation_id,
+      translation_id,
+      model_call_id,
+      schema_version,
+      status,
+      one_sentence,
+      detailed_summary,
+      why_it_matters,
+      source_note,
+      china_relevance,
+      related_topics_json
+    )
+    values ($1, $2, $3, $4, $5, 'v1', 'draft', 'One sentence reader detail summary.', 'Detailed reader detail summary.', 'Reader detail why it matters.', 'Reader detail source note.', 'Reader detail China relevance.', '["AI", "Policy"]'::jsonb)
+    `,
+    [
+      rawEntryId,
+      extractionId,
+      evaluation.rows[0].id,
+      translationId,
+      summaryModelCall.rows[0].id
+    ]
+  );
+
+  return rawEntryId;
+}
+
+async function cleanupReaderDetailFixtures(pool: Pool): Promise<void> {
+  await pool.query(
+    `
+    delete from raw_entries
+    where source_id in (
+      select id from sources where url like 'https://example.invalid/reader-detail-%'
+    )
+    `
+  );
+  await pool.query(
+    "delete from sources where url like 'https://example.invalid/reader-detail-%'"
+  );
+}

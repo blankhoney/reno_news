@@ -582,7 +582,7 @@ Completion notes:
 
 ## Task 18: Milestone 4 / Issue 011 Reader Item Detail And Language View Foundation
 
-Status: Pending
+Status: Done
 
 Scope:
 - Add DB reader detail projection for one item.
@@ -611,4 +611,9 @@ Verification:
 - Direct/local smoke for reader detail API and `/items/[id]`.
 
 Completion notes:
-- Pending.
+- Completed Issue 011 on 2026-05-20.
+- Added DB reader detail projection, `GET /reader/items/:id`, web detail fetch, internal item links, `/items/[id]`, and query-string Chinese/original language switch.
+- Covered full-text mode, excerpt mode, blocked item suppression, disabled-source suppression, translated title, related topics, missing-detail 404, no-store detail fetch, and language-view links.
+- Verified full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local dev reader detail smoke.
+- Did not expose translation draft full text.
+- Did not add saved/read-later, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters.

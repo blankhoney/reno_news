@@ -228,6 +228,29 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   });
 
+  app.get(
+    "/reader/items/:id",
+    {
+      schema: {
+        params: sourceParamsSchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const item = await readerRepository.getReaderItemDetail(Number(id));
+
+        if (!item) {
+          return reply.code(404).send({ error: "Reader item not found" });
+        }
+
+        return { item };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
   return app;
 }
 
@@ -312,6 +335,9 @@ const unconfiguredReaderRepository: ReaderRepository = {
     throw new DatabaseNotConfiguredError();
   },
   listReaderItems: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  getReaderItemDetail: async () => {
     throw new DatabaseNotConfiguredError();
   },
   close: async () => undefined

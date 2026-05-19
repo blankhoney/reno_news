@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 4 |
-| Current Issue | Issue 011 |
+| Current Issue | Next Milestone 4 issue planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -63,7 +63,7 @@ MVP v0.1 is frozen.
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
-| Milestone 4 | Reader UI | In Progress | Issue 010 done; Issue 011 planned, implementation next |
+| Milestone 4 | Reader UI | In Progress | Issues 010-011 done; next issue planning needed |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
@@ -736,11 +736,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | pending |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -752,31 +752,53 @@ Required Tasks
 - [x] Add Reader Detail Projection and Language View terminology to `CONTEXT.md`.
 - [x] Add ADR for rights-filtered detail language views.
 - [x] Add Issue 011 technical plan.
-- [ ] Add DB reader detail projection for one item.
-- [ ] Add API endpoint for reader item detail.
-- [ ] Add web API client path for reader item detail.
-- [ ] Link reader item cards to internal detail pages.
-- [ ] Add `/items/[id]` reader detail page.
-- [ ] Add query-string Chinese/original language switch without client-side state.
-- [ ] Update reader API documentation.
+- [x] Add DB reader detail projection for one item.
+- [x] Add API endpoint for reader item detail.
+- [x] Add web API client path for reader item detail.
+- [x] Link reader item cards to internal detail pages.
+- [x] Add `/items/[id]` reader detail page.
+- [x] Add query-string Chinese/original language switch without client-side state.
+- [x] Update reader API documentation.
 
 Acceptance Criteria
 
-- [ ] Reader item cards link to internal detail pages.
-- [ ] Detail page renders for a policy-eligible item.
-- [ ] Unknown, blocked, or disabled-source items do not render as reader details.
-- [ ] Chinese/original switch works without client-side state.
-- [ ] Extracted full text is only exposed for `public_fulltext_allowed`.
-- [ ] Extracted excerpts are bounded and only exposed for `public_excerpt_allowed`.
-- [ ] Translation draft full text is not exposed.
-- [ ] New reader detail API is documented.
-- [ ] No search, digest generation, saved/read-later, personalization, public publishing workflow, browser automation, or non-RSS adapter is added.
+- [x] Reader item cards link to internal detail pages.
+- [x] Detail page renders for a policy-eligible item.
+- [x] Unknown, blocked, or disabled-source items do not render as reader details.
+- [x] Chinese/original switch works without client-side state.
+- [x] Extracted full text is only exposed for `public_fulltext_allowed`.
+- [x] Extracted excerpts are bounded and only exposed for `public_excerpt_allowed`.
+- [x] Translation draft full text is not exposed.
+- [x] New reader detail API is documented.
+- [x] No search, digest generation, saved/read-later, personalization, public publishing workflow, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Use Server Components, awaited dynamic route params, `notFound()`, and `next/link`.
 Do not turn translation drafts into public reader copy in this issue.
 Do not implement saved/read-later in this issue.
+
+**Implementation Note**
+
+Implemented:
+- DB reader detail projection for one item.
+- API endpoint `GET /reader/items/:id`.
+- Web reader API client detail fetch and item route helper.
+- Internal item links from reader cards.
+- Reader detail page at `/items/[id]`.
+- Query-string Chinese/original language switch without client-side state.
+- Reader API documentation and README endpoint notes.
+
+Validated:
+- DB integration covers full-text mode, excerpt mode, blocked item suppression, disabled-source suppression, related topics, translated title, and no translated body exposure.
+- API tests cover reader detail success and missing-detail 404.
+- Web tests cover detail fetch and language-view item links.
+- Full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, Compose service status, direct/Caddy health smoke, and `uv lock --check`.
+- Local dev smoke on `http://localhost:3100/items/:id?view=zh`, `http://localhost:3100/items/:id?view=original`, `http://localhost:3101/reader/items/:id`, and internal links from `http://localhost:3100/`.
+
+Known limitations:
+- No saved/read-later, search, digest generation, personalization, public publishing workflow, browser automation, or non-RSS adapter was added.
+- Translation draft full text remains non-public reader content.
 
 ---
 
@@ -834,7 +856,7 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 011 reader item detail and language view foundation.
+Plan the next Milestone 4 reader UI issue.
 Do not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
@@ -1102,6 +1124,6 @@ Focus:
 Current required next action:
 
 ```text
-Implement Issue 011 reader item detail and language view foundation.
+Plan the next Milestone 4 reader UI issue.
 Do not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
 ```

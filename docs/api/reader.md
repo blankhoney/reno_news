@@ -45,3 +45,43 @@ Response:
   ]
 }
 ```
+
+## `GET /reader/items/:id`
+
+Returns one reader item detail projection. The endpoint returns `404` if the item is missing, blocked, or belongs to a disabled source.
+
+Reader detail text fields are rights-filtered:
+
+- `originalTextMode: "none"` means no extracted body is public.
+- `originalTextMode: "excerpt"` means `originalText` is a bounded excerpt.
+- `originalTextMode: "full"` means `originalText` is the full extracted original text.
+- `chineseTextMode: "summary_only"` means the Chinese view uses summary fields and does not expose translation draft full text.
+
+Response:
+
+```json
+{
+  "item": {
+    "id": 1,
+    "boardSlug": "ai",
+    "boardName": "AI",
+    "sourceTitle": "OpenAI News",
+    "title": "Sample AI item",
+    "url": "https://example.invalid/ai/sample-ai-001",
+    "summary": "Development seed item for the AI board.",
+    "detailSummary": "Detailed summary.",
+    "whyItMatters": "Why it matters.",
+    "sourceNote": "Source note.",
+    "chinaRelevance": "China relevance.",
+    "relatedTopics": ["AI"],
+    "originalTitle": "Sample AI item",
+    "originalText": "",
+    "originalTextMode": "none",
+    "chineseTitle": "Sample AI item",
+    "chineseText": "Detailed summary.",
+    "chineseTextMode": "summary_only",
+    "publishedAt": "2026-05-20T00:00:00.000Z",
+    "createdAt": "2026-05-20T00:00:00.000Z"
+  }
+}
+```

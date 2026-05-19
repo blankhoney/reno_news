@@ -74,12 +74,22 @@ Reader item detail fields:
 
 ## TDD Plan
 
-1. [ ] Add DB repository tests for item detail projection, 404/null behavior, and rights-filtered text modes.
-2. [ ] Add API tests for `GET /reader/items/:id`.
-3. [ ] Add web API client tests for detail fetch and encoded language-view links.
-4. [ ] Implement repository and API endpoint.
-5. [ ] Implement item detail page and language switch.
-6. [ ] Update API docs, README, master plan, and log.
+1. [x] Add DB repository tests for item detail projection, 404/null behavior, and rights-filtered text modes.
+2. [x] Add API tests for `GET /reader/items/:id`.
+3. [x] Add web API client tests for detail fetch and encoded language-view links.
+4. [x] Implement repository and API endpoint.
+5. [x] Implement item detail page and language switch.
+6. [x] Update API docs, README, master plan, and log.
+
+## Implemented Boundary
+
+- `packages/db/src/readerRepository.ts` owns the reader detail projection.
+- `apps/api` exposes `GET /reader/items/:id`.
+- `apps/web` links reader cards to `/items/[id]` and renders the detail page with query-string `view=zh|original`.
+- Original full text is exposed only for `public_fulltext_allowed`.
+- Original excerpts are bounded and exposed only for `public_excerpt_allowed`.
+- Translation draft full text is not selected or returned by the reader detail projection.
+- `docs/api/reader.md` documents the reader detail endpoint.
 
 ## Acceptance Criteria
 
