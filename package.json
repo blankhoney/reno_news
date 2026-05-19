@@ -12,7 +12,9 @@
     "test": "pnpm -r test",
     "build": "pnpm -r build",
     "db:migrate": "pnpm --filter @reno-news/db db:migrate",
-    "db:seed": "pnpm --filter @reno-news/db db:seed"
+    "db:seed": "pnpm --filter @reno-news/db db:seed",
+    "db:backup:local": "sh scripts/db-backup.sh",
+    "db:restore:drill": "sh scripts/db-restore-drill.sh"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

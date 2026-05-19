@@ -60,3 +60,36 @@ test("reader feedback review migration defines constrained review state", async 
   assert.match(migration, /length\(review_note\) <= 2000/);
   assert.match(migration, /reviewed_at timestamptz/);
 });
+
+test("backup and restore drill scripts stay local and disposable", async () => {
+  const packageJson = JSON.parse(
+    await readFile(join(process.cwd(), "../../package.json"), "utf8")
+  ) as { scripts: Record<string, string> };
+  const backupScript = await readFile(
+    join(process.cwd(), "../../scripts/db-backup.sh"),
+    "utf8"
+  );
+  const restoreScript = await readFile(
+    join(process.cwd(), "../../scripts/db-restore-drill.sh"),
+    "utf8"
+  );
+  const gitignore = await readFile(join(process.cwd(), "../../.gitignore"), "utf8");
+
+  assert.equal(packageJson.scripts["db:backup:local"], "sh scripts/db-backup.sh");
+  assert.equal(packageJson.scripts["db:restore:drill"], "sh scripts/db-restore-drill.sh");
+  assert.match(gitignore, /^backups\/$/m);
+
+  assert.match(backupScript, /pg_dump/);
+  assert.match(backupScript, /-Fc/);
+  assert.match(backupScript, /docker compose -f "\$COMPOSE_FILE" exec -T postgres/);
+  assert.doesNotMatch(backupScript, /cron|systemd|aws|s3|gsutil|wal/i);
+
+  assert.match(restoreScript, /pg_restore/);
+  assert.match(restoreScript, /--exit-on-error/);
+  assert.match(restoreScript, /RESTORE_DATABASE/);
+  assert.match(restoreScript, /template0/);
+  assert.match(restoreScript, /dropdb/);
+  assert.match(restoreScript, /docker compose -f "\$COMPOSE_FILE" exec -T postgres/);
+  assert.match(restoreScript, /RESTORE_DATABASE" = "\$PRIMARY_DATABASE"/);
+  assert.doesNotMatch(restoreScript, /cron|systemd|aws|s3|gsutil|wal/i);
+});

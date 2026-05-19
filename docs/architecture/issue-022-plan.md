@@ -23,22 +23,22 @@ This is not a complete production backup strategy. It deliberately does not add 
 
 ## TDD Plan
 
-1. [ ] Add script-contract tests that verify the backup and restore-drill commands use `pg_dump -Fc`, `pg_restore --exit-on-error`, non-interactive Compose execution, and a disposable restore target.
-2. [ ] Add local backup script or package script for creating a timestamped PostgreSQL custom-format Backup Snapshot.
-3. [ ] Add local restore-drill script or package script that restores a selected dump into a disposable database and verifies expected tables.
-4. [ ] Add `docs/ops/backup-restore.md` with backup, restore drill, verification, cleanup, and limitations.
-5. [ ] Update README with the manual backup/restore drill entrypoints.
-6. [ ] Run a local backup/restore drill against the Compose PostgreSQL service and clean up the disposable restore database and dump file.
-7. [ ] Update master plan, goal plan, and implementation log.
+1. [x] Add script-contract tests that verify the backup and restore-drill commands use `pg_dump -Fc`, `pg_restore --exit-on-error`, non-interactive Compose execution, and a disposable restore target.
+2. [x] Add local backup script or package script for creating a timestamped PostgreSQL custom-format Backup Snapshot.
+3. [x] Add local restore-drill script or package script that restores a selected dump into a disposable database and verifies expected tables.
+4. [x] Add `docs/ops/backup-restore.md` with backup, restore drill, verification, cleanup, and limitations.
+5. [x] Update README with the manual backup/restore drill entrypoints.
+6. [x] Run a local backup/restore drill against the Compose PostgreSQL service and clean up the disposable restore database and dump file.
+7. [x] Update master plan, goal plan, and implementation log.
 
 ## Acceptance Criteria
 
-- [ ] A local operator can create a timestamped PostgreSQL custom-format Backup Snapshot.
-- [ ] A local operator can run a Restore Drill into a disposable database target.
-- [ ] The Restore Drill verifies expected MVP tables or counts before reporting success.
-- [ ] The runbook documents cleanup and clearly states that this is not production scheduling or PITR.
-- [ ] The primary project database is not dropped, overwritten, or mutated by the Restore Drill.
-- [ ] No cron/systemd timer, remote object storage, monitoring integration, alerting, production credentials, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
+- [x] A local operator can create a timestamped PostgreSQL custom-format Backup Snapshot.
+- [x] A local operator can run a Restore Drill into a disposable database target.
+- [x] The Restore Drill verifies expected MVP tables or counts before reporting success.
+- [x] The runbook documents cleanup and clearly states that this is not production scheduling or PITR.
+- [x] The primary project database is not dropped, overwritten, or mutated by the Restore Drill.
+- [x] No cron/systemd timer, remote object storage, monitoring integration, alerting, production credentials, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
 
 ## Research References
 

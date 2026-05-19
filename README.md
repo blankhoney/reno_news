@@ -40,6 +40,15 @@ Local API and worker processes use the same variable:
 DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news
 ```
 
+Manual local backup and restore drill:
+
+```bash
+pnpm db:backup:local
+pnpm db:restore:drill backups/<dump-file>.dump
+```
+
+The backup script writes PostgreSQL custom-format dumps to ignored `backups/`. The restore drill uses a disposable database target and drops it on exit. See `docs/ops/backup-restore.md`.
+
 ## Local Services
 
 ```bash
@@ -88,4 +97,4 @@ Reader endpoints:
 
 ## Scope Boundary
 
-Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, or auth/RBAC yet. Saved/read-later state is local to the browser and is not synced to a server. Reader feedback is stored as append-only item-scoped events; Digest preview currently consumes eligible feedback as a bounded ordering penalty. Admin feedback review can mark one feedback event as `open`, `reviewed`, `dismissed`, or `resolved`; only `dismissed` changes penalty eligibility, and review does not hide, restore, delete, moderate, personalize, change search order, or mutate raw-entry lifecycle. Reader search, related items, and digest preview are PostgreSQL-only over reader-safe metadata and summary fields. The current reader surface does not implement auth, backend personal-state APIs, email delivery, scheduler-driven digest generation, persisted digest tables, editorial digest workflow, public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, moderation workflow, trust weighting, Admin identity, audit logs, reply workflow, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
+Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, or auth/RBAC yet. Saved/read-later state is local to the browser and is not synced to a server. Reader feedback is stored as append-only item-scoped events; Digest preview currently consumes eligible feedback as a bounded ordering penalty. Admin feedback review can mark one feedback event as `open`, `reviewed`, `dismissed`, or `resolved`; only `dismissed` changes penalty eligibility, and review does not hide, restore, delete, moderate, personalize, change search order, or mutate raw-entry lifecycle. Local backup/restore support is a manual PostgreSQL dump and disposable restore drill only; it does not add production scheduling, remote storage, monitoring, alerting, WAL archiving, point-in-time recovery, or release automation. Reader search, related items, and digest preview are PostgreSQL-only over reader-safe metadata and summary fields. The current reader surface does not implement auth, backend personal-state APIs, email delivery, scheduler-driven digest generation, persisted digest tables, editorial digest workflow, public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, moderation workflow, trust weighting, Admin identity, audit logs, reply workflow, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.

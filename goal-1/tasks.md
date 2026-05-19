@@ -1421,3 +1421,37 @@ Completion notes:
 - Confirmed `apps/web/next-env.d.ts` has no diff after the final web build.
 - Ran deferred-scope scan across code directories. Found only one existing worker test string for browser automation; no production backup automation, monitoring integration, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, cron/systemd timer, object storage, WAL archiving, or point-in-time recovery implementation was added.
 - Found no blocker to starting Issue 022 implementation.
+
+## Task 40: Milestone 7 / Issue 022 Backup And Restore Drill Foundation
+
+Status: Done
+
+Scope:
+- Add script-contract tests for backup and restore drill command boundaries.
+- Add local backup script or package script for timestamped PostgreSQL custom-format dumps.
+- Add local restore-drill script or package script for disposable database restore verification.
+- Add `docs/ops/backup-restore.md`.
+- Update README, master plan, goal plan, and implementation log.
+- Run a local backup/restore drill and clean up the disposable restore target and dump file.
+- Do not add production backup automation, cron/systemd timers, remote object storage, WAL archiving, point-in-time recovery, monitoring integrations, alerting, production credentials, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters.
+
+Verification:
+- `pnpm --filter @reno-news/db test`
+- Full repo checks as needed for touched surfaces.
+- Local backup/restore drill against the Compose PostgreSQL service.
+
+Completion notes:
+- Completed Issue 022 on 2026-05-20.
+- Added script-contract tests for backup and restore drill command boundaries.
+- Added root scripts `db:backup:local` and `db:restore:drill`.
+- Added `scripts/db-backup.sh` for timestamped PostgreSQL custom-format Backup Snapshots.
+- Added `scripts/db-restore-drill.sh` for disposable database restore verification and automatic cleanup.
+- Added `docs/ops/backup-restore.md`.
+- Updated README, Issue 022 plan, implementation log, master plan, and goal plan.
+- Verified `pnpm --filter @reno-news/db test`.
+- Verified `pnpm lint`, `pnpm test`, `pnpm build`, DB integration tests, worker tests, and worker lock consistency.
+- Verified `pnpm db:backup:local` created `backups/reno_news-20260519T224137Z.dump`.
+- Verified `pnpm db:restore:drill backups/reno_news-20260519T224137Z.dump` restored into disposable database `reno_news_restore_drill`, verified expected MVP tables, and dropped the disposable database on exit.
+- Deleted the temporary dump file and confirmed `reno_news_restore_drill` no longer exists.
+- Verified Compose service status, direct/Caddy health endpoints, empty local `backups/` dump state, no `apps/web/next-env.d.ts` diff, and no production-backup deferred-scope implementation hits.
+- Did not add production backup automation, cron/systemd timers, remote object storage, WAL archiving, point-in-time recovery, monitoring integrations, alerting, production credentials, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters.
