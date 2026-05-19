@@ -44,6 +44,10 @@ _Avoid_: Crawl job when the source is structured RSS/Atom
 Rules that decide whether and how a source may be accessed, rate-limited, retried, and processed.
 _Avoid_: Crawl config, fetch settings
 
+**Policy Change**:
+An admin-authored adjustment to a source's access, retention, translation, risk, or public-display rules.
+_Avoid_: Reader preference, ranking change, feed setting
+
 **Rights Policy**:
 Rules that decide whether retrieved content may be stored, translated, snapshotted, or publicly displayed.
 _Avoid_: Robots policy, copyright flag, share level
@@ -152,6 +156,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 
 - An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
 - A **Source** uses one **Source Adapter** to discover **Candidate Items**.
+- A **Policy Change** applies to one **Source** and changes its **Source Policy** or **Rights Policy**.
 - An **Ingest Attempt** records one **Source Adapter** execution for one **Source**.
 - An **Extraction Attempt** fetches and extracts readable text for one **Candidate Item** when **Source Policy** and **Rights Policy** allow it.
 - An **Extraction Result** may feed later normalization into a **Content Item**.

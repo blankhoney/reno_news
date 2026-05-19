@@ -689,3 +689,55 @@ Completion notes:
 - Verified web state helpers for empty storage, saved/read-later toggles, independent removal, persistence, corrupted-state recovery, and snapshot stripping.
 - Verified full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and headless Chrome localStorage persistence smoke.
 - Did not add auth, backend personal-state APIs, ranking changes, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters.
+
+## Task 21: Milestone 5 / Issue 013 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current Next.js Server Action form, `FormData`, `revalidatePath`, and `redirect` guidance.
+- Re-read local admin and policy domain docs.
+- Define the first Milestone 5 issue without implementing policy-edit code.
+- Add Policy Change terminology to `CONTEXT.md`.
+- Add an ADR for admin policy edits mutating the existing Source Policy.
+- Add Issue 013 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 013 implementation is next.
+- Do not implement source creation UI, policy history, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `docs/architecture/issue-013-plan.md` exists and maps Milestone 5 policy-admin focus to concrete tasks and acceptance criteria.
+- ADR 0017 records the current Source Policy mutation boundary.
+- `CONTEXT.md` defines Policy Change.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 013 implementation and does not start failure queue, feedback handling, raw-entry hide/restore, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest first Milestone 5 admin UI slice: editing the current Source Policy from the existing admin source detail page through the existing source update API.
+- Deferred source creation UI, policy history, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, and non-RSS adapters.
+
+## Check-Debug Loop 7
+
+Status: Pending
+
+Run after Tasks 19-21:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit docs, code, tests, and running behavior against the master plan.
+- Repair gaps before continuing.
+
+## Task 22: Milestone 5 / Issue 013 Admin Source Policy Edit Foundation
+
+Status: Pending
+
+Scope:
+- Add web tests for policy form payload parsing.
+- Add admin API helper for source policy updates.
+- Add Server Action for policy form submission.
+- Add policy edit form on `/admin/sources/[id]`.
+- Update admin documentation, README, master plan, and log.
+- Do not add source creation UI, policy history, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters.
+
+Verification:
+- `pnpm --filter @reno-news/web test`
+- `pnpm --filter @reno-news/web lint`
+- `pnpm --filter @reno-news/web build`
+- Full repo checks as needed for touched surfaces.

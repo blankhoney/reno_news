@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 5 |
-| Current Issue | Next Milestone 5 issue planning |
+| Current Issue | Issue 013: Admin source policy edit foundation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -64,7 +64,7 @@ MVP v0.1 is frozen.
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
-| Milestone 5 | Admin UI | Not Started | source/policy/failure views |
+| Milestone 5 | Admin UI | In Progress | Issue 013 planned |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
@@ -861,6 +861,49 @@ Known limitations:
 - Saved/read-later is local to one browser.
 - No auth, backend personal-state API, ranking change, search, digest generation, public publishing workflow, browser automation, or non-RSS adapter was added.
 
+### Milestone 5: Admin UI
+
+#### Issue 013: Add admin source policy edit foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | Pending |
+| PR / Commit | pending |
+
+Goal
+
+Let an Admin edit the current Source Policy from the existing admin source detail page without adding policy history, auth/RBAC, or a separate CMS workflow.
+
+Required Tasks
+
+- [x] Research current Next.js Server Action form, `FormData`, `revalidatePath`, and `redirect` guidance.
+- [x] Add Policy Change terminology to `CONTEXT.md`.
+- [x] Add ADR for admin policy edits mutating the existing Source Policy.
+- [x] Add Issue 013 technical plan.
+- [ ] Add web tests for policy form payload parsing.
+- [ ] Add admin API helper for source policy update.
+- [ ] Add Server Action for policy form submission.
+- [ ] Add policy edit form on `/admin/sources/[id]`.
+- [ ] Update admin documentation, README, master plan, and log.
+
+Acceptance Criteria
+
+- [ ] Admin can edit crawl enabled state from the source detail page.
+- [ ] Admin can edit positive numeric fetch interval and rate-limit values.
+- [ ] Admin can edit save level, rights policy, translation policy, and risk level from constrained options.
+- [ ] Submitted values reach `PATCH /sources/:id` as a nested `policy` payload.
+- [ ] The admin source detail page is revalidated and shown again after mutation.
+- [ ] Existing enable/disable and manual ingest actions still work.
+- [ ] No source creation UI, policy history table, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use the existing source update API and current source policy row for this issue.
+Do not add policy version history until approval or audit requirements exist.
+
 ---
 
 ## 4. Deferred Backlog
@@ -917,8 +960,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the first Milestone 5 admin UI issue.
-Do not implement search, digest generation, browser automation, or non-RSS adapters yet.
+Implement Issue 013 admin source policy edit foundation.
+Do not implement source creation UI, policy history, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1185,6 +1228,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the first Milestone 5 admin UI issue.
-Do not implement search, digest generation, browser automation, or non-RSS adapters yet.
+Implement Issue 013 admin source policy edit foundation.
+Do not implement source creation UI, policy history, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters yet.
 ```

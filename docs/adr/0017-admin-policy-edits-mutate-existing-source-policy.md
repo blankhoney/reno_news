@@ -1,0 +1,3 @@
+# Admin Policy Edits Mutate Existing Source Policy
+
+Milestone 5 policy admin edits should update the existing source policy record through the established source update path instead of introducing a new policy history or audit table. The project already stores one current policy per source, and the first admin UI slice needs operational control over crawl, retention, translation, rights, and risk fields without committing to a long-term approval or audit workflow. A later audit trail can be added when moderation and release governance require it, but Issue 013 should keep the mutation boundary on the current Source Policy.
