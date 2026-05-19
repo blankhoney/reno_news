@@ -923,3 +923,22 @@ Completion notes:
 - Selected the smallest first Milestone 6 slice: PostgreSQL reader search over reader-safe metadata and summary fields.
 - Chose not to search private extraction text or translation draft full text, because search results must not leak content the reader UI cannot display.
 - Deferred feedback handling, feedback-to-ranking, digest generation, semantic/vector search, Meilisearch/OpenSearch, `pg_trgm`, `zhparser`, auth/RBAC, backend personal-state APIs, browser automation, and non-RSS adapters.
+
+## Check-Debug Loop 9
+
+Status: Done
+
+Run after Tasks 25-27:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit docs, code, tests, running services, and deferred-scope boundaries against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 25-27 on 2026-05-20.
+- Re-read goal input, plan, and tasks.
+- Confirmed Issue 015 is complete, Milestone 5 is done, and Issue 016 planning points to PostgreSQL reader search implementation.
+- Ran deferred-scope scan and found search, feedback, digest, external search, `pg_trgm`, and `zhparser` references only in docs or planning text; no Issue 016 search implementation was added in Task 27.
+- Verified full repo `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, and `pnpm build`.
+- Verified worker tests with `uv --project services/worker run python -m unittest discover -s services/worker/tests` and worker lock consistency with `uv lock --check` from `services/worker`.
+- Verified Compose service status and direct plus Caddy-proxied health endpoints for web, API, and worker.
+- Found no blocker to starting Issue 016 implementation.
