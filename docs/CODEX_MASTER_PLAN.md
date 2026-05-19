@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 3 |
-| Current Issue | Milestone 3 planning |
+| Current Issue | Issue 007 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -62,7 +62,7 @@ MVP v0.1 is frozen.
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
-| Milestone 3 | AI Pipeline | Not Started | Next: plan first AI pipeline issue |
+| Milestone 3 | AI Pipeline | In Progress | Issue 007 planned; implementation next |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
@@ -482,6 +482,52 @@ Known limitations:
 - Extraction results are private worker output and are not exposed through reader UI or search.
 - No browser automation, fallback extractor, AI processing, or non-RSS adapter was added.
 
+### Milestone 3: AI Pipeline
+
+#### Issue 007: Add AI evaluation adapter foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | |
+
+Goal
+
+Evaluate one extracted item through a provider-neutral adapter, store the model call, and store structured AI evaluation output.
+
+Required Tasks
+
+- [x] Research current OpenAI Responses API and Structured Outputs guidance.
+- [x] Add Model Call and Prefilter terminology to `CONTEXT.md`.
+- [x] Add ADR for Responses API Structured Outputs.
+- [x] Add Issue 007 technical plan.
+- [ ] Add SQL migration for `model_calls` and `ai_evaluations`.
+- [ ] Add versioned AI evaluation output schema.
+- [ ] Add provider-neutral adapter interface.
+- [ ] Add deterministic fake adapter for tests.
+- [ ] Add prefilter skip path.
+- [ ] Add model-call logging for success, failure, and skipped evaluation.
+- [ ] Store structured scores, rationale, evidence, and summary output.
+- [ ] Add OpenAI adapter boundary without requiring live API tests.
+
+Acceptance Criteria
+
+- [ ] One extracted item can be evaluated through a fake adapter and stored without network access.
+- [ ] Every attempted evaluation creates a model-call record.
+- [ ] Structured evaluation output includes scores, rationale, evidence, and summary fields.
+- [ ] Prefilter can skip missing or policy-blocked text without calling the adapter.
+- [ ] Provider/model/schema version are durable.
+- [ ] No reader UI, search, translation publishing, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use fake adapters for tests.
+Do not require `OPENAI_API_KEY` for local verification.
+Do not add reader-facing summaries or translations in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -538,8 +584,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Start Milestone 3 planning.
-Define the first AI pipeline issue before implementation.
+Continue Issue 007 implementation.
+Keep Issue 007 to AI adapter, structured schema, model-call logging, prefilter, scoring/evidence/summary persistence.
 Do not implement search, reader UI, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
@@ -566,7 +612,7 @@ Issue 003
 Issue 004
 Issue 005
 Issue 006
-Milestone 3 issue planning
+Issue 007
 ```
 
 An issue is not complete until all acceptance criteria are met.
@@ -807,6 +853,6 @@ Focus:
 Current required next action:
 
 ```text
-Start Milestone 3 planning.
+Continue Issue 007 implementation.
 Do not implement search, reader UI, browser automation, or non-RSS adapters yet.
 ```

@@ -84,6 +84,14 @@ _Avoid_: Ready item, public article
 The scoring standard used to evaluate a content item for a board.
 _Avoid_: Prompt, ranking formula
 
+**Model Call**:
+A recorded request to an AI provider, including provider, model, purpose, schema or prompt version, status, latency, and redacted payload references.
+_Avoid_: AI result, evaluation, prompt
+
+**Prefilter**:
+A cheap eligibility check that decides whether an extracted item should receive expensive AI evaluation.
+_Avoid_: Final ranking, moderation, publication decision
+
 **AI Evaluation**:
 A structured assessment of a content item against a rubric, including scores, rationale, and supporting evidence.
 _Avoid_: Summary, model answer
@@ -118,6 +126,8 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Candidate Item** may become a **Content Item** after normalization, deduplication, and policy checks.
 - A **Rights Policy** constrains whether a **Content Item** may be stored, translated, snapshotted, or publicly displayed.
 - A **Rubric** evaluates **Content Items** for one or more **Boards**.
+- A **Model Call** records the provider interaction that may produce an **AI Evaluation**.
+- A **Prefilter** may skip expensive **AI Evaluation** when an extracted item is clearly ineligible.
 - An **AI Evaluation** belongs to one **Content Item** and cites zero or more **Evidence Spans**.
 - A **Content Item** may have zero or more **Translations**.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.

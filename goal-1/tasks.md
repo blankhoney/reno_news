@@ -263,6 +263,62 @@ Completion notes:
 - Added worker actor for one raw entry extraction.
 - Did not add AI, search, reader UI, browser automation, fallback extractors, or non-RSS adapters.
 
-## Future Tasks
+## Task 9: Milestone 3 / Issue 007 Planning And ADR
 
-Task 9 starts Milestone 3 planning. Do not code AI pipeline behavior until the first Milestone 3 issue is defined with scope, acceptance criteria, tests, and rollback notes.
+Status: Done
+
+Scope:
+- Research current OpenAI Responses API, Structured Outputs, and model guidance.
+- Re-read local research and current domain docs for AI pipeline boundaries.
+- Define the first Milestone 3 issue without implementing AI code.
+- Add Model Call and Prefilter terminology to `CONTEXT.md`.
+- Add an ADR for Responses API Structured Outputs.
+- Add Issue 007 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 007 is the active issue.
+- Do not implement AI pipeline code in this planning task.
+
+Verification:
+- `docs/architecture/issue-007-plan.md` exists and maps Milestone 3 focus to concrete tasks and acceptance criteria.
+- ADR 0011 records the Responses API Structured Outputs boundary.
+- `CONTEXT.md` defines Model Call and Prefilter.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 007 and does not start search, reader UI, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next vertical slice: fake-adapter AI evaluation for one extracted item.
+- Deferred reader UI, search, translation publishing, browser automation, multi-provider routing, and non-RSS adapters.
+
+## Check-Debug Loop 3
+
+Status: Done
+
+Run after Tasks 7-9:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit docs, code, tests, and running behavior against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 7-9 on 2026-05-20.
+- Re-read goal input, plan, and tasks.
+- Close-read Issue 007 planning docs, ADR, domain terminology, and master plan updates.
+- Verified Issue 007 is planning-only and does not start search, reader UI, browser automation, live API calls, or non-RSS adapters.
+- Found no blocker to starting Issue 007 implementation with fake adapters first.
+
+## Task 10: Milestone 3 / Issue 007 AI Evaluation Adapter Foundation
+
+Status: Pending
+
+Scope:
+- Add SQL migration for `model_calls` and `ai_evaluations`.
+- Add versioned AI evaluation output schema.
+- Add provider-neutral adapter interface and deterministic fake adapter.
+- Add prefilter skip path.
+- Add model-call logging for success, failure, and skipped evaluation.
+- Store structured scores, rationale, evidence, and summary output.
+- Add OpenAI adapter boundary without requiring live API tests.
+
+Verification:
+- Pending until implementation starts.
+
+Completion notes:
+- Pending.
