@@ -13,11 +13,13 @@ export const TRANSLATION_POLICY_OPTIONS = [
   "public_fulltext"
 ] as const;
 export const RISK_LEVEL_OPTIONS = ["low", "medium", "high"] as const;
+export const RAW_ENTRY_LIFECYCLE_ACTION_OPTIONS = ["hide", "restore"] as const;
 
 export type SaveLevel = (typeof SAVE_LEVEL_OPTIONS)[number];
 export type RightsPolicy = (typeof RIGHTS_POLICY_OPTIONS)[number];
 export type TranslationPolicy = (typeof TRANSLATION_POLICY_OPTIONS)[number];
 export type RiskLevel = (typeof RISK_LEVEL_OPTIONS)[number];
+export type RawEntryLifecycleAction = (typeof RAW_ENTRY_LIFECYCLE_ACTION_OPTIONS)[number];
 
 export type SourcePolicyRecord = {
   crawlEnabled: boolean;
@@ -30,6 +32,10 @@ export type SourcePolicyRecord = {
 };
 
 export type SourcePolicyUpdate = SourcePolicyRecord;
+
+export type RawEntryLifecycleUpdate = {
+  action: RawEntryLifecycleAction;
+};
 
 export type SourceRecord = {
   id: number;
@@ -120,6 +126,20 @@ export async function updateSourcePolicy(id: string, policy: SourcePolicyUpdate)
   }
 }
 
+export async function updateRawEntryLifecycle(
+  id: string,
+  update: RawEntryLifecycleUpdate
+): Promise<void> {
+  const response = await fetch(apiUrl(`/raw-entries/${id}`), {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(update)
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update raw entry ${id}: ${response.status}`);
+  }
+}
+
 export function sourcePolicyUpdateFromFormData(formData: Pick<FormData, "get">): SourcePolicyUpdate {
   return {
     crawlEnabled: readBooleanField(formData, "crawlEnabled"),
@@ -129,6 +149,14 @@ export function sourcePolicyUpdateFromFormData(formData: Pick<FormData, "get">):
     rightsPolicy: readOptionField(formData, "rightsPolicy", RIGHTS_POLICY_OPTIONS),
     translationPolicy: readOptionField(formData, "translationPolicy", TRANSLATION_POLICY_OPTIONS),
     riskLevel: readOptionField(formData, "riskLevel", RISK_LEVEL_OPTIONS)
+  };
+}
+
+export function rawEntryLifecycleActionFromFormData(
+  formData: Pick<FormData, "get">
+): RawEntryLifecycleUpdate {
+  return {
+    action: readOptionField(formData, "action", RAW_ENTRY_LIFECYCLE_ACTION_OPTIONS)
   };
 }
 

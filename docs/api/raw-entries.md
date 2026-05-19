@@ -1,6 +1,6 @@
 # Raw Entries API
 
-Issue 005 adds read-only Raw Entry endpoints for admin/debug inspection. These endpoints expose RSS/Atom metadata already stored in `raw_entries`; they do not fetch article full text.
+Raw Entry endpoints expose RSS/Atom metadata already stored in `raw_entries` for admin/debug inspection. Issue 015 adds a constrained manual hide/restore action; these endpoints do not fetch article full text.
 
 ## `GET /raw-entries`
 
@@ -24,6 +24,28 @@ Returns one raw entry with source identity and status fields.
 
 Returns `404` when the raw entry does not exist.
 
+## `PATCH /raw-entries/:id`
+
+Applies one constrained lifecycle action to a raw entry.
+
+Request:
+
+```json
+{ "action": "hide" }
+```
+
+or:
+
+```json
+{ "action": "restore" }
+```
+
+Behavior:
+- `hide` sets `lifecycleStatus` to `hidden`.
+- `restore` sets `lifecycleStatus` to `candidate`.
+- Unsupported actions return `400`.
+- Missing raw entries return `404`.
+
 ## Boundary
 
-Raw Entry endpoints are for admin/debug inspection only. Reader UI, full-text extraction, AI evaluation, search, and publication state are later milestone work.
+Raw Entry endpoints are for admin/debug inspection and manual lifecycle moderation only. They do not add feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, full-text extraction, AI evaluation, search, or publication workflow.

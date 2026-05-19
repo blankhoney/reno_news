@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+  rawEntryLifecycleActionFromFormData,
   setSourceEnabled,
   sourcePolicyUpdateFromFormData,
   triggerSourceIngest,
+  updateRawEntryLifecycle,
   updateSourcePolicy
 } from "./api";
 
@@ -35,4 +37,14 @@ export async function updateSourcePolicyAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath(`/admin/sources/${sourceId}`);
   redirect(`/admin/sources/${sourceId}`);
+}
+
+export async function updateRawEntryLifecycleAction(formData: FormData) {
+  const rawEntryId = String(formData.get("rawEntryId") ?? "");
+  const update = rawEntryLifecycleActionFromFormData(formData);
+
+  await updateRawEntryLifecycle(rawEntryId, update);
+  revalidatePath("/admin/raw-entries");
+  revalidatePath(`/admin/raw-entries/${rawEntryId}`);
+  redirect(`/admin/raw-entries/${rawEntryId}`);
 }

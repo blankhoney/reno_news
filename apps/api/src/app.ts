@@ -37,6 +37,10 @@ type FailureQueueQuery = {
   limit?: number;
 };
 
+type RawEntryLifecycleBody = {
+  action: "hide" | "restore";
+};
+
 class DatabaseNotConfiguredError extends Error {
   constructor() {
     super("DATABASE_URL is required");
@@ -55,6 +59,7 @@ const rightsPolicies = [
 ];
 const translationPolicies = ["none", "private_only", "public_excerpt", "public_fulltext"];
 const riskLevels = ["low", "medium", "high"];
+const rawEntryLifecycleActions = ["hide", "restore"];
 
 const sourcePolicySchema = {
   type: "object",
@@ -104,6 +109,15 @@ const failureQueueQuerySchema = {
   additionalProperties: false,
   properties: {
     limit: { type: "integer", minimum: 1, maximum: 200 }
+  }
+};
+
+const rawEntryLifecycleBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["action"],
+  properties: {
+    action: { type: "string", enum: rawEntryLifecycleActions }
   }
 };
 
@@ -214,6 +228,33 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
       try {
         const { id } = request.params as SourceParams;
         const rawEntry = await rawEntryRepository.getRawEntry(Number(id));
+
+        if (!rawEntry) {
+          return reply.code(404).send({ error: "Raw entry not found" });
+        }
+
+        return rawEntry;
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.patch(
+    "/raw-entries/:id",
+    {
+      schema: {
+        params: sourceParamsSchema,
+        body: rawEntryLifecycleBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const rawEntry = await rawEntryRepository.updateRawEntryLifecycle(
+          Number(id),
+          request.body as RawEntryLifecycleBody
+        );
 
         if (!rawEntry) {
           return reply.code(404).send({ error: "Raw entry not found" });
@@ -376,6 +417,9 @@ const unconfiguredRawEntryRepository: RawEntryRepository = {
     throw new DatabaseNotConfiguredError();
   },
   getRawEntry: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  updateRawEntryLifecycle: async () => {
     throw new DatabaseNotConfiguredError();
   },
   close: async () => undefined

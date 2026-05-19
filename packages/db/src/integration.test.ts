@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { runMigrations, runSeed } from "./runner";
 import { createFailureQueueRepository } from "./failureQueueRepository";
+import { createRawEntryRepository } from "./rawEntryRepository";
 import { createReaderRepository } from "./readerRepository";
 import { createSourceRepository } from "./sourceRepository";
 
@@ -409,12 +410,62 @@ test("reader repository returns rights-filtered item detail", async () => {
   }
 });
 
+test("raw entry repository hides and restores reader-visible entries", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const rawEntryRepository = createRawEntryRepository(databaseUrl);
+  const readerRepository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+
+    const rawEntryId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-manual-hide",
+      title: "Reader detail manual hide item",
+      sourceUrl: "https://example.invalid/reader-detail-manual-hide.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true,
+      lifecycleStatus: "ready"
+    });
+
+    assert.ok(await readerRepository.getReaderItemDetail(rawEntryId));
+
+    const hidden = await rawEntryRepository.updateRawEntryLifecycle(rawEntryId, {
+      action: "hide"
+    });
+    assert.equal(hidden?.lifecycleStatus, "hidden");
+    assert.equal(await readerRepository.getReaderItemDetail(rawEntryId), null);
+
+    const hiddenList = await readerRepository.listReaderItems({ boardSlug: "ai" });
+    assert.equal(hiddenList.some((item) => item.id === rawEntryId), false);
+
+    const restored = await rawEntryRepository.updateRawEntryLifecycle(rawEntryId, {
+      action: "restore"
+    });
+    assert.equal(restored?.lifecycleStatus, "candidate");
+    assert.ok(await readerRepository.getReaderItemDetail(rawEntryId));
+
+    assert.equal(
+      await rawEntryRepository.updateRawEntryLifecycle(999_999_999, { action: "hide" }),
+      null
+    );
+  } finally {
+    await rawEntryRepository.close();
+    await readerRepository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
 type ReaderDetailFixtureInput = {
   externalId: string;
   title: string;
   sourceUrl: string;
   rightsStatus: string;
   sourceEnabled: boolean;
+  lifecycleStatus?: string;
   extractedText?: string;
   translatedTitle?: string;
   translatedText?: string;
@@ -453,7 +504,7 @@ async function createReaderDetailFixture(
       processing_stage,
       rights_status
     )
-    values ($1, $2, $3, $4, $5, '2026-05-20T00:00:00Z', '{"readerDetailFixture": true}'::jsonb, $2, 'ready', 'extracted', $6)
+    values ($1, $2, $3, $4, $5, '2026-05-20T00:00:00Z', '{"readerDetailFixture": true}'::jsonb, $2, $7, 'extracted', $6)
     returning id::int
     `,
     [
@@ -462,7 +513,8 @@ async function createReaderDetailFixture(
       `https://example.invalid/items/${input.externalId}`,
       input.title,
       "Raw reader detail summary.",
-      input.rightsStatus
+      input.rightsStatus,
+      input.lifecycleStatus ?? "ready"
     ]
   );
   const rawEntryId = rawEntry.rows[0].id;

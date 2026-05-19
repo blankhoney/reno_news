@@ -13,9 +13,19 @@ export type RawEntryRecord = {
   createdAt: string;
 };
 
+export type RawEntryLifecycleAction = "hide" | "restore";
+
+export type UpdateRawEntryLifecycleInput = {
+  action: RawEntryLifecycleAction;
+};
+
 export type RawEntryRepository = {
   listRawEntries(): Promise<RawEntryRecord[]>;
   getRawEntry(id: number): Promise<RawEntryRecord | null>;
+  updateRawEntryLifecycle(
+    id: number,
+    input: UpdateRawEntryLifecycleInput
+  ): Promise<RawEntryRecord | null>;
   close(): Promise<void>;
 };
 
@@ -61,6 +71,7 @@ export function createRawEntryRepository(databaseUrl: string): RawEntryRepositor
   return {
     listRawEntries: async () => listRawEntries(pool),
     getRawEntry: async (id) => getRawEntry(pool, id),
+    updateRawEntryLifecycle: async (id, input) => updateRawEntryLifecycle(pool, id, input),
     close: async () => {
       await pool.end();
     }
@@ -76,6 +87,40 @@ async function listRawEntries(queryable: Queryable): Promise<RawEntryRecord[]> {
 
 async function getRawEntry(queryable: Queryable, id: number): Promise<RawEntryRecord | null> {
   const result = await queryable.query<RawEntryRow>(`${rawEntrySelect} where re.id = $1`, [id]);
+  const row = result.rows[0];
+  return row ? mapRawEntryRow(row) : null;
+}
+
+async function updateRawEntryLifecycle(
+  queryable: Queryable,
+  id: number,
+  input: UpdateRawEntryLifecycleInput
+): Promise<RawEntryRecord | null> {
+  const lifecycleStatus = input.action === "hide" ? "hidden" : "candidate";
+  const result = await queryable.query<RawEntryRow>(
+    `
+    with updated as (
+      update raw_entries
+      set lifecycle_status = $2
+      where id = $1
+      returning *
+    )
+    select
+      re.id::int as "id",
+      re.source_id::int as "sourceId",
+      s.title as "sourceTitle",
+      re.title as "title",
+      re.url as "url",
+      re.lifecycle_status as "lifecycleStatus",
+      re.processing_stage as "processingStage",
+      re.rights_status as "rightsStatus",
+      re.failure_type as "failureType",
+      re.created_at as "createdAt"
+    from updated re
+    join sources s on s.id = re.source_id
+    `,
+    [id, lifecycleStatus]
+  );
   const row = result.rows[0];
   return row ? mapRawEntryRow(row) : null;
 }

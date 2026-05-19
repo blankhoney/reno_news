@@ -65,6 +65,10 @@ function fakeRawEntryRepository(
   return {
     listRawEntries: async () => [rawEntryRecord],
     getRawEntry: async () => rawEntryRecord,
+    updateRawEntryLifecycle: async () => ({
+      ...rawEntryRecord,
+      lifecycleStatus: "hidden"
+    }),
     close: async () => undefined,
     ...overrides
   };
@@ -407,6 +411,91 @@ test("GET /raw-entries/:id returns 404 for missing raw entries", async () => {
   const response = await app.inject({
     method: "GET",
     url: "/raw-entries/999"
+  });
+
+  assert.equal(response.statusCode, 404);
+});
+
+test("PATCH /raw-entries/:id applies a lifecycle action", async () => {
+  let receivedId: number | undefined;
+  let receivedInput: unknown;
+  const app = buildApp(
+    { logger: false },
+    {
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository({
+        updateRawEntryLifecycle: async (id, input) => {
+          receivedId = id;
+          receivedInput = input;
+          return {
+            ...rawEntryRecord,
+            lifecycleStatus: "hidden"
+          };
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PATCH",
+    url: "/raw-entries/1",
+    payload: {
+      action: "hide"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().lifecycleStatus, "hidden");
+  assert.equal(receivedId, 1);
+  assert.deepEqual(receivedInput, { action: "hide" });
+});
+
+test("PATCH /raw-entries/:id rejects unsupported lifecycle actions", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository()
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PATCH",
+    url: "/raw-entries/1",
+    payload: {
+      action: "delete"
+    }
+  });
+
+  assert.equal(response.statusCode, 400);
+});
+
+test("PATCH /raw-entries/:id returns 404 for missing raw entries", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository({
+        updateRawEntryLifecycle: async () => null
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PATCH",
+    url: "/raw-entries/999",
+    payload: {
+      action: "hide"
+    }
   });
 
   assert.equal(response.statusCode, 404);

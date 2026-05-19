@@ -22,7 +22,7 @@ Response:
 
 ## `GET /reader/items`
 
-Returns latest reader item cards. Optional query:
+Returns latest reader item cards. Hidden raw entries are excluded. Optional query:
 
 - `board`: board slug filter.
 
@@ -48,7 +48,7 @@ Response:
 
 ## `GET /reader/items/:id`
 
-Returns one reader item detail projection. The endpoint returns `404` if the item is missing, blocked, or belongs to a disabled source.
+Returns one reader item detail projection. The endpoint returns `404` if the item is missing, hidden, blocked, or belongs to a disabled source.
 
 Reader detail text fields are rights-filtered:
 

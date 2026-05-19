@@ -3,8 +3,11 @@ import assert from "node:assert/strict";
 import {
   getFailures,
   joinServiceUrl,
+  rawEntryLifecycleActionFromFormData,
   sourcePolicyUpdateFromFormData,
+  updateRawEntryLifecycle,
   updateSourcePolicy,
+  type RawEntryLifecycleUpdate,
   type SourcePolicyUpdate
 } from "./api";
 
@@ -85,6 +88,50 @@ test("updateSourcePolicy sends nested policy payload to the source API", async (
   assert.equal(requestInit?.method, "PATCH");
   assert.deepEqual(requestInit?.headers, { "content-type": "application/json" });
   assert.equal(requestInit?.body, JSON.stringify({ policy }));
+});
+
+test("rawEntryLifecycleActionFromFormData builds a constrained action payload", () => {
+  const formData = new FormData();
+  formData.set("action", "restore");
+
+  assert.deepEqual(rawEntryLifecycleActionFromFormData(formData), {
+    action: "restore"
+  });
+});
+
+test("rawEntryLifecycleActionFromFormData rejects unsupported lifecycle actions", () => {
+  const formData = new FormData();
+  formData.set("action", "delete");
+
+  assert.throws(
+    () => rawEntryLifecycleActionFromFormData(formData),
+    /action has an unsupported value/
+  );
+});
+
+test("updateRawEntryLifecycle sends constrained lifecycle action to the raw entry API", async () => {
+  const previousFetch = globalThis.fetch;
+  const update: RawEntryLifecycleUpdate = {
+    action: "hide"
+  };
+  let requestUrl = "";
+  let requestInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    requestUrl = String(url);
+    requestInit = init;
+    return new Response("{}", { status: 200 });
+  }) as typeof fetch;
+  test.after(() => {
+    globalThis.fetch = previousFetch;
+  });
+
+  await updateRawEntryLifecycle("9", update);
+
+  assert.equal(requestUrl, "http://localhost:3001/raw-entries/9");
+  assert.equal(requestInit?.method, "PATCH");
+  assert.deepEqual(requestInit?.headers, { "content-type": "application/json" });
+  assert.equal(requestInit?.body, JSON.stringify(update));
 });
 
 test("getFailures fetches admin failure queue without caching", async () => {

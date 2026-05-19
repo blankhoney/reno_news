@@ -863,3 +863,37 @@ Completion notes:
 - Selected the smallest next Milestone 5 admin UI slice: hide one raw entry from reader-facing surfaces and restore a hidden raw entry from the existing admin raw-entry detail page.
 - Chose to reuse `raw_entries.lifecycle_status = 'hidden'` and restore to `candidate` because the MVP does not store previous lifecycle history.
 - Deferred feedback handling, moderation reasons, audit history, review queues, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, and non-RSS adapters.
+
+## Task 26: Milestone 5 / Issue 015 Admin Raw Entry Manual Hide Restore Foundation
+
+Status: Done
+
+Scope:
+- Add DB integration tests for hide, restore, missing raw entry, and reader hidden filtering.
+- Implement raw-entry lifecycle mutation in `RawEntryRepository`.
+- Add API tests for `PATCH /raw-entries/:id`.
+- Implement constrained raw-entry lifecycle API route.
+- Add web API client tests for raw-entry lifecycle actions.
+- Add Server Action for hide/restore form submission.
+- Add hide/restore controls on `/admin/raw-entries/[id]`.
+- Update README, Raw Entries API docs, master plan, and log.
+- Do not add feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters.
+
+Verification:
+- `pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 015 on 2026-05-20.
+- Added DB integration tests for hide, restore, missing raw entry, and reader hidden filtering.
+- Added `RawEntryRepository.updateRawEntryLifecycle` using `hidden` for hide and `candidate` for restore.
+- Added reader list and detail filtering for hidden raw entries.
+- Added `PATCH /raw-entries/:id` with constrained `hide` or `restore` action validation.
+- Added web lifecycle helper tests, `updateRawEntryLifecycleAction`, and hide/restore controls on `/admin/raw-entries/[id]`.
+- Updated README, Raw Entries API docs, Reader API docs, Issue 015 plan, implementation log, master plan, and goal plan.
+- Verified targeted DB integration, API, and web tests.
+- Verified full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local Hide/Restore Server Action smoke.
+- Reset the smoke seed entry lifecycle back to `new`.
+- Did not add feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters.

@@ -50,26 +50,34 @@ or:
 
 ## TDD Plan
 
-1. [ ] Add DB integration tests for hide, restore, missing raw entry, and reader hidden filtering.
-2. [ ] Implement raw-entry lifecycle mutation in `RawEntryRepository`.
-3. [ ] Add API tests for `PATCH /raw-entries/:id` hide, restore, invalid action, and missing raw entry.
-4. [ ] Implement the Fastify route with full JSON Schema for params and body.
-5. [ ] Add web API client tests for lifecycle action form parsing and PATCH payload shape.
-6. [ ] Add Server Action for raw-entry lifecycle actions.
-7. [ ] Add hide/restore controls to `/admin/raw-entries/[id]`.
-8. [ ] Update README, Raw Entries API docs, master plan, and log.
+1. [x] Add DB integration tests for hide, restore, missing raw entry, and reader hidden filtering.
+2. [x] Implement raw-entry lifecycle mutation in `RawEntryRepository`.
+3. [x] Add API tests for `PATCH /raw-entries/:id` hide, restore, invalid action, and missing raw entry.
+4. [x] Implement the Fastify route with full JSON Schema for params and body.
+5. [x] Add web API client tests for lifecycle action form parsing and PATCH payload shape.
+6. [x] Add Server Action for raw-entry lifecycle actions.
+7. [x] Add hide/restore controls to `/admin/raw-entries/[id]`.
+8. [x] Update README, Raw Entries API docs, master plan, and log.
+
+## Implemented Boundary
+
+- `RawEntryRepository.updateRawEntryLifecycle` owns the constrained lifecycle mutation.
+- `PATCH /raw-entries/:id` accepts only `hide` or `restore`.
+- Reader list and detail projections exclude `hidden` raw entries.
+- `/admin/raw-entries/[id]` renders one hide or restore form based on the current lifecycle status.
+- The implementation does not add feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters.
 
 ## Acceptance Criteria
 
-- [ ] Admin can hide a raw entry from its admin detail page.
-- [ ] Admin can restore a hidden raw entry from its admin detail page.
-- [ ] Hidden raw entries do not appear in reader item lists.
-- [ ] Hidden raw entry detail requests through the reader API return not found.
-- [ ] Admin raw-entry list and detail still include hidden entries for inspection.
-- [ ] Restore sets the raw entry lifecycle to `candidate`.
-- [ ] The endpoint uses Fastify v5 full JSON Schema for params and body validation.
-- [ ] The web action revalidates the raw-entry list and detail page before redirecting.
-- [ ] No feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapter is added.
+- [x] Admin can hide a raw entry from its admin detail page.
+- [x] Admin can restore a hidden raw entry from its admin detail page.
+- [x] Hidden raw entries do not appear in reader item lists.
+- [x] Hidden raw entry detail requests through the reader API return not found.
+- [x] Admin raw-entry list and detail still include hidden entries for inspection.
+- [x] Restore sets the raw entry lifecycle to `candidate`.
+- [x] The endpoint uses Fastify v5 full JSON Schema for params and body validation.
+- [x] The web action revalidates the raw-entry list and detail page before redirecting.
+- [x] No feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapter is added.
 
 ## Research References
 

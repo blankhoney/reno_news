@@ -12,8 +12,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 
 | Field | Value |
 |---|---|
-| Current Milestone | Milestone 5 |
-| Current Issue | Next Milestone 5 issue planning |
+| Current Milestone | Milestone 6 |
+| Current Issue | Next Milestone 6 issue planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -64,7 +64,7 @@ MVP v0.1 is frozen.
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
-| Milestone 5 | Admin UI | In Progress | Issues 013-014 done |
+| Milestone 5 | Admin UI | Done | Issues 013-015 done |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
@@ -992,11 +992,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | Planned |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -1009,31 +1009,53 @@ Required Tasks
 - [x] Add Manual Moderation Action terminology to `CONTEXT.md`.
 - [x] Add ADR for manual hide/restore using current raw-entry lifecycle state.
 - [x] Add Issue 015 technical plan and implementation log.
-- [ ] Add DB integration tests for hide, restore, missing raw entry, and reader hidden filtering.
-- [ ] Implement raw-entry lifecycle mutation in `RawEntryRepository`.
-- [ ] Add API tests for `PATCH /raw-entries/:id`.
-- [ ] Implement constrained raw-entry lifecycle API route.
-- [ ] Add web API client tests for raw-entry lifecycle actions.
-- [ ] Add Server Action for hide/restore form submission.
-- [ ] Add hide/restore controls on `/admin/raw-entries/[id]`.
-- [ ] Update README, Raw Entries API docs, master plan, and log.
+- [x] Add DB integration tests for hide, restore, missing raw entry, and reader hidden filtering.
+- [x] Implement raw-entry lifecycle mutation in `RawEntryRepository`.
+- [x] Add API tests for `PATCH /raw-entries/:id`.
+- [x] Implement constrained raw-entry lifecycle API route.
+- [x] Add web API client tests for raw-entry lifecycle actions.
+- [x] Add Server Action for hide/restore form submission.
+- [x] Add hide/restore controls on `/admin/raw-entries/[id]`.
+- [x] Update README, Raw Entries API docs, master plan, and log.
 
 Acceptance Criteria
 
-- [ ] Admin can hide a raw entry from its admin detail page.
-- [ ] Admin can restore a hidden raw entry from its admin detail page.
-- [ ] Hidden raw entries do not appear in reader item lists.
-- [ ] Hidden raw entry detail requests through the reader API return not found.
-- [ ] Admin raw-entry list and detail still include hidden entries for inspection.
-- [ ] Restore sets the raw entry lifecycle to `candidate`.
-- [ ] The endpoint uses Fastify v5 full JSON Schema for params and body validation.
-- [ ] The web action revalidates the raw-entry list and detail page before redirecting.
-- [ ] No feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapter is added.
+- [x] Admin can hide a raw entry from its admin detail page.
+- [x] Admin can restore a hidden raw entry from its admin detail page.
+- [x] Hidden raw entries do not appear in reader item lists.
+- [x] Hidden raw entry detail requests through the reader API return not found.
+- [x] Admin raw-entry list and detail still include hidden entries for inspection.
+- [x] Restore sets the raw entry lifecycle to `candidate`.
+- [x] The endpoint uses Fastify v5 full JSON Schema for params and body validation.
+- [x] The web action revalidates the raw-entry list and detail page before redirecting.
+- [x] No feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Use existing `raw_entries.lifecycle_status`.
 Do not add feedback handling, moderation history, or generic status editing in this issue.
+
+**Implementation Note**
+
+Implemented:
+- DB integration test coverage for hide, restore, missing raw entry, and reader hidden filtering.
+- `RawEntryRepository.updateRawEntryLifecycle`, using `hidden` for hide and `candidate` for restore.
+- Reader list and detail filtering for hidden raw entries.
+- `PATCH /raw-entries/:id` with constrained action payload validation.
+- Web lifecycle helper tests, `updateRawEntryLifecycleAction`, and hide/restore controls on `/admin/raw-entries/[id]`.
+- README, Raw Entries API, and Reader API documentation updates.
+
+Validated:
+- Red DB test first failed for missing `updateRawEntryLifecycle`.
+- Red API test first failed with `PATCH /raw-entries/:id` returning 404.
+- Red web test first failed for missing lifecycle helper functions.
+- Targeted DB integration, API, and web tests passed.
+- Full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, and direct/Caddy health smoke passed.
+- Local dev smoke submitted the Hide and Restore forms through Next Server Action, verified reader detail returned 404 while hidden and 200 after restore, then reset the seed entry lifecycle to `new`.
+
+Known limitations:
+- Restore returns hidden items to `candidate`; previous lifecycle history is not retained.
+- No feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapter was added.
 
 ---
 
@@ -1091,8 +1113,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 015: admin raw entry manual hide restore foundation.
-Do not implement feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters yet.
+Plan the first Milestone 6 search, feedback, or digest issue.
+Do not implement moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1318,7 +1340,6 @@ Focus:
 - source admin
 - policy admin
 - failure queue
-- feedback handling
 - manual hide/restore
 
 ### Milestone 6
@@ -1359,6 +1380,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 5 admin UI issue.
-Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters yet.
+Plan the first Milestone 6 search, feedback, or digest issue.
+Do not implement moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, browser automation, or non-RSS adapters yet.
 ```

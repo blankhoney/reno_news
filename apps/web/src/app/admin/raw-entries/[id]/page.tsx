@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { getRawEntry } from "../../api";
+import { updateRawEntryLifecycleAction } from "../../actions";
 
 export default async function RawEntryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const entry = await getRawEntry(id);
+  const lifecycleAction = entry.lifecycleStatus === "hidden" ? "restore" : "hide";
+  const lifecycleActionLabel = entry.lifecycleStatus === "hidden" ? "Restore" : "Hide";
 
   return (
     <main className="admin-shell">
@@ -39,6 +42,14 @@ export default async function RawEntryDetailPage({ params }: { params: Promise<{
             <dd>{entry.createdAt}</dd>
           </dl>
         </div>
+      </section>
+
+      <section className="admin-actions" aria-label="Moderation actions">
+        <form action={updateRawEntryLifecycleAction}>
+          <input type="hidden" name="rawEntryId" value={entry.id} />
+          <input type="hidden" name="action" value={lifecycleAction} />
+          <button type="submit">{lifecycleActionLabel}</button>
+        </form>
       </section>
     </main>
   );

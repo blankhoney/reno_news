@@ -104,7 +104,11 @@ async function listReaderItems(
   input: ListReaderItemsInput = {}
 ): Promise<ReaderItemCard[]> {
   const values: string[] = [];
-  const filters = ["s.enabled = true", "re.rights_status != 'blocked'"];
+  const filters = [
+    "s.enabled = true",
+    "re.lifecycle_status != 'hidden'",
+    "re.rights_status != 'blocked'"
+  ];
 
   if (input.boardSlug) {
     values.push(input.boardSlug);
@@ -191,7 +195,10 @@ async function getReaderItemDetail(
       order by id desc
       limit 1
     ) tr on true
-    where re.id = $1 and s.enabled = true and re.rights_status != 'blocked'
+    where re.id = $1
+      and s.enabled = true
+      and re.lifecycle_status != 'hidden'
+      and re.rights_status != 'blocked'
     `,
     [id]
   );
