@@ -1299,3 +1299,34 @@ Completion notes:
 - Confirmed `apps/web/next-env.d.ts` has no diff after the final web build.
 - Ran deferred-scope scan across code, package manifests, worker config, README, master plan, Issue 020 plan/log, ADR 0024, and goal notes. Found only documentation boundary references plus one existing worker test string for browser automation; no moderation workflow, feedback resolution, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter implementation was added.
 - Found no blocker to planning the next Milestone 6 issue.
+
+## Task 37: Milestone 6 / Issue 021 Admin Feedback Review Planning And ADR
+
+Status: Done
+
+Scope:
+- Re-read current feedback capture, Quality Feedback Penalty, Admin feedback page, and Feedback API boundaries.
+- Research current Next.js Server Action form guidance and Fastify v5 params/body JSON Schema validation guidance.
+- Add Feedback Review and Feedback Review Status terminology to `CONTEXT.md`.
+- Add ADR 0025 for event-local, non-moderating Feedback Review.
+- Add Issue 021 technical plan and implementation log.
+- Update Feedback API docs to reflect the current Issue 020 baseline.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 021 implementation is next.
+- Do not implement code in this planning task.
+- Do not add auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or lifecycle mutation from Feedback Review.
+
+Verification:
+- `CONTEXT.md` defines Feedback Review and Feedback Review Status.
+- ADR 0025 records that Feedback Review is event-local and non-moderating.
+- `docs/architecture/issue-021-plan.md` maps Admin Feedback Review to concrete TDD steps and acceptance criteria.
+- `docs/api/feedback.md` reflects that eligible feedback may affect Digest ordering through a bounded Quality Feedback Penalty.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 021 implementation and preserves the deferred-scope boundary.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next Milestone 6 slice: Admin review of individual Feedback events.
+- Chose constrained statuses: `open`, `reviewed`, `dismissed`, and `resolved`.
+- Chose that dismissed feedback stops contributing to the Quality Feedback Penalty while open, reviewed, and resolved feedback remain eligible unless a later issue changes that policy.
+- Added Feedback Review terminology, Feedback Review Status terminology, ADR 0025, `docs/architecture/issue-021-plan.md`, and `docs/logs/2026-05-20-issue-021.md`.
+- Updated Feedback API docs and `docs/CODEX_MASTER_PLAN.md` so Issue 021 implementation is next.
+- Deferred auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, and lifecycle mutation from Feedback Review.

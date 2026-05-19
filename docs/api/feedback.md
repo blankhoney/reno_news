@@ -1,6 +1,6 @@
 # Feedback API
 
-Feedback endpoints capture reader-submitted item-scoped signals for later review. They do not mutate item lifecycle, ranking, search ordering, digest inclusion, saved/read-later state, or moderation status.
+Feedback endpoints capture reader-submitted item-scoped signals for later review. Digest preview may consume eligible feedback as a bounded Quality Feedback Penalty. Feedback does not mutate item lifecycle, search ordering, saved/read-later state, or moderation status by itself.
 
 ## Feedback Types
 

@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 6 |
-| Current Issue | Milestone 6 / next issue planning |
+| Current Issue | Issue 021 / admin feedback review implementation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -65,7 +65,7 @@ MVP v0.1 is frozen.
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
-| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 020 done; next issue planning |
+| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 021 planned; implementation next |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
 Status values:
@@ -1373,6 +1373,51 @@ Validated:
 Known limitations:
 - The penalty is digest-only and intentionally does not add moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters.
 
+#### Issue 021: Add admin feedback review foundation
+
+| Field | Value |
+|---|---|
+| Status | Planned |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | TBD |
+| PR / Commit | pending |
+
+Goal
+
+Let an Admin review individual Reader Feedback events and dismiss invalid feedback from the Quality Feedback Penalty without adding a general moderation workflow, identity model, or lifecycle mutation.
+
+Required Tasks
+
+- [x] Re-read current feedback capture, feedback penalty, and admin feedback boundaries.
+- [x] Add Feedback Review and Feedback Review Status terminology to `CONTEXT.md`.
+- [x] Add ADR for event-local, non-moderating feedback review.
+- [x] Add Issue 021 technical plan and implementation log.
+- [x] Update Feedback API docs to reflect current Quality Feedback Penalty behavior.
+- [ ] Add migration tests for constrained review status, optional bounded review note, and review timestamp fields.
+- [ ] Add DB integration tests for default open feedback, constrained review updates, missing feedback, and dismissed feedback excluded from Digest penalty.
+- [ ] Implement feedback review repository update path.
+- [ ] Update `ReaderRepository.listReaderDigestItems` so dismissed feedback does not count toward Quality Feedback Penalty.
+- [ ] Add API tests for `PATCH /admin/feedback/:id`.
+- [ ] Implement Fastify route with full JSON Schema params/body validation.
+- [ ] Add web API client and Server Action tests for feedback review forms.
+- [ ] Add review controls to `/admin/feedback`.
+- [ ] Update Feedback API docs, README, master plan, goal plan, and implementation log.
+
+Acceptance Criteria
+
+- [ ] New feedback defaults to `open`.
+- [ ] Admin can set feedback review status to `open`, `reviewed`, `dismissed`, or `resolved`.
+- [ ] Review note is optional and bounded.
+- [ ] Missing feedback review updates return `404`.
+- [ ] Dismissed feedback does not contribute to Quality Feedback Penalty.
+- [ ] Feedback Review does not hide, restore, delete, moderate, re-board, personalize, or change raw-entry lifecycle.
+- [ ] No auth/RBAC, Admin identity, audit log, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Keep Feedback Review event-local. Do not add Admin identity, audit logs, lifecycle actions, or a moderation queue in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1429,8 +1474,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 6 issue.
-Do not implement moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or any wider feedback-to-ranking workflow until the next issue is explicitly scoped in this master plan.
+Implement Issue 021: admin Feedback Review foundation.
+Do not implement auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or lifecycle mutation from feedback review.
 ---
 ## 9. Codex Operating Rules
 
@@ -1696,6 +1741,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 6 issue.
-Do not implement moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or any wider feedback-to-ranking workflow until the next issue is explicitly scoped in this master plan.
+Implement Issue 021: admin Feedback Review foundation.
+Do not implement auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or lifecycle mutation from feedback review.
 ```

@@ -176,6 +176,14 @@ _Avoid_: Free-form status, ranking formula, moderation state
 A bounded public ordering penalty derived from item-scoped Feedback Types, used only after an issue explicitly scopes feedback consumption.
 _Avoid_: Vote count, personal preference, automatic moderation, hide rule
 
+**Feedback Review**:
+An Admin inspection of one Feedback event that records whether the event remains eligible to affect public ordering signals.
+_Avoid_: Manual Moderation Action, reader reply, content lifecycle change
+
+**Feedback Review Status**:
+A constrained review state for Feedback, such as open, reviewed, dismissed, or resolved.
+_Avoid_: Feedback Type, lifecycle status, trust score
+
 **Digest**:
 A curated summary of notable published items for a board or homepage period.
 _Avoid_: Newsletter unless email delivery is specifically meant
@@ -216,6 +224,7 @@ _Avoid_: Ranking winner, recommendation, feedback target
 - **Feedback** belongs to one **Reader** action and one **Content Item**, but MVP feedback capture does not imply reader accounts, backend personal-state sync, moderation workflow, or ranking mutation.
 - A **Feedback Type** constrains what a **Feedback** event means before any later moderation or ranking logic consumes it.
 - A **Quality Feedback Penalty** may be derived from stored **Feedback**, but it must remain bounded and must not hide, restore, delete, moderate, or personalize items by itself.
+- A **Feedback Review** can change whether one **Feedback** event remains eligible for a **Quality Feedback Penalty**, but it must not change item lifecycle by itself.
 - A **Digest** contains selected **Digest Items** from one **Digest Window**.
 - A **Digest Item** must still be a policy-visible **Published Item** and must not expose private extraction text, translation drafts, feedback events, or admin diagnostics.
 
