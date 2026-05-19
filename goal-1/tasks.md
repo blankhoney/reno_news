@@ -789,7 +789,7 @@ Completion notes:
 
 ## Task 24: Milestone 5 / Issue 014 Admin Failure Queue Foundation
 
-Status: Pending
+Status: Done
 
 Scope:
 - Add DB repository tests for failure queue projection.
@@ -806,3 +806,13 @@ Verification:
 - `pnpm --filter @reno-news/api test`
 - `pnpm --filter @reno-news/web test`
 - Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 014 on 2026-05-20.
+- Added DB integration tests for normalizing source ingest, extraction, and model-call failures.
+- Added `FailureQueueRepository` over existing attempt/model-call logs.
+- Added `GET /admin/failures` with optional `limit` query validation.
+- Added web failure queue client test, `/admin/failures`, and links from admin surfaces.
+- Updated README, Admin Failures API docs, Issue 014 plan, implementation log, and master plan.
+- Verified targeted DB integration, API, and web tests, full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local failure queue API/page smoke.
+- Did not add retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters.

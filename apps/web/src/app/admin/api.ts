@@ -54,6 +54,21 @@ export type RawEntryRecord = {
   createdAt: string;
 };
 
+export type FailureRecord = {
+  id: number;
+  failureStage: string;
+  status: "failure";
+  failureType: string | null;
+  errorCode: string | null;
+  message: string | null;
+  sourceId: number | null;
+  sourceTitle: string | null;
+  rawEntryId: number | null;
+  rawEntryTitle: string | null;
+  purpose: string | null;
+  createdAt: string;
+};
+
 export function joinServiceUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }
@@ -139,6 +154,15 @@ export async function getRawEntry(id: string): Promise<RawEntryRecord> {
     throw new Error(`Failed to load raw entry ${id}: ${response.status}`);
   }
   return (await response.json()) as RawEntryRecord;
+}
+
+export async function getFailures(): Promise<FailureRecord[]> {
+  const response = await fetch(apiUrl("/admin/failures"), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Failed to load failures: ${response.status}`);
+  }
+  const payload = (await response.json()) as { failures: FailureRecord[] };
+  return payload.failures;
 }
 
 function readBooleanField(formData: Pick<FormData, "get">, name: string): boolean {

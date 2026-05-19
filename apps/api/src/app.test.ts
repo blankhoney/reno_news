@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type {
+  FailureQueueRecord,
+  FailureQueueRepository,
   RawEntryRecord,
   RawEntryRepository,
   ReaderBoard,
@@ -63,6 +65,31 @@ function fakeRawEntryRepository(
   return {
     listRawEntries: async () => [rawEntryRecord],
     getRawEntry: async () => rawEntryRecord,
+    close: async () => undefined,
+    ...overrides
+  };
+}
+
+const failureRecord: FailureQueueRecord = {
+  id: 10,
+  failureStage: "source_ingest",
+  status: "failure",
+  failureType: "network",
+  errorCode: null,
+  message: "Feed unavailable",
+  sourceId: 1,
+  sourceTitle: "OpenAI News",
+  rawEntryId: null,
+  rawEntryTitle: null,
+  purpose: null,
+  createdAt: "2026-05-20T00:00:00.000Z"
+};
+
+function fakeFailureQueueRepository(
+  overrides: Partial<FailureQueueRepository> = {}
+): FailureQueueRepository {
+  return {
+    listFailures: async () => [failureRecord],
     close: async () => undefined,
     ...overrides
   };
@@ -383,6 +410,56 @@ test("GET /raw-entries/:id returns 404 for missing raw entries", async () => {
   });
 
   assert.equal(response.statusCode, 404);
+});
+
+test("GET /admin/failures lists failure queue records with optional limit", async () => {
+  let receivedLimit: number | undefined;
+  const app = buildApp(
+    { logger: false },
+    {
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository(),
+      failureQueueRepository: fakeFailureQueueRepository({
+        listFailures: async (options) => {
+          receivedLimit = options?.limit;
+          return [failureRecord];
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/admin/failures?limit=5"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), { failures: [failureRecord] });
+  assert.equal(receivedLimit, 5);
+});
+
+test("GET /admin/failures rejects invalid limit", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository(),
+      failureQueueRepository: fakeFailureQueueRepository()
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/admin/failures?limit=0"
+  });
+
+  assert.equal(response.statusCode, 400);
 });
 
 test("GET /reader/boards lists reader boards", async () => {

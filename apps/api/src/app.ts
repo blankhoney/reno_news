@@ -5,11 +5,13 @@ import Fastify, {
 } from "fastify";
 import {
   BoardNotFoundError,
+  createFailureQueueRepository,
   createRawEntryRepository,
   createReaderRepository,
   createSourceRepository,
   isUniqueViolation,
   type CreateSourceInput,
+  type FailureQueueRepository,
   type RawEntryRepository,
   type ReaderRepository,
   type SourceRepository,
@@ -20,6 +22,7 @@ type AppDependencies = {
   sourceRepository?: SourceRepository;
   rawEntryRepository?: RawEntryRepository;
   readerRepository?: ReaderRepository;
+  failureQueueRepository?: FailureQueueRepository;
 };
 
 type SourceParams = {
@@ -28,6 +31,10 @@ type SourceParams = {
 
 type ReaderItemsQuery = {
   board?: string;
+};
+
+type FailureQueueQuery = {
+  limit?: number;
 };
 
 class DatabaseNotConfiguredError extends Error {
@@ -92,12 +99,22 @@ const sourceParamsSchema = {
   }
 };
 
+const failureQueueQuerySchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    limit: { type: "integer", minimum: 1, maximum: 200 }
+  }
+};
+
 export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDependencies = {}) {
   const app = Fastify(options);
   const sourceRepository = dependencies.sourceRepository ?? sourceRepositoryFromEnvironment(app);
   const rawEntryRepository =
     dependencies.rawEntryRepository ?? rawEntryRepositoryFromEnvironment(app);
   const readerRepository = dependencies.readerRepository ?? readerRepositoryFromEnvironment(app);
+  const failureQueueRepository =
+    dependencies.failureQueueRepository ?? failureQueueRepositoryFromEnvironment(app);
 
   app.get("/healthz", async () => ({
     status: "ok",
@@ -209,6 +226,24 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   );
 
+  app.get(
+    "/admin/failures",
+    {
+      schema: {
+        querystring: failureQueueQuerySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const query = request.query as FailureQueueQuery;
+        const failures = await failureQueueRepository.listFailures({ limit: query.limit });
+        return { failures };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
   app.get("/reader/boards", async (_request, reply) => {
     try {
       const boards = await readerRepository.listReaderBoards();
@@ -302,6 +337,22 @@ function readerRepositoryFromEnvironment(app: FastifyInstance): ReaderRepository
   return repository;
 }
 
+function failureQueueRepositoryFromEnvironment(app: FastifyInstance): FailureQueueRepository {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredFailureQueueRepository;
+  }
+
+  const repository = createFailureQueueRepository(databaseUrl);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return repository;
+}
+
 const unconfiguredSourceRepository: SourceRepository = {
   listSources: async () => {
     throw new DatabaseNotConfiguredError();
@@ -338,6 +389,13 @@ const unconfiguredReaderRepository: ReaderRepository = {
     throw new DatabaseNotConfiguredError();
   },
   getReaderItemDetail: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  close: async () => undefined
+};
+
+const unconfiguredFailureQueueRepository: FailureQueueRepository = {
+  listFailures: async () => {
     throw new DatabaseNotConfiguredError();
   },
   close: async () => undefined

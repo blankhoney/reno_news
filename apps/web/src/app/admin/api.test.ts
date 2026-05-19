@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  getFailures,
   joinServiceUrl,
   sourcePolicyUpdateFromFormData,
   updateSourcePolicy,
@@ -8,8 +9,14 @@ import {
 } from "./api";
 
 test("joinServiceUrl handles trailing and leading slashes", () => {
-  assert.equal(joinServiceUrl("http://localhost:3001/", "/sources"), "http://localhost:3001/sources");
-  assert.equal(joinServiceUrl("http://localhost:3001", "sources/1"), "http://localhost:3001/sources/1");
+  assert.equal(
+    joinServiceUrl("http://localhost:3001/", "/sources"),
+    "http://localhost:3001/sources"
+  );
+  assert.equal(
+    joinServiceUrl("http://localhost:3001", "sources/1"),
+    "http://localhost:3001/sources/1"
+  );
 });
 
 test("sourcePolicyUpdateFromFormData builds a constrained policy payload", () => {
@@ -43,7 +50,10 @@ test("sourcePolicyUpdateFromFormData rejects non-positive numeric policy values"
   formData.set("translationPolicy", "none");
   formData.set("riskLevel", "low");
 
-  assert.throws(() => sourcePolicyUpdateFromFormData(formData), /fetchIntervalMinutes must be a positive integer/);
+  assert.throws(
+    () => sourcePolicyUpdateFromFormData(formData),
+    /fetchIntervalMinutes must be a positive integer/
+  );
 });
 
 test("updateSourcePolicy sends nested policy payload to the source API", async () => {
@@ -75,4 +85,43 @@ test("updateSourcePolicy sends nested policy payload to the source API", async (
   assert.equal(requestInit?.method, "PATCH");
   assert.deepEqual(requestInit?.headers, { "content-type": "application/json" });
   assert.equal(requestInit?.body, JSON.stringify({ policy }));
+});
+
+test("getFailures fetches admin failure queue without caching", async () => {
+  const previousFetch = globalThis.fetch;
+  let requestUrl = "";
+  let requestInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    requestUrl = String(url);
+    requestInit = init;
+    return Response.json({
+      failures: [
+        {
+          id: 10,
+          failureStage: "source_ingest",
+          status: "failure",
+          failureType: "network",
+          errorCode: null,
+          message: "Feed unavailable",
+          sourceId: 1,
+          sourceTitle: "OpenAI News",
+          rawEntryId: null,
+          rawEntryTitle: null,
+          purpose: null,
+          createdAt: "2026-05-20T00:00:00.000Z"
+        }
+      ]
+    });
+  }) as typeof fetch;
+  test.after(() => {
+    globalThis.fetch = previousFetch;
+  });
+
+  const failures = await getFailures();
+
+  assert.equal(requestUrl, "http://localhost:3001/admin/failures");
+  assert.deepEqual(requestInit, { cache: "no-store" });
+  assert.equal(failures[0].failureStage, "source_ingest");
+  assert.equal(failures[0].sourceTitle, "OpenAI News");
 });

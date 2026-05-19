@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { runMigrations, runSeed } from "./runner";
+import { createFailureQueueRepository } from "./failureQueueRepository";
 import { createReaderRepository } from "./readerRepository";
 import { createSourceRepository } from "./sourceRepository";
 
@@ -161,6 +162,141 @@ test("source repository can create, update, and list worker-readable policies", 
   }
 });
 
+test("failure queue repository normalizes recent failures", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const testUrl = "https://example.invalid/failure-queue-test.xml";
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  await cleanupFailureQueueFixture(pool, testUrl);
+
+  const sourceResult = await pool.query<{ id: number }>(
+    `
+      insert into sources (board_id, source_type, title, url, enabled)
+      select id, 'rss', 'Failure Queue Test', $1, true
+      from boards
+      where slug = 'ai'
+      returning id::int
+    `,
+    [testUrl]
+  );
+  const sourceId = sourceResult.rows[0].id;
+  await pool.query("insert into source_policies (source_id) values ($1)", [sourceId]);
+  const rawEntryResult = await pool.query<{ id: number }>(
+    `
+      insert into raw_entries (
+        source_id,
+        external_id,
+        url,
+        title,
+        lifecycle_status,
+        processing_stage,
+        rights_status,
+        failure_type,
+        canonical_hash
+      )
+      values (
+        $1,
+        'failure-queue-entry',
+        'https://example.invalid/failure-queue-entry',
+        'Failure Queue Entry',
+        'new',
+        'metadata_ingested',
+        'metadata_only',
+        'network',
+        'failure-queue-entry'
+      )
+      returning id::int
+    `,
+    [sourceId]
+  );
+  const rawEntryId = rawEntryResult.rows[0].id;
+
+  await pool.query(
+    `
+      insert into source_ingest_attempts (source_id, status, failure_type, message, created_at)
+      values ($1, 'failure', 'network', 'Feed unavailable', now() - interval '3 minutes')
+    `,
+    [sourceId]
+  );
+  await pool.query(
+    `
+      insert into raw_entry_extraction_attempts (
+        raw_entry_id,
+        status,
+        failure_type,
+        message,
+        started_at,
+        completed_at
+      )
+      values (
+        $1,
+        'failure',
+        'parse',
+        'No readable text',
+        now() - interval '2 minutes',
+        now() - interval '2 minutes'
+      )
+    `,
+    [rawEntryId]
+  );
+  await pool.query(
+    `
+      insert into model_calls (
+        provider,
+        model,
+        purpose,
+        schema_version,
+        status,
+        error_code,
+        request_redacted_json,
+        created_at
+      )
+      values (
+        'fixture',
+        'fixture',
+        'ai_evaluation',
+        'v1',
+        'failure',
+        'adapter_error_issue014',
+        $1::jsonb,
+        now() - interval '1 minute'
+      )
+    `,
+    [JSON.stringify({ rawEntryId })]
+  );
+
+  const repository = createFailureQueueRepository(databaseUrl);
+
+  try {
+    const failures = await repository.listFailures({ limit: 20 });
+    const scopedFailures = failures.filter(
+      (failure) =>
+        failure.sourceId === sourceId ||
+        failure.rawEntryId === rawEntryId ||
+        failure.errorCode === "adapter_error_issue014"
+    );
+
+    assert.deepEqual(
+      scopedFailures.map((failure) => failure.failureStage),
+      ["model_call", "extraction", "source_ingest"]
+    );
+    assert.equal(scopedFailures[0].rawEntryId, rawEntryId);
+    assert.equal(scopedFailures[0].rawEntryTitle, "Failure Queue Entry");
+    assert.equal(scopedFailures[0].sourceTitle, "Failure Queue Test");
+    assert.equal(scopedFailures[0].purpose, "ai_evaluation");
+    assert.equal(scopedFailures[0].errorCode, "adapter_error_issue014");
+    assert.equal(scopedFailures[1].failureType, "parse");
+    assert.equal(scopedFailures[1].message, "No readable text");
+    assert.equal(scopedFailures[2].failureType, "network");
+    assert.equal(scopedFailures[2].message, "Feed unavailable");
+  } finally {
+    await repository.close();
+    await cleanupFailureQueueFixture(pool, testUrl);
+    await pool.end();
+  }
+});
+
 test("reader repository lists boards and policy-filtered item cards", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });
@@ -189,6 +325,15 @@ test("reader repository lists boards and policy-filtered item cards", async () =
     await repository.close();
   }
 });
+
+async function cleanupFailureQueueFixture(pool: Pool, sourceUrl: string): Promise<void> {
+  await pool.query("delete from model_calls where error_code = 'adapter_error_issue014'");
+  await pool.query(
+    "delete from raw_entries where source_id in (select id from sources where url = $1)",
+    [sourceUrl]
+  );
+  await pool.query("delete from sources where url = $1", [sourceUrl]);
+}
 
 test("reader repository returns rights-filtered item detail", async () => {
   await runMigrations({ databaseUrl });

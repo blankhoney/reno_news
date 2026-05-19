@@ -24,7 +24,10 @@ export default async function SourceDetailPage({ params }: { params: Promise<{ i
           <h1>{source.title}</h1>
           <p>{source.url}</p>
         </div>
-        <Link href="/admin/raw-entries">Raw entries</Link>
+        <nav className="admin-header-links">
+          <Link href="/admin/raw-entries">Raw entries</Link>
+          <Link href="/admin/failures">Failures</Link>
+        </nav>
       </header>
 
       <section className="admin-grid">

@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 5 |
-| Current Issue | Issue 014: Admin failure queue foundation |
+| Current Issue | Next Milestone 5 issue planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -64,7 +64,7 @@ MVP v0.1 is frozen.
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
-| Milestone 5 | Admin UI | In Progress | Issue 013 done; Issue 014 planned |
+| Milestone 5 | Admin UI | In Progress | Issues 013-014 done |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
@@ -928,11 +928,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | Pending |
-| PR / Commit | pending |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -944,28 +944,49 @@ Required Tasks
 - [x] Add Failure Queue terminology to `CONTEXT.md`.
 - [x] Add ADR for failure queue using existing attempt logs.
 - [x] Add Issue 014 technical plan.
-- [ ] Add DB repository tests for failure queue projection.
-- [ ] Implement failure queue repository.
-- [ ] Add API tests for `GET /admin/failures`.
-- [ ] Implement `GET /admin/failures`.
-- [ ] Add web API client tests for failure queue loading.
-- [ ] Add `/admin/failures` page and admin links.
-- [ ] Update README, API docs, master plan, and log.
+- [x] Add DB repository tests for failure queue projection.
+- [x] Implement failure queue repository.
+- [x] Add API tests for `GET /admin/failures`.
+- [x] Implement `GET /admin/failures`.
+- [x] Add web API client tests for failure queue loading.
+- [x] Add `/admin/failures` page and admin links.
+- [x] Update README, API docs, master plan, and log.
 
 Acceptance Criteria
 
-- [ ] Admin can view recent source ingest failures.
-- [ ] Admin can view recent extraction failures.
-- [ ] Admin can view recent failed model calls.
-- [ ] Failure rows are ordered newest first.
-- [ ] Failure rows include enough source or raw-entry context for inspection when that context exists.
-- [ ] The endpoint uses Fastify v5 full JSON Schema for any query validation.
-- [ ] No retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter is added.
+- [x] Admin can view recent source ingest failures.
+- [x] Admin can view recent extraction failures.
+- [x] Admin can view recent failed model calls.
+- [x] Failure rows are ordered newest first.
+- [x] Failure rows include enough source or raw-entry context for inspection when that context exists.
+- [x] The endpoint uses Fastify v5 full JSON Schema for any query validation.
+- [x] No retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Use existing attempt/model-call records as a read-only projection.
 Do not add retry or resolution workflow in this issue.
+
+**Implementation Note**
+
+Implemented:
+- DB integration test coverage for source ingest, extraction, and model-call failure normalization.
+- Failure queue repository projection over existing attempt/model-call logs.
+- `GET /admin/failures` with optional `limit` query validation.
+- Web failure queue client test, `/admin/failures`, and links from admin source/raw-entry surfaces.
+- README and API documentation updates.
+
+Validated:
+- Red DB test first failed for missing `failureQueueRepository`.
+- Red API test first failed with `GET /admin/failures` returning 404.
+- Red web test first failed for missing `getFailures`.
+- Targeted DB integration, API, and web tests passed.
+- Full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, and direct/Caddy health smoke passed.
+- Local dev smoke verified `GET /admin/failures` and `/admin/failures` page rendering.
+
+Known limitations:
+- Failure queue is read-only.
+- No retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter was added.
 
 ---
 
@@ -1023,8 +1044,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 014 admin failure queue foundation.
-Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters yet.
+Plan the next Milestone 5 admin UI issue.
+Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1291,6 +1312,6 @@ Focus:
 Current required next action:
 
 ```text
-Implement Issue 014 admin failure queue foundation.
-Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters yet.
+Plan the next Milestone 5 admin UI issue.
+Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters yet.
 ```

@@ -227,6 +227,18 @@ td span {
   overflow-wrap: anywhere;
 }
 
+.admin-header-links,
+.admin-context-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-context-links {
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .admin-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -307,6 +319,7 @@ dd {
 @media (max-width: 760px) {
   .admin-header,
   .admin-actions,
+  .admin-header-links,
   .reader-header,
   .reader-header-links {
     align-items: flex-start;

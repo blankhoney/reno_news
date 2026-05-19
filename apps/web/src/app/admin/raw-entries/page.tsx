@@ -12,6 +12,7 @@ export default async function RawEntriesPage() {
           <h1>Raw Entries</h1>
           <p>Metadata discovered by RSS/Atom ingest.</p>
         </div>
+        <Link href="/admin/failures">Failures</Link>
       </header>
 
       <table>

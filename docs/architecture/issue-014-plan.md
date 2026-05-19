@@ -43,23 +43,30 @@ Issue 014 should use existing failure facts instead of adding a workflow table. 
 
 ## TDD Plan
 
-1. [ ] Add DB repository tests for normalizing ingest, extraction, and model-call failures.
-2. [ ] Implement failure queue repository projection.
-3. [ ] Add API tests for `GET /admin/failures`.
-4. [ ] Implement the API endpoint.
-5. [ ] Add web API client tests for failure queue loading.
-6. [ ] Add `/admin/failures` page and links from admin surfaces.
-7. [ ] Update README, API docs, master plan, and log.
+1. [x] Add DB repository tests for normalizing ingest, extraction, and model-call failures.
+2. [x] Implement failure queue repository projection.
+3. [x] Add API tests for `GET /admin/failures`.
+4. [x] Implement the API endpoint.
+5. [x] Add web API client tests for failure queue loading.
+6. [x] Add `/admin/failures` page and links from admin surfaces.
+7. [x] Update README, API docs, master plan, and log.
+
+## Implemented Boundary
+
+- `packages/db/src/failureQueueRepository.ts` owns the normalized read-only projection.
+- `GET /admin/failures` returns `{ failures }` and validates `limit` with a Fastify v5 full JSON Schema query object.
+- `apps/web/src/app/admin/failures/page.tsx` renders the queue and links to source or raw-entry admin details when context exists.
+- The implementation does not add retry, acknowledgement, resolution state, a new failure queue table, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters.
 
 ## Acceptance Criteria
 
-- Admin can view recent source ingest failures.
-- Admin can view recent extraction failures.
-- Admin can view recent failed model calls.
-- Failure rows are ordered newest first.
-- Failure rows include enough source or raw-entry context for inspection when that context exists.
-- The endpoint uses Fastify v5 full JSON Schema for any query validation.
-- No retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter is added.
+- [x] Admin can view recent source ingest failures.
+- [x] Admin can view recent extraction failures.
+- [x] Admin can view recent failed model calls.
+- [x] Failure rows are ordered newest first.
+- [x] Failure rows include enough source or raw-entry context for inspection when that context exists.
+- [x] The endpoint uses Fastify v5 full JSON Schema for any query validation.
+- [x] No retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter is added.
 
 ## Research References
 

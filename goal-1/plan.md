@@ -7,10 +7,10 @@ Execute `docs/CODEX_MASTER_PLAN.md` in order until the final milestone is comple
 ## Current Context
 
 - Current milestone: Milestone 5.
-- Current issue: Issue 014 implementation.
+- Current issue: next Milestone 5 issue planning.
 - Existing durable docs: `CONTEXT.md` and `docs/adr/`.
 - Execution source of truth: `docs/CODEX_MASTER_PLAN.md`.
-- Completed baseline: Issues 001-013 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, basic admin/debug views, full-text extraction foundation, model-call logging, AI evaluation adapter foundation, Chinese translation draft foundation, summary block draft foundation, reader home/board listing foundation, reader detail/language view foundation, local saved/read-later foundation, and admin source policy edit foundation in place. Issue 014 planning is complete and the next task is implementation.
+- Completed baseline: Issues 001-014 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, basic admin/debug views, full-text extraction foundation, model-call logging, AI evaluation adapter foundation, Chinese translation draft foundation, summary block draft foundation, reader home/board listing foundation, reader detail/language view foundation, local saved/read-later foundation, admin source policy edit foundation, and admin failure queue foundation in place.
 
 ## Execution Approach
 

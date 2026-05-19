@@ -11,7 +11,10 @@ export default async function AdminPage() {
           <h1>Admin Debug</h1>
           <p>Source Registry</p>
         </div>
-        <Link href="/admin/raw-entries">Raw entries</Link>
+        <nav className="admin-header-links">
+          <Link href="/admin/raw-entries">Raw entries</Link>
+          <Link href="/admin/failures">Failures</Link>
+        </nav>
       </header>
 
       <table>
