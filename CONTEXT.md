@@ -112,6 +112,10 @@ _Avoid_: Admin filter, crawler query, ranking signal
 A policy-filtered reader item returned because reader-safe metadata or summary text matches a Reader Search Query.
 _Avoid_: Admin raw entry, private full-text match, recommendation
 
+**Related Item**:
+A policy-visible item shown near a current Reader Detail Projection because it shares board, source, or reader-safe text signals with that item.
+_Avoid_: Personalized recommendation, ranking signal, digest item
+
 **Rubric**:
 The scoring standard used to evaluate a content item for a board.
 _Avoid_: Prompt, ranking formula
@@ -194,6 +198,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Reader Item Card** may present safe metadata and summary snippets without exposing full extracted or translated text.
 - A **Reader Detail Projection** may expose an item in one or more **Language Views**, but it must still obey **Rights Policy** and cannot publish **Translation Drafts** by implication.
 - A **Reader Search Query** returns **Reader Search Results** only from the same policy-visible item set used by reader listings and detail projections.
+- A **Related Item** is selected from the same policy-visible item set used by **Reader Search Results** and must not expose private extraction text, translation drafts, feedback signals, or admin diagnostics.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.
 - A **Saved Item** or **Read Later Item** belongs to a **Reader**'s **Personal Space** and does not affect public ranking or admin curation by itself.
 - **Feedback** belongs to one **Reader** action and one **Content Item**, but MVP feedback capture does not imply reader accounts, backend personal-state sync, moderation workflow, or ranking mutation.

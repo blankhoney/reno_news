@@ -1065,3 +1065,33 @@ Completion notes:
 - Confirmed no feedback smoke rows remain in `reader_feedback` for the current smoke message patterns.
 - Confirmed `apps/web/next-env.d.ts` has no diff after the final web build.
 - Found no blocker to planning the next Milestone 6 issue.
+
+## Task 31: Milestone 6 / Issue 018 Reader-Safe Related Items Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current PostgreSQL full-text ranking guidance.
+- Research current Next.js App Router dynamic page, `notFound`, and `Link` guidance.
+- Research current Fastify v5 JSON Schema validation guidance.
+- Re-read local reader projection, search, feedback, digest, and PostgreSQL-first boundaries.
+- Define the next Milestone 6 issue without implementing related-items code.
+- Add Related Item terminology to `CONTEXT.md`.
+- Add an ADR for reader-safe PostgreSQL related item selection.
+- Add Issue 018 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 018 implementation is next.
+- Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `docs/architecture/issue-018-plan.md` exists and maps reader-safe Related Items to concrete tasks and acceptance criteria.
+- ADR 0022 records the reader-safe PostgreSQL related item boundary.
+- `CONTEXT.md` defines Related Item and separates it from personalized recommendations, ranking signals, and digest items.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 018 implementation and does not start feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next Milestone 6 slice: lightweight Related Items on reader item detail pages, selected from the same policy-visible PostgreSQL projection used by reader lists, detail pages, and search.
+- Chose shared board, shared source, recency, and reader-safe PostgreSQL full-text rank as acceptable first signals.
+- Deferred feedback weighting, personalized recommendations, moderation workflow, digest generation, semantic/vector search, external search services, search extensions, auth/RBAC, backend personal-state sync, browser automation, and non-RSS adapters.
+- Added Related Item terminology, ADR 0022, `docs/architecture/issue-018-plan.md`, and `docs/logs/2026-05-20-issue-018.md`.
+- Updated `docs/CODEX_MASTER_PLAN.md` so Issue 018 implementation is next.

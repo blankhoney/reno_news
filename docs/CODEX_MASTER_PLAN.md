@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 6 |
-| Current Issue | Milestone 6 / next issue planning |
+| Current Issue | Issue 018 / lightweight related items implementation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -65,7 +65,7 @@ MVP v0.1 is frozen.
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
-| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 017 done; next issue planning |
+| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 018 planned; implementation next |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
 Status values:
@@ -1187,6 +1187,51 @@ Validated:
 Known limitations:
 - Feedback is captured but not consumed by ranking, moderation workflow, digest generation, identity/reputation, or personal-state sync.
 
+#### Issue 018: Add reader-safe related items foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | TBD |
+| PR / Commit | pending |
+
+Goal
+
+Let a Reader see a small set of policy-visible Related Items on a reader item detail page without adding personalization, feedback-to-ranking, digest generation, semantic search, or a new search service.
+
+Required Tasks
+
+- [x] Research current PostgreSQL full-text ranking guidance.
+- [x] Research current Next.js App Router dynamic page guidance.
+- [x] Research current Fastify v5 JSON Schema validation guidance.
+- [x] Add Related Item terminology to `CONTEXT.md`.
+- [x] Add ADR for reader-safe PostgreSQL related item selection.
+- [x] Add Issue 018 technical plan and implementation log.
+- [ ] Add DB integration tests for related item visibility, self exclusion, ordering signals, missing target, and empty-result behavior.
+- [ ] Implement reader related-items repository method over reader-safe fields.
+- [ ] Add API tests for `GET /reader/items/:id/related`.
+- [ ] Implement `GET /reader/items/:id/related` with Fastify v5 full JSON Schema params/query validation.
+- [ ] Add web API client tests for related item loading.
+- [ ] Add related item section to the reader item detail page.
+- [ ] Update README, Reader API docs, master plan, and log.
+
+Acceptance Criteria
+
+- [ ] Reader item detail can show related item cards for a visible item.
+- [ ] The current item is never returned as its own Related Item.
+- [ ] Related Items come only from reader-visible items.
+- [ ] Hidden raw entries, blocked items, disabled-source items, and missing items are excluded.
+- [ ] API validates item id and bounded limit with Fastify v5 full JSON Schema.
+- [ ] Related Items do not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
+- [ ] No feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use PostgreSQL and the existing reader-safe projection first.
+Do not add feedback weighting, personal recommendations, semantic/vector search, digest generation, or search extensions in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1243,8 +1288,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 6 issue.
-Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters until the next issue is explicitly scoped in this master plan.
+Implement Issue 018: reader-safe related items foundation.
+Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
 ---
 ## 9. Codex Operating Rules
 
@@ -1510,6 +1555,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 6 issue.
-Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters until the next issue is explicitly scoped in this master plan.
+Implement Issue 018: reader-safe related items foundation.
+Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
 ```
