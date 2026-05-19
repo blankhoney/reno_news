@@ -1042,3 +1042,26 @@ Completion notes:
 - Deleted the smoke feedback row after verification.
 - Rebuilt web after local dev smoke so `apps/web/next-env.d.ts` points back to production route types.
 - Did not add feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
+
+## Check-Debug Loop 10
+
+Status: Done
+
+Run after Tasks 28-30:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit Issue 016 and Issue 017 code, docs, tests, running services, smoke cleanup, and deferred-scope boundaries against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 28-30 on 2026-05-20.
+- Re-read goal input, plan, task history, recent commits, and current worktree state.
+- Confirmed Issue 016 and Issue 017 are complete and the master plan points to planning the next Milestone 6 issue.
+- Ran deferred-scope scans across code, package manifests, lockfiles, Compose config, docs, and goal notes. Found no external search service, search extension, feedback-to-ranking, moderation workflow, digest generation, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter implementation added by Issues 016-017.
+- Confirmed local current-code smoke ports `3100` and `3101` are not listening.
+- Verified `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, and `pnpm build`.
+- Verified DB integration with `pnpm --filter @reno-news/db test:integration`.
+- Verified worker tests with `uv --project services/worker run python -m unittest discover -s services/worker/tests` and worker lock consistency with `uv lock --check`.
+- Verified Compose service status plus direct and Caddy-proxied health endpoints for web, API, and worker.
+- Confirmed no feedback smoke rows remain in `reader_feedback` for the current smoke message patterns.
+- Confirmed `apps/web/next-env.d.ts` has no diff after the final web build.
+- Found no blocker to planning the next Milestone 6 issue.
