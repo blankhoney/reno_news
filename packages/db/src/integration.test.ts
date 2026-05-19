@@ -25,11 +25,15 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     const rawEntries = await pool.query<{ count: string }>(
       "select count(*) from raw_entries where raw_payload_json @> '{\"seed\": true}'::jsonb"
     );
+    const extractionTables = await pool.query<{ count: string }>(
+      "select count(*) from information_schema.tables where table_schema = 'public' and table_name in ('raw_entry_extraction_attempts', 'raw_entry_extractions')"
+    );
 
     assert.equal(Number(boards.rows[0].count), 5);
     assert.equal(Number(sources.rows[0].count), 5);
     assert.equal(Number(sourcePolicies.rows[0].count), 5);
     assert.equal(Number(rawEntries.rows[0].count), 5);
+    assert.equal(Number(extractionTables.rows[0].count), 2);
 
     await assert.rejects(
       pool.query(
@@ -48,6 +52,16 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     await assert.rejects(
       pool.query(
         "update source_policies set rights_policy = 'invalid' where source_id = (select id from sources where url = 'https://openai.com/news/rss.xml')"
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "insert into raw_entry_extraction_attempts (raw_entry_id, status) select id, 'invalid' from raw_entries limit 1"
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "insert into raw_entry_extractions (raw_entry_id, extractor_name, extractor_version, final_url, extracted_text, text_length, extraction_confidence) select id, 'test', '0', url, 'text', 4, 1.5 from raw_entries limit 1"
       )
     );
   } finally {

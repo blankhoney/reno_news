@@ -12,8 +12,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 
 | Field | Value |
 |---|---|
-| Current Milestone | Milestone 2 |
-| Current Issue | Issue 006 |
+| Current Milestone | Milestone 3 |
+| Current Issue | Milestone 3 planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -61,8 +61,8 @@ MVP v0.1 is frozen.
 |---|---|---|---|
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
-| Milestone 2 | Fetch & Extraction | In Progress | Issue 006 planned; implementation next |
-| Milestone 3 | AI Pipeline | Not Started | adapter + schema first |
+| Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
+| Milestone 3 | AI Pipeline | Not Started | Next: plan first AI pipeline issue |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
@@ -422,11 +422,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -438,30 +438,49 @@ Required Tasks
 - [x] Add extraction terminology to `CONTEXT.md`.
 - [x] Add ADR for extraction result storage boundary.
 - [x] Add Issue 006 technical plan.
-- [ ] Add SQL migration for extraction attempts and results.
-- [ ] Add worker repository path for raw entry extraction inputs.
-- [ ] Add policy gate before article body fetch.
-- [ ] Add HTTPX article fetch path.
-- [ ] Add Trafilatura extraction path.
-- [ ] Store extracted text and extraction confidence.
-- [ ] Record policy, network/status, and no-text extraction failures.
-- [ ] Add deterministic fixture tests.
-- [ ] Add worker trigger for one raw entry.
+- [x] Add SQL migration for extraction attempts and results.
+- [x] Add worker repository path for raw entry extraction inputs.
+- [x] Add policy gate before article body fetch.
+- [x] Add HTTPX article fetch path.
+- [x] Add Trafilatura extraction path.
+- [x] Store extracted text and extraction confidence.
+- [x] Record policy, network/status, and no-text extraction failures.
+- [x] Add deterministic fixture tests.
+- [x] Add worker trigger for one raw entry.
 
 Acceptance Criteria
 
-- [ ] One eligible raw entry can be fetched, extracted, and stored in tests without external network.
-- [ ] Metadata-only sources are skipped before article body fetch.
-- [ ] HTTP/status failures are recorded.
-- [ ] Empty or unusable extraction output is recorded as an extraction failure.
-- [ ] Extraction confidence is stored as a bounded numeric value.
-- [ ] No AI, search, reader UI, browser automation, or non-RSS adapter is added.
+- [x] One eligible raw entry can be fetched, extracted, and stored in tests without external network.
+- [x] Metadata-only sources are skipped before article body fetch.
+- [x] HTTP/status failures are recorded.
+- [x] Empty or unusable extraction output is recorded as an extraction failure.
+- [x] Extraction confidence is stored as a bounded numeric value.
+- [x] No AI, search, reader UI, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Keep extraction output private and separate from publication.
 Do not create reader-facing content pages in this issue.
 Do not add Playwright/Crawl4AI or commercial fetch fallbacks in this issue.
+
+**Completion Note**
+
+Implemented:
+- SQL migration for `raw_entry_extraction_attempts` and `raw_entry_extractions`.
+- Python worker extraction path using HTTPX for article fetch and Trafilatura for text extraction.
+- Policy gate requiring `save_level = 'full_text'` and rights policy allowing private or public full-text storage.
+- Extraction attempt recording for policy skip, network/status failure, no-text parse failure, and success.
+- Extraction result storage with extractor identity, final URL, optional metadata, text length, and bounded confidence.
+- Dramatiq actor for one raw entry extraction.
+
+Validated:
+- Migration and seed integration tests include extraction table existence and constraints.
+- Worker fixture tests cover successful extraction, metadata-only policy skip, fetch failure, and no-text parse failure.
+- Full repo install, lint, tests, build, DB integration, worker discovery, RSS tests, extraction tests, and `uv lock --check`.
+
+Known limitations:
+- Extraction results are private worker output and are not exposed through reader UI or search.
+- No browser automation, fallback extractor, AI processing, or non-RSS adapter was added.
 
 ---
 
@@ -519,9 +538,9 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Continue Issue 006 implementation.
-Keep Issue 006 to full-text fetch, extraction, extraction failure tracking, extracted text storage, and extraction confidence.
-Do not implement AI, search, reader UI, browser automation, or non-RSS adapters yet.
+Start Milestone 3 planning.
+Define the first AI pipeline issue before implementation.
+Do not implement search, reader UI, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -547,6 +566,7 @@ Issue 003
 Issue 004
 Issue 005
 Issue 006
+Milestone 3 issue planning
 ```
 
 An issue is not complete until all acceptance criteria are met.
@@ -687,6 +707,21 @@ Milestone 1 is complete only when:
 
 ---
 
+## 13.1 Milestone 2 Exit Criteria
+
+Milestone 2 is complete only when:
+
+- [x] Extraction attempt/result tables exist.
+- [x] One eligible raw entry can be extracted from deterministic HTML.
+- [x] Metadata-only sources are skipped before article body fetch.
+- [x] Network/status extraction failures are recorded.
+- [x] Empty extraction output is recorded as a parse failure.
+- [x] Extraction confidence is stored as a bounded numeric value.
+- [x] No AI, search, reader UI, browser automation, or non-RSS adapter was added.
+- [x] `docs/CODEX_MASTER_PLAN.md` is updated.
+
+---
+
 ## 14. Notes for Future Milestones
 
 These are reminders only. Do not implement them during Milestone 0 or Milestone 1.
@@ -772,6 +807,6 @@ Focus:
 Current required next action:
 
 ```text
-Continue Issue 006 implementation.
-Do not implement AI, search, reader UI, browser automation, or non-RSS adapters yet.
+Start Milestone 3 planning.
+Do not implement search, reader UI, browser automation, or non-RSS adapters yet.
 ```

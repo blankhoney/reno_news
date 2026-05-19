@@ -203,8 +203,6 @@ Completion notes:
 - Verified full repo install, lint, tests, build, DB integration, worker discovery, RSS ingest tests, and local web/API/worker smoke.
 - Found no blocker to starting Milestone 2 planning.
 
-## Future Tasks
-
 ## Task 7: Milestone 2 / Issue 006 Planning And ADR
 
 Status: Done
@@ -232,7 +230,7 @@ Completion notes:
 
 ## Task 8: Milestone 2 / Issue 006 Full-Text Extraction Foundation
 
-Status: Pending
+Status: Done
 
 Scope:
 - Add SQL migration for extraction attempts and results.
@@ -245,7 +243,26 @@ Scope:
 - Add deterministic fixture tests and worker trigger for one raw entry.
 
 Verification:
-- Pending until implementation starts.
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:migrate`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:seed`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm --filter @reno-news/db test:integration`
+- `uv run python -m unittest discover -s tests`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test uv run python -m unittest tests/test_rss_ingest.py tests/test_scheduler.py tests/test_health.py tests/test_extraction.py`
+- `uv lock --check`
 
 Completion notes:
-- Pending.
+- Completed Issue 006 on 2026-05-20.
+- Added extraction attempt/result tables.
+- Added worker full-text extraction path using HTTPX and Trafilatura.
+- Added strict policy gate before article body fetch.
+- Added deterministic fixture tests for success, policy skip, network failure, and no-text parse failure.
+- Added worker actor for one raw entry extraction.
+- Did not add AI, search, reader UI, browser automation, fallback extractors, or non-RSS adapters.
+
+## Future Tasks
+
+Task 9 starts Milestone 3 planning. Do not code AI pipeline behavior until the first Milestone 3 issue is defined with scope, acceptance criteria, tests, and rollback notes.

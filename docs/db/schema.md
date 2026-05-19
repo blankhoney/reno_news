@@ -1,6 +1,6 @@
 # Database Schema
 
-This document describes the SQL schema introduced by Issue 002. SQL files in `infra/db/migrations` remain the source of truth for product schema.
+This document summarizes the current SQL schema. SQL files in `infra/db/migrations` remain the source of truth for product schema.
 
 ## Migration Metadata
 
@@ -54,6 +54,24 @@ This document describes the SQL schema introduced by Issue 002. SQL files in `in
 - `status` is constrained to `success`, `failure`, or `skipped`.
 - `failure_type` is constrained to `network`, `parse`, `policy`, `duplicate`, or `unknown` when present.
 - Stores entry counts and failure messages for worker/debug visibility.
+
+## Raw Entry Extraction Attempts
+
+`raw_entry_extraction_attempts`
+
+- Records one extraction attempt for one raw entry.
+- `status` is constrained to `success`, `failure`, or `skipped`.
+- `failure_type` is constrained to `network`, `parse`, `policy`, or `unknown` when present.
+- Stores failure messages and start/completion timestamps.
+
+## Raw Entry Extractions
+
+`raw_entry_extractions`
+
+- Stores the latest successful extraction result for one raw entry.
+- Links back to the raw entry and the attempt that produced the result.
+- Stores extractor identity, final URL, optional metadata, extracted text, text length, and extraction confidence.
+- `extraction_confidence` is constrained to the inclusive range `0..1`.
 
 ## Status Boundaries
 

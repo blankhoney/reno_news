@@ -29,7 +29,7 @@ Out of scope:
 
 The Python worker owns article fetch and extraction. HTTPX handles article HTML fetches with explicit timeout, `follow_redirects=True`, and status failure classification. Trafilatura extracts readable text and metadata from HTML. The worker stores success output and records failure attempts.
 
-Extraction is policy-gated before fetch. Sources with `save_level = 'metadata_only'` must not fetch/store article body text. Rights policy still controls later public display; Issue 006 only stores private worker output for eligible sources.
+Extraction is policy-gated before fetch. Sources must use `save_level = 'full_text'`, and rights policy must be `private_allowed` or `public_fulltext_allowed`. Rights policy still controls later public display; Issue 006 only stores private worker output for eligible sources.
 
 ## Proposed Storage
 
@@ -60,12 +60,12 @@ Extraction is policy-gated before fetch. Sources with `save_level = 'metadata_on
 
 ## TDD Plan
 
-1. Add migration tests for extraction tables and constrained status/failure/confidence fields.
-2. Add worker tests for policy skip, HTTP failure, no-text extraction failure, and successful fixture extraction.
-3. Add worker extraction repository functions.
-4. Implement the worker extraction function for one raw entry.
-5. Add a Dramatiq actor or callable trigger only after the direct extraction function is tested.
-6. Verify full repo checks and worker PostgreSQL tests.
+1. Add migration tests for extraction tables and constrained status/failure/confidence fields. Done.
+2. Add worker tests for policy skip, HTTP failure, no-text extraction failure, and successful fixture extraction. Done.
+3. Add worker extraction repository functions. Done.
+4. Implement the worker extraction function for one raw entry. Done.
+5. Add a Dramatiq actor or callable trigger only after the direct extraction function is tested. Done.
+6. Verify full repo checks and worker PostgreSQL tests. Done.
 
 ## Acceptance Criteria
 
@@ -75,6 +75,19 @@ Extraction is policy-gated before fetch. Sources with `save_level = 'metadata_on
 - Empty or unusable extraction output is recorded as an extraction failure.
 - Extraction confidence is stored as a bounded numeric value.
 - No AI, search, reader UI, browser automation, or non-RSS adapter is added.
+
+## Verification
+
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:migrate`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:seed`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm --filter @reno-news/db test:integration`
+- `uv run python -m unittest discover -s tests`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test uv run python -m unittest tests/test_rss_ingest.py tests/test_scheduler.py tests/test_health.py tests/test_extraction.py`
+- `uv lock --check`
 
 ## Research References
 
