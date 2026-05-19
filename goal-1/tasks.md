@@ -1531,3 +1531,31 @@ Completion notes:
 - Ran deferred-scope scan across code directories. Found only the forbidden-operation regex in the release audit contract test; no release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credential, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation implementation was added.
 - Worktree contains only unrelated untracked repo-local skill files plus `AGENTS.md` and `skills-lock.json`.
 - Found no blocker to planning the next Milestone 7 issue.
+
+## Task 43: Milestone 7 / Issue 024 Disk Usage Guard Planning And ADR
+
+Status: Done
+
+Scope:
+- Re-read Milestone 7 disk usage controls, release audit, and production audit boundaries.
+- Research current Docker logging rotation options, Compose service logging configuration, and Docker disk-usage inspection commands.
+- Add Disk Usage Guard and Log Retention Policy terminology to `CONTEXT.md`.
+- Add an ADR for local disk usage guardrails using Compose log rotation and read-only disk checks.
+- Add Issue 024 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 024 implementation is next.
+- Do not implement disk usage code/config in this planning task.
+- Do not add destructive prune/cleanup automation, remote monitoring integration, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation.
+
+Verification:
+- `CONTEXT.md` defines Disk Usage Guard and Log Retention Policy.
+- ADR 0028 records the local disk guardrail boundary.
+- `docs/architecture/issue-024-plan.md` maps Disk Usage Guard work to concrete TDD steps and acceptance criteria.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 024 implementation and preserves the deferred-scope boundary.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the next Milestone 7 slice: local Disk Usage Guard foundation.
+- Chose bounded Compose log retention and a read-only disk usage check as the first non-destructive disk guardrails.
+- Added Disk Usage Guard and Log Retention Policy terminology, ADR 0028, `docs/architecture/issue-024-plan.md`, and `docs/logs/2026-05-20-issue-024.md`.
+- Updated `docs/CODEX_MASTER_PLAN.md` so Issue 024 implementation is next.
+- Deferred destructive prune/cleanup automation, remote monitoring integration, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, and production backup automation.

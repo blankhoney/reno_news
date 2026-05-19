@@ -216,6 +216,14 @@ _Avoid_: Code review, CI status only, product launch plan
 A release-blocking local check that must pass before an operator treats the current build as releasable.
 _Avoid_: Deployment workflow, approval system, production monitor
 
+**Disk Usage Guard**:
+A local operational guardrail that checks or bounds disk growth from runtime logs, Docker artifacts, and local backup files.
+_Avoid_: Cleanup daemon, remote monitor, storage autoscaler
+
+**Log Retention Policy**:
+A bounded rule for how much local container log history may remain on disk.
+_Avoid_: Observability platform, audit log, content archive
+
 ## Relationships
 
 - An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
@@ -252,6 +260,7 @@ _Avoid_: Deployment workflow, approval system, production monitor
 - An **Operational Runbook** records repeatable operator steps; implementation may automate local commands only after the runbook boundary is explicit.
 - A **Release Audit** checks readiness evidence but does not add product features by itself.
 - A **Release Gate** may consume **Release Audit** evidence, health checks, and runbook presence, but it must not deploy, publish, or mutate production state by itself.
+- A **Disk Usage Guard** may enforce a **Log Retention Policy** and inspect local disk usage, but it must not delete data or prune Docker resources unless a later issue explicitly scopes destructive cleanup.
 
 ## Example dialogue
 
