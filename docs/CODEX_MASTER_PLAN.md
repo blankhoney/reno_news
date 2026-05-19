@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 6 |
-| Current Issue | Issue 020 / feedback quality penalty implementation |
+| Current Issue | Milestone 6 / next issue planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -65,7 +65,7 @@ MVP v0.1 is frozen.
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
-| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 020 planned; implementation next |
+| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 020 done; next issue planning |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
 Status values:
@@ -1316,11 +1316,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | Planned |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | TBD |
-| PR / Commit | pending |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -1332,25 +1332,46 @@ Required Tasks
 - [x] Add Quality Feedback Penalty terminology to `CONTEXT.md`.
 - [x] Add ADR for bounded, non-moderating feedback consumption.
 - [x] Add Issue 020 technical plan and implementation log.
-- [ ] Add DB integration tests proving Digest ordering lowers otherwise comparable items with higher Quality Feedback Penalty.
-- [ ] Cover penalty clamping and all current Feedback Types.
-- [ ] Cover that hidden raw entries, blocked items, and disabled-source items remain excluded by existing visibility filters.
-- [ ] Implement the computed penalty inside `ReaderRepository.listReaderDigestItems`.
-- [ ] Keep `GET /reader/digest` response shape unchanged.
-- [ ] Update README, Reader API docs, master plan, goal plan, and implementation log.
+- [x] Add DB integration tests proving Digest ordering lowers otherwise comparable items with higher Quality Feedback Penalty.
+- [x] Cover penalty clamping and all current Feedback Types.
+- [x] Cover that hidden raw entries, blocked items, and disabled-source items remain excluded by existing visibility filters.
+- [x] Implement the computed penalty inside `ReaderRepository.listReaderDigestItems`.
+- [x] Keep `GET /reader/digest` response shape unchanged.
+- [x] Update README, Reader API docs, master plan, goal plan, and implementation log.
 
 Acceptance Criteria
 
-- [ ] Digest preview ordering can use a bounded Quality Feedback Penalty.
-- [ ] Feedback penalty is derived only from existing item-scoped `reader_feedback` rows.
-- [ ] Penalty affects ordering only and does not hide, restore, delete, moderate, or personalize items.
-- [ ] Existing reader visibility filters still exclude hidden raw entries, blocked items, and disabled-source items.
-- [ ] API response shape for `GET /reader/digest` remains unchanged.
-- [ ] No moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
+- [x] Digest preview ordering can use a bounded Quality Feedback Penalty.
+- [x] Feedback penalty is derived only from existing item-scoped `reader_feedback` rows.
+- [x] Penalty affects ordering only and does not hide, restore, delete, moderate, or personalize items.
+- [x] Existing reader visibility filters still exclude hidden raw entries, blocked items, and disabled-source items.
+- [x] API response shape for `GET /reader/digest` remains unchanged.
+- [x] No moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Use existing `reader_feedback` rows first. Do not add a rank table, materialized digest edition, reader account model, or moderation workflow in this issue.
+
+**Completion Note**
+
+Implemented:
+- `ReaderRepository.listReaderDigestItems` now computes a bounded Quality Feedback Penalty from existing `reader_feedback` rows.
+- Digest preview ordering lowers otherwise comparable items with quality, correction, duplicate, broken-link, or rights-concern feedback.
+- `GET /reader/digest` keeps the same response shape; the penalty is not exposed to readers.
+- README, Reader API docs, Issue 020 plan, implementation log, master plan, and goal plan updates.
+
+Validated:
+- DB integration test first failed before implementation because the penalized item still ranked ahead of a clean item.
+- DB integration tests now cover all current Feedback Types, penalty clamping, ordering impact, and existing hidden/blocked/disabled-source filtering.
+- API tests confirm `GET /reader/digest` keeps its response shape.
+- Full repo install, lint, tests, and build pass.
+- Worker discovery tests and worker lock consistency pass.
+- Compose service status, direct health checks, and Caddy-proxied health checks pass.
+- Current-code smoke on API `3101` and web `3100` confirms the clean digest item ranks and renders before the penalized item.
+- Issue 020 smoke rows were deleted, ports `3100` and `3101` are clear, and `apps/web/next-env.d.ts` has no diff after the final web build.
+
+Known limitations:
+- The penalty is digest-only and intentionally does not add moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters.
 
 ---
 
@@ -1408,8 +1429,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 020: bounded Quality Feedback Penalty for Digest preview ordering.
-Do not implement moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapters.
+Plan the next Milestone 6 issue.
+Do not implement moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or any wider feedback-to-ranking workflow until the next issue is explicitly scoped in this master plan.
 ---
 ## 9. Codex Operating Rules
 
@@ -1675,6 +1696,6 @@ Focus:
 Current required next action:
 
 ```text
-Implement Issue 020: bounded Quality Feedback Penalty for Digest preview ordering.
-Do not implement moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapters.
+Plan the next Milestone 6 issue.
+Do not implement moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or any wider feedback-to-ranking workflow until the next issue is explicitly scoped in this master plan.
 ```

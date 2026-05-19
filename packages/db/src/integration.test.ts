@@ -748,6 +748,80 @@ test("reader repository lists digest items from the reader-safe visible pool", a
   }
 });
 
+test("reader repository applies bounded feedback quality penalty to digest ordering", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+
+    const cleanId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-feedback-clean",
+      title: "Digest Feedback Clean Item",
+      summaryOneSentence: "Digest feedback clean summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-feedback-clean.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const allTypePenaltyId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-feedback-all-types",
+      title: "Digest Feedback All Types Item",
+      summaryOneSentence: "Digest feedback all types summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-feedback-all-types.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const cappedOlderId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-feedback-capped-older",
+      title: "Digest Feedback Capped Older Item",
+      summaryOneSentence: "Digest feedback capped older summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-feedback-capped-older.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const cappedNewerId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-feedback-capped-newer",
+      title: "Digest Feedback Capped Newer Item",
+      summaryOneSentence: "Digest feedback capped newer summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-feedback-capped-newer.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+
+    await addFeedbackFixture(pool, allTypePenaltyId, [
+      "rights_concern",
+      "correction",
+      "quality_issue",
+      "duplicate",
+      "broken_link"
+    ]);
+    await addFeedbackFixture(pool, cappedOlderId, ["rights_concern", "rights_concern"]);
+    await addFeedbackFixture(pool, cappedNewerId, [
+      "rights_concern",
+      "rights_concern",
+      "rights_concern"
+    ]);
+
+    const digestItems = await repository.listReaderDigestItems({
+      boardSlug: "ai",
+      limit: 20
+    });
+    const digestIds = digestItems.map((item) => item.id);
+
+    assert.ok(digestIds.indexOf(cleanId) < digestIds.indexOf(allTypePenaltyId));
+    assert.ok(digestIds.indexOf(cleanId) < digestIds.indexOf(cappedOlderId));
+    assert.ok(digestIds.indexOf(cleanId) < digestIds.indexOf(cappedNewerId));
+    assert.ok(digestIds.indexOf(cappedNewerId) < digestIds.indexOf(cappedOlderId));
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
 test("feedback repository stores feedback only for visible reader items", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });
@@ -1050,4 +1124,17 @@ async function cleanupReaderDetailFixtures(pool: Pool): Promise<void> {
   await pool.query(
     "delete from sources where url like 'https://example.invalid/reader-detail-%'"
   );
+}
+
+async function addFeedbackFixture(
+  pool: Pool,
+  rawEntryId: number,
+  feedbackTypes: string[]
+): Promise<void> {
+  for (const feedbackType of feedbackTypes) {
+    await pool.query(
+      "insert into reader_feedback (raw_entry_id, feedback_type, message) values ($1, $2, null)",
+      [rawEntryId, feedbackType]
+    );
+  }
 }

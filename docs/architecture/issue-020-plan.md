@@ -30,21 +30,21 @@ Clamp the total penalty into a small range before applying it to Digest ordering
 
 ## TDD Plan
 
-1. [ ] Add DB integration tests proving Digest ordering lowers otherwise comparable items with higher Quality Feedback Penalty.
-2. [ ] Cover penalty clamping and all current Feedback Types.
-3. [ ] Cover that hidden raw entries, blocked items, and disabled-source items remain excluded by existing visibility filters.
-4. [ ] Implement the computed penalty inside `ReaderRepository.listReaderDigestItems`.
-5. [ ] Keep `GET /reader/digest` response shape unchanged.
-6. [ ] Update README, Reader API docs, master plan, goal plan, and implementation log.
+1. [x] Add DB integration tests proving Digest ordering lowers otherwise comparable items with higher Quality Feedback Penalty.
+2. [x] Cover penalty clamping and all current Feedback Types.
+3. [x] Cover that hidden raw entries, blocked items, and disabled-source items remain excluded by existing visibility filters.
+4. [x] Implement the computed penalty inside `ReaderRepository.listReaderDigestItems`.
+5. [x] Keep `GET /reader/digest` response shape unchanged.
+6. [x] Update README, Reader API docs, master plan, goal plan, and implementation log.
 
 ## Acceptance Criteria
 
-- [ ] Digest preview ordering can use a bounded Quality Feedback Penalty.
-- [ ] Feedback penalty is derived only from existing item-scoped `reader_feedback` rows.
-- [ ] Penalty affects ordering only and does not hide, restore, delete, moderate, or personalize items.
-- [ ] Existing reader visibility filters still exclude hidden raw entries, blocked items, and disabled-source items.
-- [ ] API response shape for `GET /reader/digest` remains unchanged.
-- [ ] No moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
+- [x] Digest preview ordering can use a bounded Quality Feedback Penalty.
+- [x] Feedback penalty is derived only from existing item-scoped `reader_feedback` rows.
+- [x] Penalty affects ordering only and does not hide, restore, delete, moderate, or personalize items.
+- [x] Existing reader visibility filters still exclude hidden raw entries, blocked items, and disabled-source items.
+- [x] API response shape for `GET /reader/digest` remains unchanged.
+- [x] No moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
 
 ## Research References
 

@@ -1243,3 +1243,36 @@ Completion notes:
 - Chose not to add automatic hide/restore, moderation resolution, reader accounts, trust weighting, personalization, backend personal-state sync, semantic/vector search, external search services, search extensions, digest delivery, editorial workflow, browser automation, or non-RSS adapters.
 - Added Quality Feedback Penalty terminology, ADR 0024, `docs/architecture/issue-020-plan.md`, and `docs/logs/2026-05-20-issue-020.md`.
 - Updated `docs/CODEX_MASTER_PLAN.md` so Issue 020 implementation is next.
+
+## Task 36: Milestone 6 / Issue 020 Bounded Feedback Quality Penalty Foundation
+
+Status: Done
+
+Scope:
+- Add DB integration tests proving Digest ordering lowers otherwise comparable items with higher Quality Feedback Penalty.
+- Cover penalty clamping and all current Feedback Types.
+- Cover that hidden raw entries, blocked items, and disabled-source items remain excluded by existing visibility filters.
+- Implement the computed penalty inside `ReaderRepository.listReaderDigestItems`.
+- Keep `GET /reader/digest` response shape unchanged.
+- Update README, Reader API docs, master plan, goal plan, and implementation log.
+- Do not add moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter.
+
+Verification:
+- `pnpm --filter @reno-news/db test:integration`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 020 on 2026-05-20.
+- Added a red DB integration test showing the clean item did not rank ahead of a feedback-penalized item before implementation.
+- Added DB integration coverage for all current Feedback Types, penalty clamping, ordering impact, and existing visibility filters.
+- Added a computed, clamped Quality Feedback Penalty inside `ReaderRepository.listReaderDigestItems`.
+- Kept `GET /reader/digest` response shape unchanged; the penalty is not exposed to readers.
+- Updated README, Reader API docs, Issue 020 plan, implementation log, master plan, and goal plan.
+- Verified targeted DB integration tests.
+- Verified API tests, full repo install, lint, tests, build, worker discovery tests, worker lock consistency, Compose service status, direct health checks, and Caddy-proxied health checks.
+- Verified local current-code digest smoke on API `3101` and web `3100`; the clean item ranked and rendered before the penalized item.
+- Deleted Issue 020 smoke rows and confirmed no smoke raw entries remain.
+- Stopped local smoke servers and confirmed no listeners remain on `3100` or `3101`.
+- Rebuilt web after local dev smoke and confirmed `apps/web/next-env.d.ts` has no diff.
+- Ran deferred-scope scan and found only documentation boundary references plus one existing worker test string for browser automation; no deferred implementation was added.
+- Did not add moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter.

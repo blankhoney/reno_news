@@ -409,8 +409,25 @@ async function listReaderDigestItems(
       order by id desc
       limit 1
     ) sb on true
+    left join lateral (
+      select least(
+        coalesce(sum(
+          case rf.feedback_type
+            when 'rights_concern' then 4
+            when 'correction' then 3
+            when 'quality_issue' then 2
+            when 'duplicate' then 1
+            when 'broken_link' then 1
+            else 0
+          end
+        ), 0),
+        8
+      ) as quality_feedback_penalty
+      from reader_feedback rf
+      where rf.raw_entry_id = re.id
+    ) fp on true
     where ${filters.join(" and ")}
-    order by coalesce(re.published_at, re.created_at) desc, re.id desc
+    order by fp.quality_feedback_penalty asc, coalesce(re.published_at, re.created_at) desc, re.id desc
     limit $1
     `,
     values

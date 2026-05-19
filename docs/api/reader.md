@@ -82,7 +82,7 @@ Returns a reader-safe digest preview of visible item cards. Optional query param
 - `board`: board slug filter.
 - `limit`: bounded digest item count, 1 to 24.
 
-Digest preview uses the same reader-visible pool as reader lists, item details, search, and related items. It does not create a persisted digest, schedule delivery, send email, consume feedback, or expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
+Digest preview uses the same reader-visible pool as reader lists, item details, search, and related items. Ordering may apply a bounded Quality Feedback Penalty derived from stored item-scoped Reader Feedback. It does not create a persisted digest, schedule delivery, send email, hide or moderate items, personalize results, or expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
 
 Response:
 
