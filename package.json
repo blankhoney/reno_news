@@ -10,7 +10,9 @@
   "scripts": {
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "db:migrate": "pnpm --filter @reno-news/db db:migrate",
+    "db:seed": "pnpm --filter @reno-news/db db:seed"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

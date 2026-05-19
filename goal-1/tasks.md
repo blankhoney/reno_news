@@ -46,28 +46,47 @@ Completion notes:
 - Fixed review findings before final verification.
 - Committed the completed foundation as `Initialize Milestone 0 foundation`.
 
-## Task 3: Milestone 1 / Issue 002 SQL Migration Framework And Core Enums
+## Task 3: Milestone 0 / Issue 002 SQL Migration Framework And Core Enums
 
-Status: Pending
+Status: Done
 
 Scope:
-- Start only after Task 1 and Task 2 are complete.
-- Follow `docs/CODEX_MASTER_PLAN.md` Issue 002.
+- Add a SQL-first migration runner.
+- Add initial PostgreSQL schema needed for boards, development sources, and development raw entries.
+- Add constrained status fields for lifecycle status, processing stage, rights status, and failure type.
+- Add idempotent development seed data for five MVP boards, sample sources, and sample raw entries.
+- Do not add Source Policy, RSS adapter behavior, crawling, AI, search, or reader/admin UI.
 
 Verification:
-- To be detailed before implementation.
+- `pnpm --filter @reno-news/db test`
+- `pnpm --filter @reno-news/db db:migrate`
+- `pnpm --filter @reno-news/db db:seed`
+- Re-run seed to prove idempotence.
+- SQL assertions against the local Compose PostgreSQL database.
 
 Completion notes:
-- Pending.
+- Completed Issue 002 on 2026-05-20.
+- Added `packages/db` migration and seed tooling with SQL files as source of truth.
+- Added initial SQL schema for boards, minimal development sources, and raw entries.
+- Added constrained fields for lifecycle status, processing stage, rights status, and failure type.
+- Added idempotent development seed data for five MVP boards, five sample sources, and five sample raw entries.
+- Verified db lint, db unit test, db integration test, fresh migrate, repeated seed idempotence, count checks, constrained-field rejection, full repo install/lint/test/build, worker tests, Compose startup, and health smoke.
 
 ## Check-Debug Loop 1
 
-Status: Pending
+Status: Done
 
 Run after Tasks 1-3:
 - Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
 - Audit docs, code, tests, and running behavior against the master plan.
 - Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 1-3 on 2026-05-20.
+- Re-read goal input, plan, and tasks after context compaction.
+- Repaired stale goal plan context so it points to Milestone 1 / Issue 003.
+- Verified master plan status, scope boundaries, forbidden dependency scan, service health, Caddy proxy health, lint, tests, build, worker tests, and DB integration test.
+- Found no blocker to starting Issue 003.
 
 ## Future Tasks
 

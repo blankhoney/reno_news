@@ -1,6 +1,6 @@
 # Reno News
 
-Reno News is a Chinese-first public intelligence reading system. The current implementation is Milestone 0 infrastructure only.
+Reno News is a Chinese-first public intelligence reading system. The current implementation covers Milestone 0 infrastructure and SQL migration bootstrap.
 
 ## Requirements
 
@@ -25,6 +25,15 @@ cd services/worker
 uv run python -m unittest discover -s tests
 ```
 
+## Database
+
+With the Compose PostgreSQL service running:
+
+```bash
+DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news pnpm db:migrate
+DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news pnpm db:seed
+```
+
 ## Local Services
 
 ```bash
@@ -42,4 +51,4 @@ Health endpoints:
 
 ## Scope Boundary
 
-Milestone 0 does not implement RSS ingest, crawling, AI, search, reader UI, admin workflows, or database migrations. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
+Milestone 0 does not implement RSS ingest, crawling, AI, search, reader UI, or admin workflows. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.

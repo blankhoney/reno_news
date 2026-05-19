@@ -12,8 +12,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 
 | Field | Value |
 |---|---|
-| Current Milestone | Milestone 0 |
-| Current Issue | Issue 002 |
+| Current Milestone | Milestone 1 |
+| Current Issue | Issue 003 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -59,7 +59,7 @@ MVP v0.1 is frozen.
 
 | Milestone | Name | Status | Notes |
 |---|---|---|---|
-| Milestone 0 | Repo, Dev Environment, CI/CD | In Progress | Issue 001 done; Issue 002 next |
+| Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
 | Milestone 1 | Source Registry + RSS Ingest | Not Started | RSS adapter only |
 | Milestone 2 | Fetch & Extraction | Not Started | trafilatura main path |
 | Milestone 3 | AI Pipeline | Not Started | adapter + schema first |
@@ -158,11 +158,11 @@ Do not add RSS adapter here.
 
 | Field | Value |
 |---|---|
-| Status | Not Started |
+| Status | Done |
 | Owner | Codex |
-| Started At | |
-| Completed At | |
-| PR / Commit | |
+| Started At | 2026-05-20 |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -170,24 +170,47 @@ Establish SQL-first database schema management and MVP core enums.
 
 Required Tasks
 
-- [ ] Add migration tool.
-- [ ] Add initial database schema.
-- [ ] Add enum or constrained fields for lifecycle status.
-- [ ] Add enum or constrained fields for processing stage.
-- [ ] Add enum or constrained fields for rights status.
-- [ ] Add enum or constrained fields for failure type.
-- [ ] Add seed script.
-- [ ] Seed five MVP boards.
-- [ ] Seed sample sources.
-- [ ] Seed sample raw entries for development only.
+- [x] Add migration tool.
+- [x] Add initial database schema.
+- [x] Add enum or constrained fields for lifecycle status.
+- [x] Add enum or constrained fields for processing stage.
+- [x] Add enum or constrained fields for rights status.
+- [x] Add enum or constrained fields for failure type.
+- [x] Add seed script.
+- [x] Seed five MVP boards.
+- [x] Seed sample sources.
+- [x] Seed sample raw entries for development only.
 
 Acceptance Criteria
 
-- [ ] Fresh database can be migrated from zero.
-- [ ] Seed data can be loaded repeatedly in dev.
-- [ ] Migrations are idempotent where appropriate.
-- [ ] No ORM-specific schema is treated as source of truth.
-- [ ] SQL migrations are the source of truth.
+- [x] Fresh database can be migrated from zero.
+- [x] Seed data can be loaded repeatedly in dev.
+- [x] Migrations are idempotent where appropriate.
+- [x] No ORM-specific schema is treated as source of truth.
+- [x] SQL migrations are the source of truth.
+
+**Completion Note**
+
+Implemented:
+- `packages/db` migration and seed CLI using node-postgres.
+- SQL migration files under `infra/db/migrations`.
+- Idempotent development seed SQL under `infra/db/seeds`.
+- Five MVP boards, five sample RSS sources, and five sample raw entries.
+- Constrained text fields for lifecycle status, processing stage, rights status, and failure type.
+
+Validated:
+- `pnpm --filter @reno-news/db lint`
+- `pnpm --filter @reno-news/db test`
+- `pnpm --filter @reno-news/db test:integration`
+- Fresh database migration from zero.
+- Repeated development seed load without duplicate rows.
+- SQL count checks for boards, sources, raw entries, and applied migrations.
+- Invalid values rejected for all four constrained status fields.
+- Full repo install, lint, test, build, worker test, Compose startup, and health smoke.
+
+Known limitations:
+- `sources` is only the minimal development source table needed for seed data; Source Policy and admin source management remain Issue 003.
+- No RSS fetching, scheduler ingest, extraction, AI, search, reader UI, or admin UI was added.
 
 Notes
 
@@ -383,8 +406,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Start Issue 001 only.
-Do not implement Issue 002 until Issue 001 meets acceptance criteria.
+Start Issue 003.
+Do not implement Issue 004 until Issue 003 meets acceptance criteria.
 Do not implement any adapter before Issue 004.
 Do not implement any non-RSS adapter in Milestone 1.
 ---
@@ -516,18 +539,18 @@ Before marking any issue as `Done`, Codex must verify:
 
 Milestone 0 is complete only when:
 
-- [ ] Monorepo structure exists.
-- [ ] Web app starts.
-- [ ] API service starts.
-- [ ] Worker service starts.
-- [ ] PostgreSQL starts.
-- [ ] Redis starts.
-- [ ] Caddy placeholder config exists.
-- [ ] Local Docker Compose works.
-- [ ] CI runs lint/test/build placeholders successfully.
-- [ ] Health checks exist.
-- [ ] Initial README exists.
-- [ ] `docs/CODEX_MASTER_PLAN.md` is updated.
+- [x] Monorepo structure exists.
+- [x] Web app starts.
+- [x] API service starts.
+- [x] Worker service starts.
+- [x] PostgreSQL starts.
+- [x] Redis starts.
+- [x] Caddy placeholder config exists.
+- [x] Local Docker Compose works.
+- [x] CI runs lint/test/build placeholders successfully.
+- [x] Health checks exist.
+- [x] Initial README exists.
+- [x] `docs/CODEX_MASTER_PLAN.md` is updated.
 
 ---
 
@@ -636,8 +659,8 @@ Focus:
 Current required next action:
 
 ```text
-Start Issue 001.
-Do not start Issue 002 yet.
+Start Issue 003.
+Do not start Issue 004 yet.
 Do not implement RSS ingest yet.
 Do not implement AI, search, reader UI, or non-RSS adapters yet.
 ```

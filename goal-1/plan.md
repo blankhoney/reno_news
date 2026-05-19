@@ -6,11 +6,11 @@ Execute `docs/CODEX_MASTER_PLAN.md` in order until the final milestone is comple
 
 ## Current Context
 
-- Current milestone: Milestone 0.
-- Current issue: Issue 001, "Initialize monorepo and base development environment".
+- Current milestone: Milestone 1.
+- Current issue: Issue 003, "Build Source Registry and Source Policy tables".
 - Existing durable docs: `CONTEXT.md` and `docs/adr/`.
 - Execution source of truth: `docs/CODEX_MASTER_PLAN.md`.
-- Bootstrap assumption: use `pnpm` for the JavaScript/TypeScript workspace and `uv` for the Python worker unless the user overrides it.
+- Completed baseline: Issues 001-002 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, and development seed data in place.
 
 ## Execution Approach
 
