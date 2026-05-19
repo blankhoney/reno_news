@@ -975,3 +975,33 @@ Completion notes:
 - Verified full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local current-code search smoke on API `3101` and web `3100`.
 - Rebuilt web after local dev smoke so `apps/web/next-env.d.ts` points back to production route types.
 - Did not add feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters.
+
+## Task 29: Milestone 6 / Issue 017 Reader Feedback Capture Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current Next.js Server Action form guidance for `FormData`, `revalidatePath`, and `redirect`.
+- Research current Fastify v5 JSON Schema route validation guidance.
+- Re-read local feedback, personal-state, moderation, and ranking boundaries.
+- Define the next Milestone 6 issue without implementing feedback code.
+- Add or refine feedback terminology in `CONTEXT.md`.
+- Add an ADR for reader feedback storage staying separate from local personal state, moderation, and ranking mutation.
+- Add Issue 017 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 017 implementation is next.
+- Do not implement feedback capture, feedback-to-ranking, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `docs/architecture/issue-017-plan.md` exists and maps reader feedback capture to concrete tasks and acceptance criteria.
+- ADR 0021 records the feedback storage boundary.
+- `CONTEXT.md` defines the feedback terms needed for implementation.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 017 implementation and does not start ranking mutation, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next Milestone 6 slice: append-only reader feedback capture for policy-visible items.
+- Chose constrained Feedback Types and optional bounded message text.
+- Chose not to add reader accounts, backend saved/read-later sync, automatic moderation, ranking mutation, digest generation, semantic/vector search, external search services, browser automation, or non-RSS adapters.
+- Added Feedback Type terminology and narrowed Feedback away from likes, preferences, saved/read-later state, and manual moderation.
+- Added ADR 0021 and `docs/architecture/issue-017-plan.md`.
+- Updated `docs/CODEX_MASTER_PLAN.md` so Issue 017 implementation is next.

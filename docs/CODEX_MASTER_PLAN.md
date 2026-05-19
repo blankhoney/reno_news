@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 6 |
-| Current Issue | Milestone 6 / next issue planning |
+| Current Issue | Milestone 6 / Issue 017 implementation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -65,7 +65,7 @@ MVP v0.1 is frozen.
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
-| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 016 done; next issue planning |
+| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 017 planned |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
 Status values:
@@ -1122,6 +1122,52 @@ Validated:
 Known limitations:
 - Search is PostgreSQL-only and intentionally does not add semantic/vector search, external search services, search extensions, feedback-to-ranking, digest generation, auth/RBAC, backend personal-state APIs, browser automation, or non-RSS adapters.
 
+#### Issue 017: Add reader feedback capture foundation
+
+| Field | Value |
+|---|---|
+| Status | Planned |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | |
+
+Goal
+
+Let a Reader submit constrained feedback for a policy-visible reader item, storing it for later moderation or ranking work without applying those effects yet.
+
+Required Tasks
+
+- [x] Research current Next.js Server Action form guidance.
+- [x] Research current Fastify v5 JSON Schema validation guidance.
+- [x] Refine Feedback terminology and add Feedback Type to `CONTEXT.md`.
+- [x] Add ADR for feedback storage staying separate from local personal state, moderation, and ranking mutation.
+- [x] Add Issue 017 technical plan and implementation log.
+- [ ] Add SQL migration tests for reader feedback storage and constrained feedback types.
+- [ ] Add DB integration tests for visible item feedback and missing/hidden/blocked/disabled-source rejection.
+- [ ] Implement feedback repository create/list methods.
+- [ ] Add API tests for `POST /reader/items/:id/feedback`.
+- [ ] Add API tests for `GET /admin/feedback`.
+- [ ] Implement Fastify routes with full JSON Schema validation.
+- [ ] Add web API client and Server Action tests for feedback form payload construction.
+- [ ] Add feedback form to reader item detail and read-only admin feedback page.
+- [ ] Update README, Feedback API docs, master plan, and log.
+
+Acceptance Criteria
+
+- [ ] Reader can submit one constrained feedback event for a visible reader item.
+- [ ] Feedback type is required and limited to approved Feedback Types.
+- [ ] Feedback message is optional and bounded.
+- [ ] Missing, hidden, blocked, and disabled-source items cannot receive reader feedback.
+- [ ] Admin can inspect recent feedback events in a read-only view.
+- [ ] Feedback does not mutate item lifecycle, ranking, search result ordering, board placement, digest inclusion, or personal saved/read-later state.
+- [ ] No auth/RBAC, reader account, backend personal-state sync, moderation workflow, feedback-to-ranking consumption, digest generation, semantic/vector search, external search service, search extension deployment, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Store feedback as append-only item-scoped server-side events first.
+Do not add reader identity, trust weighting, moderation resolution, automatic hide/restore, or ranking consumption in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1178,8 +1224,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 6 issue.
-Do not implement feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters until the next issue is explicitly scoped in this master plan.
+Implement Issue 017: reader feedback capture foundation.
+Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1445,6 +1491,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 6 issue.
-Do not implement feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters until the next issue is explicitly scoped in this master plan.
+Implement Issue 017: reader feedback capture foundation.
+Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters yet.
 ```

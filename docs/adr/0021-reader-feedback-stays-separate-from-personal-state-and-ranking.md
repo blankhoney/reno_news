@@ -1,0 +1,5 @@
+# Reader feedback stays separate from personal state and ranking
+
+Issue 017 should store Reader Feedback as item-scoped server-side events, not as saved/read-later state, immediate ranking mutation, or manual moderation state. Feedback needs to survive across browsers and be inspectable later, so it cannot live only in local browser storage like saved/read-later. At the same time, the MVP still has no reader accounts, reputation model, moderation workflow, or ranking formula that can safely consume feedback automatically.
+
+Issue 017 should therefore add constrained feedback capture for policy-visible reader items, using explicit Feedback Types and optional bounded reader text. It must not add auth/RBAC, backend personal-state sync, automatic hide/restore, feedback-to-ranking, digest generation, semantic search, external search services, browser automation, or non-RSS adapters. Later issues may add moderation review and ranking consumption from these stored events once those semantics are defined.
