@@ -475,3 +475,58 @@ Completion notes:
 - Added versioned summary block output schema, provider-neutral adapter contract, deterministic fake adapter, missing-extraction and missing-evaluation prefilter skip path, model-call logging, structured summary block draft persistence, and injectable OpenAI Responses adapter boundary.
 - Covered fake-adapter success, missing extraction skip, missing evaluation skip, adapter failure logging, and OpenAI boundary request/parse behavior.
 - Did not add reader UI, search indexing, digest generation, public publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapters.
+
+## Task 15: Milestone 4 / Issue 010 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current Next.js App Router Server Component and Link guidance.
+- Re-read local reader UI and domain docs.
+- Define the first Milestone 4 issue without implementing reader UI code.
+- Add Reader Item Card terminology to `CONTEXT.md`.
+- Add an ADR for reader card projection boundaries.
+- Add Issue 010 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 010 is the active issue.
+- Do not implement reader UI code in this planning task.
+
+Verification:
+- `docs/architecture/issue-010-plan.md` exists and maps Milestone 4 home/board listing focus to concrete tasks and acceptance criteria.
+- ADR 0014 records the reader card projection boundary.
+- `CONTEXT.md` defines Reader Item Card.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 010 and does not start article pages, search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest reader UI vertical slice: home and board listing over metadata/summary cards.
+- Deferred article detail pages, Chinese/original switch, saved/read-later, search, digest generation, personalization, browser automation, public publishing workflow, and non-RSS adapters.
+
+## Check-Debug Loop 5
+
+Status: Pending
+
+Run after Tasks 13-15:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit docs, code, tests, and running behavior against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Pending.
+
+## Task 16: Milestone 4 / Issue 010 Reader Home And Board Listing Foundation
+
+Status: Pending
+
+Scope:
+- Add DB reader projection for boards and item cards.
+- Add API endpoints for reader boards and reader item cards.
+- Add web API client for reader data.
+- Replace the placeholder home page with reader board navigation and latest item cards.
+- Add `/boards/[slug]` reader board page.
+- Add reader API documentation.
+
+Verification:
+- Pending until implementation starts.
+
+Completion notes:
+- Pending.

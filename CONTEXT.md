@@ -80,6 +80,10 @@ _Avoid_: Article when the item may not be an article, raw entry, story
 A content item visible to readers according to its rights policy and publication state.
 _Avoid_: Ready item, public article
 
+**Reader Item Card**:
+A compact reader UI presentation of policy-eligible item metadata and optional summary snippet.
+_Avoid_: Article page, full-text copy, admin debug row
+
 **Rubric**:
 The scoring standard used to evaluate a content item for a board.
 _Avoid_: Prompt, ranking formula
@@ -144,6 +148,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Content Item** may have zero or more **Translations**.
 - A **Translation Draft** contains one or more **Translation Segments** and must pass publishing policy before it can become reader-facing.
 - A **Summary Block** explains an evaluated item but does not itself publish, rank, index, or place the item.
+- A **Reader Item Card** may present safe metadata and summary snippets without exposing full extracted or translated text.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.
 - **Feedback** belongs to one **Reader** and one **Content Item**.
 - A **Digest** contains selected **Published Items**.

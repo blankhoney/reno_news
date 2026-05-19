@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 4 |
-| Current Issue | Next Milestone 4 issue |
+| Current Issue | Issue 010 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -63,7 +63,7 @@ MVP v0.1 is frozen.
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
-| Milestone 4 | Reader UI | Not Started | next issue planning needed |
+| Milestone 4 | Reader UI | In Progress | Issue 010 planned; implementation next |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
@@ -668,6 +668,50 @@ Validated:
 Known limitations:
 - No reader UI, search indexing, digest generation, public publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapter was added.
 
+### Milestone 4: Reader UI
+
+#### Issue 010: Add reader home and board listing foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | |
+
+Goal
+
+Start the reader UI with a home page and board listing page backed by a policy-filtered metadata/summary projection.
+
+Required Tasks
+
+- [x] Research current Next.js App Router Server Component and Link guidance.
+- [x] Add Reader Item Card terminology to `CONTEXT.md`.
+- [x] Add ADR for reader card projection boundaries.
+- [x] Add Issue 010 technical plan.
+- [ ] Add DB reader projection for boards and item cards.
+- [ ] Add API endpoints for reader boards and reader item cards.
+- [ ] Add web API client for reader data.
+- [ ] Replace the placeholder home page with reader board navigation and latest item cards.
+- [ ] Add `/boards/[slug]` reader board page.
+- [ ] Add reader API documentation.
+
+Acceptance Criteria
+
+- [ ] Home page shows the five MVP boards.
+- [ ] Home page can render latest reader item cards or a clear empty state.
+- [ ] Board page filters cards by board slug and handles unknown boards according to the API contract.
+- [ ] Reader cards never include extracted full text, translated full text, private model payloads, or admin-only diagnostics.
+- [ ] New reader API endpoints are documented.
+- [ ] No article page, search, digest generation, saved/read-later, personalization, browser automation, public publishing workflow, or non-RSS adapter is added.
+
+Notes
+
+Use Server Components and `next/link`.
+Do not add client-side state unless the page needs it.
+Do not implement article detail pages in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -724,8 +768,9 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the first Milestone 4 reader UI issue.
-Keep Milestone 4 to reader UI over existing stored data; do not implement search, digest generation, public publishing workflow, browser automation, or non-RSS adapters yet.
+Continue Issue 010 implementation.
+Keep Issue 010 to reader home and board listing over metadata/summary cards.
+Do not implement article pages, search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -992,6 +1037,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the first Milestone 4 reader UI issue.
-Do not implement search, digest generation, public publishing workflow, browser automation, or non-RSS adapters yet.
+Continue Issue 010 implementation.
+Do not implement article pages, search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
 ```
