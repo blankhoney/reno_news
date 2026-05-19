@@ -6,7 +6,9 @@ import {
   getReaderItems,
   getReaderSearchItems,
   joinServiceUrl,
-  readerItemPath
+  readerFeedbackFromFormData,
+  readerItemPath,
+  submitReaderFeedback
 } from "./readerApi";
 
 test("joinServiceUrl handles reader paths", () => {
@@ -104,6 +106,70 @@ test("getReaderSearchItems appends query and optional board filter", async () =>
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("readerFeedbackFromFormData builds a constrained feedback payload", () => {
+  const formData = new FormData();
+  formData.set("feedbackType", "quality_issue");
+  formData.set("message", " Summary is too vague. ");
+
+  assert.deepEqual(readerFeedbackFromFormData(formData), {
+    feedbackType: "quality_issue",
+    message: "Summary is too vague."
+  });
+
+  formData.set("message", " ");
+  assert.deepEqual(readerFeedbackFromFormData(formData), {
+    feedbackType: "quality_issue"
+  });
+});
+
+test("readerFeedbackFromFormData rejects unsupported type and oversized message", () => {
+  const unsupported = new FormData();
+  unsupported.set("feedbackType", "like");
+  assert.throws(
+    () => readerFeedbackFromFormData(unsupported),
+    /feedbackType has an unsupported value/
+  );
+
+  const oversized = new FormData();
+  oversized.set("feedbackType", "correction");
+  oversized.set("message", "x".repeat(2001));
+  assert.throws(
+    () => readerFeedbackFromFormData(oversized),
+    /message must be 2000 characters or fewer/
+  );
+});
+
+test("submitReaderFeedback sends constrained feedback to the item API", async () => {
+  const originalFetch = globalThis.fetch;
+  let requestUrl = "";
+  let requestInit: RequestInit | undefined;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    requestUrl = String(input);
+    requestInit = init;
+    return new Response("{}", { status: 201 });
+  }) as typeof fetch;
+
+  try {
+    await submitReaderFeedback(7, {
+      feedbackType: "rights_concern",
+      message: "Rights issue."
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(requestUrl, "http://localhost:3001/reader/items/7/feedback");
+  assert.equal(requestInit?.method, "POST");
+  assert.deepEqual(requestInit?.headers, { "content-type": "application/json" });
+  assert.equal(
+    requestInit?.body,
+    JSON.stringify({
+      feedbackType: "rights_concern",
+      message: "Rights issue."
+    })
+  );
 });
 
 test("readerItemPath appends language view query when provided", () => {

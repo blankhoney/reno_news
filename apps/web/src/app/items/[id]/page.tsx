@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PersonalControls } from "../../PersonalControls";
 import { toPersonalItemSnapshot } from "../../personalState";
+import { submitReaderFeedbackAction } from "./actions";
 import {
+  READER_FEEDBACK_TYPE_OPTIONS,
   getReaderItemDetail,
   readerItemPath,
   type ReaderItemDetail,
@@ -68,7 +70,43 @@ export default async function ItemPage({ params, searchParams }: ItemPageProps) 
       ) : (
         <ChineseView item={item} />
       )}
+
+      <FeedbackForm itemId={item.id} />
     </main>
+  );
+}
+
+const feedbackTypeLabels: Record<(typeof READER_FEEDBACK_TYPE_OPTIONS)[number], string> = {
+  correction: "Correction",
+  quality_issue: "Quality issue",
+  duplicate: "Duplicate",
+  broken_link: "Broken link",
+  rights_concern: "Rights concern"
+};
+
+function FeedbackForm({ itemId }: { itemId: number }) {
+  return (
+    <section className="reader-feedback">
+      <h2>Feedback</h2>
+      <form action={submitReaderFeedbackAction}>
+        <input type="hidden" name="itemId" value={itemId} />
+        <label>
+          <span>Type</span>
+          <select name="feedbackType" defaultValue="quality_issue" required>
+            {READER_FEEDBACK_TYPE_OPTIONS.map((feedbackType) => (
+              <option key={feedbackType} value={feedbackType}>
+                {feedbackTypeLabels[feedbackType]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Message</span>
+          <textarea name="message" maxLength={2000} rows={4} />
+        </label>
+        <button type="submit">Submit feedback</button>
+      </form>
+    </section>
   );
 }
 

@@ -75,6 +75,18 @@ export type FailureRecord = {
   createdAt: string;
 };
 
+export type FeedbackRecord = {
+  id: number;
+  rawEntryId: number;
+  rawEntryTitle: string;
+  boardSlug: string;
+  boardName: string;
+  sourceTitle: string;
+  feedbackType: string;
+  message: string | null;
+  createdAt: string;
+};
+
 export function joinServiceUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }
@@ -191,6 +203,15 @@ export async function getFailures(): Promise<FailureRecord[]> {
   }
   const payload = (await response.json()) as { failures: FailureRecord[] };
   return payload.failures;
+}
+
+export async function getFeedback(): Promise<FeedbackRecord[]> {
+  const response = await fetch(apiUrl("/admin/feedback"), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Failed to load feedback: ${response.status}`);
+  }
+  const payload = (await response.json()) as { feedback: FeedbackRecord[] };
+  return payload.feedback;
 }
 
 function readBooleanField(formData: Pick<FormData, "get">, name: string): boolean {

@@ -19,6 +19,19 @@ export type ReaderItemCard = {
 export type ReaderOriginalTextMode = "none" | "excerpt" | "full";
 export type ReaderChineseTextMode = "summary_only";
 export type ReaderLanguageView = "zh" | "original";
+export const READER_FEEDBACK_TYPE_OPTIONS = [
+  "correction",
+  "quality_issue",
+  "duplicate",
+  "broken_link",
+  "rights_concern"
+] as const;
+export type ReaderFeedbackType = (typeof READER_FEEDBACK_TYPE_OPTIONS)[number];
+
+export type ReaderFeedbackInput = {
+  feedbackType: ReaderFeedbackType;
+  message?: string;
+};
 
 export type ReaderItemDetail = ReaderItemCard & {
   detailSummary: string;
@@ -94,9 +107,74 @@ export async function getReaderItemDetail(id: number): Promise<ReaderItemDetail 
   return payload.item;
 }
 
+export async function submitReaderFeedback(
+  id: number | string,
+  feedback: ReaderFeedbackInput
+): Promise<void> {
+  const response = await fetch(apiUrl(`/reader/items/${id}/feedback`), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(feedback)
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to submit reader feedback for item ${id}: ${response.status}`);
+  }
+}
+
+export function readerFeedbackFromFormData(
+  formData: Pick<FormData, "get">
+): ReaderFeedbackInput {
+  const feedbackType = readOptionField(
+    formData,
+    "feedbackType",
+    READER_FEEDBACK_TYPE_OPTIONS
+  );
+  const message = readOptionalStringField(formData, "message");
+
+  if (message && message.length > 2000) {
+    throw new Error("message must be 2000 characters or fewer");
+  }
+
+  return message ? { feedbackType, message } : { feedbackType };
+}
+
 export function readerItemPath(id: number, view?: ReaderLanguageView): string {
   if (!view) {
     return `/items/${id}`;
   }
   return `/items/${id}?${new URLSearchParams({ view }).toString()}`;
+}
+
+function readOptionField<const T extends readonly string[]>(
+  formData: Pick<FormData, "get">,
+  name: string,
+  options: T
+): T[number] {
+  const value = readStringField(formData, name);
+
+  if (options.includes(value)) {
+    return value;
+  }
+
+  throw new Error(`${name} has an unsupported value`);
+}
+
+function readStringField(formData: Pick<FormData, "get">, name: string): string {
+  const value = formData.get(name);
+
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`${name} is required`);
+  }
+
+  return value;
+}
+
+function readOptionalStringField(formData: Pick<FormData, "get">, name: string): string | undefined {
+  const value = formData.get(name);
+
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  return value.trim() || undefined;
 }

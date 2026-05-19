@@ -5,12 +5,14 @@ import Fastify, {
 } from "fastify";
 import {
   BoardNotFoundError,
+  createFeedbackRepository,
   createFailureQueueRepository,
   createRawEntryRepository,
   createReaderRepository,
   createSourceRepository,
   isUniqueViolation,
   type CreateSourceInput,
+  type FeedbackRepository,
   type FailureQueueRepository,
   type RawEntryRepository,
   type ReaderRepository,
@@ -22,6 +24,7 @@ type AppDependencies = {
   sourceRepository?: SourceRepository;
   rawEntryRepository?: RawEntryRepository;
   readerRepository?: ReaderRepository;
+  feedbackRepository?: FeedbackRepository;
   failureQueueRepository?: FailureQueueRepository;
 };
 
@@ -36,6 +39,11 @@ type ReaderItemsQuery = {
 type ReaderSearchQuery = {
   q: string;
   board?: string;
+};
+
+type ReaderFeedbackBody = {
+  feedbackType: "correction" | "quality_issue" | "duplicate" | "broken_link" | "rights_concern";
+  message?: string;
 };
 
 type FailureQueueQuery = {
@@ -65,6 +73,13 @@ const rightsPolicies = [
 const translationPolicies = ["none", "private_only", "public_excerpt", "public_fulltext"];
 const riskLevels = ["low", "medium", "high"];
 const rawEntryLifecycleActions = ["hide", "restore"];
+const feedbackTypes = [
+  "correction",
+  "quality_issue",
+  "duplicate",
+  "broken_link",
+  "rights_concern"
+];
 
 const sourcePolicySchema = {
   type: "object",
@@ -117,6 +132,8 @@ const failureQueueQuerySchema = {
   }
 };
 
+const feedbackQuerySchema = failureQueueQuerySchema;
+
 const readerSearchQuerySchema = {
   type: "object",
   additionalProperties: false,
@@ -124,6 +141,16 @@ const readerSearchQuerySchema = {
   properties: {
     q: { type: "string", minLength: 1, pattern: "\\S" },
     board: { type: "string", minLength: 1 }
+  }
+};
+
+const readerFeedbackBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["feedbackType"],
+  properties: {
+    feedbackType: { type: "string", enum: feedbackTypes },
+    message: { type: "string", minLength: 1, maxLength: 2000, pattern: "\\S" }
   }
 };
 
@@ -142,6 +169,8 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   const rawEntryRepository =
     dependencies.rawEntryRepository ?? rawEntryRepositoryFromEnvironment(app);
   const readerRepository = dependencies.readerRepository ?? readerRepositoryFromEnvironment(app);
+  const feedbackRepository =
+    dependencies.feedbackRepository ?? feedbackRepositoryFromEnvironment(app);
   const failureQueueRepository =
     dependencies.failureQueueRepository ?? failureQueueRepositoryFromEnvironment(app);
 
@@ -300,6 +329,24 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   );
 
+  app.get(
+    "/admin/feedback",
+    {
+      schema: {
+        querystring: feedbackQuerySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const query = request.query as FailureQueueQuery;
+        const feedback = await feedbackRepository.listFeedback({ limit: query.limit });
+        return { feedback };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
   app.get("/reader/boards", async (_request, reply) => {
     try {
       const boards = await readerRepository.listReaderBoards();
@@ -334,6 +381,35 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
           boardSlug: query.board
         });
         return { items };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.post(
+    "/reader/items/:id/feedback",
+    {
+      schema: {
+        params: sourceParamsSchema,
+        body: readerFeedbackBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const body = request.body as ReaderFeedbackBody;
+        const feedback = await feedbackRepository.createFeedback({
+          rawEntryId: Number(id),
+          feedbackType: body.feedbackType,
+          message: body.message
+        });
+
+        if (!feedback) {
+          return reply.code(404).send({ error: "Reader item not found" });
+        }
+
+        return reply.code(201).send({ feedback });
       } catch (error) {
         return sendSourceError(reply, error);
       }
@@ -414,6 +490,22 @@ function readerRepositoryFromEnvironment(app: FastifyInstance): ReaderRepository
   return repository;
 }
 
+function feedbackRepositoryFromEnvironment(app: FastifyInstance): FeedbackRepository {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredFeedbackRepository;
+  }
+
+  const repository = createFeedbackRepository(databaseUrl);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return repository;
+}
+
 function failureQueueRepositoryFromEnvironment(app: FastifyInstance): FailureQueueRepository {
   const databaseUrl = process.env.DATABASE_URL;
 
@@ -472,6 +564,16 @@ const unconfiguredReaderRepository: ReaderRepository = {
     throw new DatabaseNotConfiguredError();
   },
   getReaderItemDetail: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  close: async () => undefined
+};
+
+const unconfiguredFeedbackRepository: FeedbackRepository = {
+  createFeedback: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  listFeedback: async () => {
     throw new DatabaseNotConfiguredError();
   },
   close: async () => undefined

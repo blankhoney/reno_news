@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import type {
   FailureQueueRecord,
   FailureQueueRepository,
+  FeedbackRecord,
+  FeedbackRepository,
   RawEntryRecord,
   RawEntryRepository,
   ReaderBoard,
@@ -89,11 +91,34 @@ const failureRecord: FailureQueueRecord = {
   createdAt: "2026-05-20T00:00:00.000Z"
 };
 
+const feedbackRecord: FeedbackRecord = {
+  id: 20,
+  rawEntryId: 1,
+  rawEntryTitle: "Sample AI item",
+  boardSlug: "ai",
+  boardName: "AI",
+  sourceTitle: "OpenAI News",
+  feedbackType: "quality_issue",
+  message: "Summary is too vague.",
+  createdAt: "2026-05-20T00:00:00.000Z"
+};
+
 function fakeFailureQueueRepository(
   overrides: Partial<FailureQueueRepository> = {}
 ): FailureQueueRepository {
   return {
     listFailures: async () => [failureRecord],
+    close: async () => undefined,
+    ...overrides
+  };
+}
+
+function fakeFeedbackRepository(
+  overrides: Partial<FeedbackRepository> = {}
+): FeedbackRepository {
+  return {
+    createFeedback: async () => feedbackRecord,
+    listFeedback: async () => [feedbackRecord],
     close: async () => undefined,
     ...overrides
   };
@@ -552,6 +577,33 @@ test("GET /admin/failures rejects invalid limit", async () => {
   assert.equal(response.statusCode, 400);
 });
 
+test("GET /admin/feedback lists recent feedback with optional limit", async () => {
+  let receivedLimit: number | undefined;
+  const app = buildApp(
+    { logger: false },
+    {
+      feedbackRepository: fakeFeedbackRepository({
+        listFeedback: async (options) => {
+          receivedLimit = options?.limit;
+          return [feedbackRecord];
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/admin/feedback?limit=5"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(receivedLimit, 5);
+  assert.deepEqual(response.json(), { feedback: [feedbackRecord] });
+});
+
 test("GET /reader/boards lists reader boards", async () => {
   const app = buildApp({ logger: false }, { readerRepository: fakeReaderRepository() });
   test.after(async () => {
@@ -647,6 +699,91 @@ test("GET /reader/search rejects empty query", async () => {
   });
 
   assert.equal(response.statusCode, 400);
+});
+
+test("POST /reader/items/:id/feedback stores constrained feedback", async () => {
+  let receivedInput: unknown;
+  const app = buildApp(
+    { logger: false },
+    {
+      feedbackRepository: fakeFeedbackRepository({
+        createFeedback: async (input) => {
+          receivedInput = input;
+          return feedbackRecord;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/reader/items/1/feedback",
+    payload: {
+      feedbackType: "quality_issue",
+      message: "Summary is too vague."
+    }
+  });
+
+  assert.equal(response.statusCode, 201);
+  assert.deepEqual(receivedInput, {
+    rawEntryId: 1,
+    feedbackType: "quality_issue",
+    message: "Summary is too vague."
+  });
+  assert.deepEqual(response.json(), { feedback: feedbackRecord });
+});
+
+test("POST /reader/items/:id/feedback returns 404 for invisible items", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      feedbackRepository: fakeFeedbackRepository({
+        createFeedback: async () => null
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/reader/items/999/feedback",
+    payload: {
+      feedbackType: "correction"
+    }
+  });
+
+  assert.equal(response.statusCode, 404);
+});
+
+test("POST /reader/items/:id/feedback rejects invalid payloads", async () => {
+  const app = buildApp({ logger: false }, { feedbackRepository: fakeFeedbackRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const unsupported = await app.inject({
+    method: "POST",
+    url: "/reader/items/1/feedback",
+    payload: {
+      feedbackType: "like"
+    }
+  });
+  const oversized = await app.inject({
+    method: "POST",
+    url: "/reader/items/1/feedback",
+    payload: {
+      feedbackType: "correction",
+      message: "x".repeat(2001)
+    }
+  });
+
+  assert.equal(unsupported.statusCode, 400);
+  assert.equal(oversized.statusCode, 400);
 });
 
 test("GET /reader/items/:id returns reader item detail", async () => {

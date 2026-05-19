@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 6 |
-| Current Issue | Milestone 6 / Issue 017 implementation |
+| Current Issue | Milestone 6 / next issue planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -65,7 +65,7 @@ MVP v0.1 is frozen.
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
-| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 017 planned |
+| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 017 done; next issue planning |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
 Status values:
@@ -1126,11 +1126,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | Planned |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -1143,30 +1143,49 @@ Required Tasks
 - [x] Refine Feedback terminology and add Feedback Type to `CONTEXT.md`.
 - [x] Add ADR for feedback storage staying separate from local personal state, moderation, and ranking mutation.
 - [x] Add Issue 017 technical plan and implementation log.
-- [ ] Add SQL migration tests for reader feedback storage and constrained feedback types.
-- [ ] Add DB integration tests for visible item feedback and missing/hidden/blocked/disabled-source rejection.
-- [ ] Implement feedback repository create/list methods.
-- [ ] Add API tests for `POST /reader/items/:id/feedback`.
-- [ ] Add API tests for `GET /admin/feedback`.
-- [ ] Implement Fastify routes with full JSON Schema validation.
-- [ ] Add web API client and Server Action tests for feedback form payload construction.
-- [ ] Add feedback form to reader item detail and read-only admin feedback page.
-- [ ] Update README, Feedback API docs, master plan, and log.
+- [x] Add SQL migration tests for reader feedback storage and constrained feedback types.
+- [x] Add DB integration tests for visible item feedback and missing/hidden/blocked/disabled-source rejection.
+- [x] Implement feedback repository create/list methods.
+- [x] Add API tests for `POST /reader/items/:id/feedback`.
+- [x] Add API tests for `GET /admin/feedback`.
+- [x] Implement Fastify routes with full JSON Schema validation.
+- [x] Add web API client and Server Action tests for feedback form payload construction.
+- [x] Add feedback form to reader item detail and read-only admin feedback page.
+- [x] Update README, Feedback API docs, master plan, and log.
 
 Acceptance Criteria
 
-- [ ] Reader can submit one constrained feedback event for a visible reader item.
-- [ ] Feedback type is required and limited to approved Feedback Types.
-- [ ] Feedback message is optional and bounded.
-- [ ] Missing, hidden, blocked, and disabled-source items cannot receive reader feedback.
-- [ ] Admin can inspect recent feedback events in a read-only view.
-- [ ] Feedback does not mutate item lifecycle, ranking, search result ordering, board placement, digest inclusion, or personal saved/read-later state.
-- [ ] No auth/RBAC, reader account, backend personal-state sync, moderation workflow, feedback-to-ranking consumption, digest generation, semantic/vector search, external search service, search extension deployment, browser automation, or non-RSS adapter is added.
+- [x] Reader can submit one constrained feedback event for a visible reader item.
+- [x] Feedback type is required and limited to approved Feedback Types.
+- [x] Feedback message is optional and bounded.
+- [x] Missing, hidden, blocked, and disabled-source items cannot receive reader feedback.
+- [x] Admin can inspect recent feedback events in a read-only view.
+- [x] Feedback does not mutate item lifecycle, ranking, search result ordering, board placement, digest inclusion, or personal saved/read-later state.
+- [x] No auth/RBAC, reader account, backend personal-state sync, moderation workflow, feedback-to-ranking consumption, digest generation, semantic/vector search, external search service, search extension deployment, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Store feedback as append-only item-scoped server-side events first.
 Do not add reader identity, trust weighting, moderation resolution, automatic hide/restore, or ranking consumption in this issue.
+
+**Completion Note**
+
+Implemented:
+- `reader_feedback` SQL migration with constrained Feedback Types, optional bounded message, and item association.
+- `FeedbackRepository.createFeedback` and `listFeedback`, with creation limited to reader-visible items.
+- `POST /reader/items/:id/feedback` and `GET /admin/feedback` with Fastify v5 JSON Schema validation.
+- Reader item detail feedback form, Server Action wiring, and read-only admin feedback page.
+- README, Feedback API docs, Issue 017 plan, implementation log, master plan, and goal plan updates.
+
+Validated:
+- Migration tests cover the feedback table and allowed types.
+- DB integration tests cover visible item feedback and missing, hidden, blocked, and disabled-source rejection.
+- API tests cover feedback creation, invalid payloads, invisible item rejection, and admin feedback listing.
+- Web tests cover feedback payload construction, POST helper behavior, and admin feedback fetch.
+- Local current-code smoke verified direct feedback creation, item page form rendering, admin API visibility, admin page rendering, and cleanup of the smoke feedback row.
+
+Known limitations:
+- Feedback is captured but not consumed by ranking, moderation workflow, digest generation, identity/reputation, or personal-state sync.
 
 ---
 
@@ -1224,8 +1243,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 017: reader feedback capture foundation.
-Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters yet.
+Plan the next Milestone 6 issue.
+Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters until the next issue is explicitly scoped in this master plan.
 ---
 ## 9. Codex Operating Rules
 
@@ -1491,6 +1510,6 @@ Focus:
 Current required next action:
 
 ```text
-Implement Issue 017: reader feedback capture foundation.
-Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters yet.
+Plan the next Milestone 6 issue.
+Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters until the next issue is explicitly scoped in this master plan.
 ```

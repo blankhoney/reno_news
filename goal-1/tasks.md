@@ -1005,3 +1005,40 @@ Completion notes:
 - Added Feedback Type terminology and narrowed Feedback away from likes, preferences, saved/read-later state, and manual moderation.
 - Added ADR 0021 and `docs/architecture/issue-017-plan.md`.
 - Updated `docs/CODEX_MASTER_PLAN.md` so Issue 017 implementation is next.
+
+## Task 30: Milestone 6 / Issue 017 Reader Feedback Capture Foundation
+
+Status: Done
+
+Scope:
+- Add SQL migration tests for reader feedback storage and constrained feedback types.
+- Add DB integration tests for visible item feedback and missing/hidden/blocked/disabled-source rejection.
+- Implement feedback repository create/list methods.
+- Add API tests for `POST /reader/items/:id/feedback`.
+- Add API tests for `GET /admin/feedback`.
+- Implement Fastify routes with full JSON Schema validation.
+- Add web API client and Server Action tests for feedback form payload construction.
+- Add feedback form to reader item detail and read-only admin feedback page.
+- Update README, Feedback API docs, master plan, and log.
+- Do not add feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
+
+Verification:
+- `pnpm --filter @reno-news/db test`
+- `pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 017 on 2026-05-20.
+- Added `reader_feedback` SQL migration with constrained Feedback Types and optional bounded message text.
+- Added DB integration coverage for visible item feedback and missing, hidden, blocked, and disabled-source rejection.
+- Added `FeedbackRepository.createFeedback` and `listFeedback`.
+- Added `POST /reader/items/:id/feedback` and `GET /admin/feedback` with Fastify v5 JSON Schema validation.
+- Added web feedback helper tests, Server Action wiring, item detail feedback form, and read-only admin feedback page.
+- Updated README, Feedback API docs, Issue 017 plan, implementation log, master plan, and goal plan.
+- Verified targeted DB migration tests, DB integration tests, API tests, web tests, and web typecheck.
+- Verified full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local current-code feedback smoke on API `3101` and web `3100`.
+- Deleted the smoke feedback row after verification.
+- Rebuilt web after local dev smoke so `apps/web/next-env.d.ts` points back to production route types.
+- Did not add feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.

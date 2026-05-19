@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { runMigrations, runSeed } from "./runner";
+import { createFeedbackRepository } from "./feedbackRepository";
 import { createFailureQueueRepository } from "./failureQueueRepository";
 import { createRawEntryRepository } from "./rawEntryRepository";
 import { createReaderRepository } from "./readerRepository";
@@ -557,6 +558,104 @@ test("reader repository searches reader-safe visible item fields", async () => {
     assert.equal(visibilityResults.some((item) => item.id === blockedId), false);
     assert.equal(visibilityResults.some((item) => item.id === disabledId), false);
     assert.deepEqual(noResults, []);
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
+test("feedback repository stores feedback only for visible reader items", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createFeedbackRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+
+    const visibleId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-feedback-visible",
+      title: "Feedback Visible Item",
+      sourceUrl: "https://example.invalid/reader-detail-feedback-visible.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const hiddenId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-feedback-hidden",
+      title: "Feedback Hidden Item",
+      sourceUrl: "https://example.invalid/reader-detail-feedback-hidden.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true,
+      lifecycleStatus: "hidden"
+    });
+    const blockedId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-feedback-blocked",
+      title: "Feedback Blocked Item",
+      sourceUrl: "https://example.invalid/reader-detail-feedback-blocked.xml",
+      rightsStatus: "blocked",
+      sourceEnabled: true
+    });
+    const disabledId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-feedback-disabled",
+      title: "Feedback Disabled Item",
+      sourceUrl: "https://example.invalid/reader-detail-feedback-disabled.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: false
+    });
+
+    const created = await repository.createFeedback({
+      rawEntryId: visibleId,
+      feedbackType: "quality_issue",
+      message: "Summary is too vague."
+    });
+    const noMessage = await repository.createFeedback({
+      rawEntryId: visibleId,
+      feedbackType: "broken_link"
+    });
+
+    assert.ok(created);
+    assert.equal(created.rawEntryId, visibleId);
+    assert.equal(created.rawEntryTitle, "Feedback Visible Item");
+    assert.equal(created.boardSlug, "ai");
+    assert.equal(created.feedbackType, "quality_issue");
+    assert.equal(created.message, "Summary is too vague.");
+    assert.ok(noMessage);
+    assert.equal(noMessage.message, null);
+
+    assert.equal(
+      await repository.createFeedback({
+        rawEntryId: 999_999_999,
+        feedbackType: "correction"
+      }),
+      null
+    );
+    assert.equal(
+      await repository.createFeedback({
+        rawEntryId: hiddenId,
+        feedbackType: "correction"
+      }),
+      null
+    );
+    assert.equal(
+      await repository.createFeedback({
+        rawEntryId: blockedId,
+        feedbackType: "correction"
+      }),
+      null
+    );
+    assert.equal(
+      await repository.createFeedback({
+        rawEntryId: disabledId,
+        feedbackType: "correction"
+      }),
+      null
+    );
+
+    const feedback = await repository.listFeedback({ limit: 10 });
+    assert.equal(feedback.some((record) => record.id === created.id), true);
+    assert.equal(feedback.some((record) => record.id === noMessage.id), true);
   } finally {
     await repository.close();
     await cleanupReaderDetailFixtures(pool);

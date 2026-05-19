@@ -14,6 +14,7 @@ export default async function AdminPage() {
         <nav className="admin-header-links">
           <Link href="/admin/raw-entries">Raw entries</Link>
           <Link href="/admin/failures">Failures</Link>
+          <Link href="/admin/feedback">Feedback</Link>
         </nav>
       </header>
 

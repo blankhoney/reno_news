@@ -38,25 +38,25 @@ The implementation should use a constrained `feedback_type` text value and optio
 
 ## TDD Plan
 
-1. [ ] Add SQL migration tests for a `reader_feedback` table and constrained feedback types.
-2. [ ] Add DB integration tests for creating feedback on visible items and rejecting missing, hidden, blocked, or disabled-source items.
-3. [ ] Implement feedback repository create/list methods.
-4. [ ] Add API tests for `POST /reader/items/:id/feedback`, invalid item id, unsupported type, oversized message, and invisible item rejection.
-5. [ ] Add API tests for `GET /admin/feedback`.
-6. [ ] Implement Fastify routes with full JSON Schema validation.
-7. [ ] Add web API client and Server Action tests for feedback form payload construction.
-8. [ ] Add feedback form to reader item detail and read-only admin feedback page.
-9. [ ] Update README, Feedback API docs, master plan, and log.
+1. [x] Add SQL migration tests for a `reader_feedback` table and constrained feedback types.
+2. [x] Add DB integration tests for creating feedback on visible items and rejecting missing, hidden, blocked, or disabled-source items.
+3. [x] Implement feedback repository create/list methods.
+4. [x] Add API tests for `POST /reader/items/:id/feedback`, invalid item id, unsupported type, oversized message, and invisible item rejection.
+5. [x] Add API tests for `GET /admin/feedback`.
+6. [x] Implement Fastify routes with full JSON Schema validation.
+7. [x] Add web API client and Server Action tests for feedback form payload construction.
+8. [x] Add feedback form to reader item detail and read-only admin feedback page.
+9. [x] Update README, Feedback API docs, master plan, and log.
 
 ## Acceptance Criteria
 
-- [ ] Reader can submit one constrained feedback event for a visible reader item.
-- [ ] Feedback type is required and limited to the approved Feedback Types.
-- [ ] Feedback message is optional and bounded.
-- [ ] Missing, hidden, blocked, and disabled-source items cannot receive reader feedback.
-- [ ] Admin can inspect recent feedback events in a read-only view.
-- [ ] Feedback does not mutate item lifecycle, ranking, search result ordering, board placement, digest inclusion, or personal saved/read-later state.
-- [ ] No auth/RBAC, reader account, backend personal-state sync, moderation workflow, feedback-to-ranking consumption, digest generation, semantic/vector search, external search service, search extension deployment, browser automation, or non-RSS adapter is added.
+- [x] Reader can submit one constrained feedback event for a visible reader item.
+- [x] Feedback type is required and limited to the approved Feedback Types.
+- [x] Feedback message is optional and bounded.
+- [x] Missing, hidden, blocked, and disabled-source items cannot receive reader feedback.
+- [x] Admin can inspect recent feedback events in a read-only view.
+- [x] Feedback does not mutate item lifecycle, ranking, search result ordering, board placement, digest inclusion, or personal saved/read-later state.
+- [x] No auth/RBAC, reader account, backend personal-state sync, moderation workflow, feedback-to-ranking consumption, digest generation, semantic/vector search, external search service, search extension deployment, browser automation, or non-RSS adapter is added.
 
 ## Research References
 

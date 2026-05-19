@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { listMigrationFiles } from "./migrations";
@@ -21,5 +21,25 @@ test("listMigrationFiles returns numbered SQL migrations in order", async () => 
     );
   } finally {
     await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("reader feedback migration defines constrained item-scoped feedback", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0008_reader_feedback.sql"),
+    "utf8"
+  );
+
+  assert.match(migration, /create table if not exists reader_feedback/);
+  assert.match(migration, /raw_entry_id bigint not null references raw_entries\(id\)/);
+  assert.match(migration, /feedback_type text not null check/);
+  for (const feedbackType of [
+    "correction",
+    "quality_issue",
+    "duplicate",
+    "broken_link",
+    "rights_concern"
+  ]) {
+    assert.match(migration, new RegExp(`'${feedbackType}'`));
   }
 });

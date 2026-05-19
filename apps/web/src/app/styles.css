@@ -199,6 +199,41 @@ td span {
   max-width: 780px;
 }
 
+.reader-feedback {
+  border-top: 1px solid #d7dde5;
+  margin-top: 2rem;
+  max-width: 780px;
+  padding-top: 1.5rem;
+}
+
+.reader-feedback form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.reader-feedback label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.reader-feedback span {
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.reader-feedback select,
+.reader-feedback textarea {
+  border: 1px solid #94a3b8;
+  font: inherit;
+  min-width: 0;
+  padding: 0.55rem;
+}
+
+.reader-feedback button {
+  justify-self: start;
+}
+
 .reader-detail section {
   border-top: 1px solid #d7dde5;
   margin-top: 1.25rem;

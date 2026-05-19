@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  getFeedback,
   getFailures,
   joinServiceUrl,
   rawEntryLifecycleActionFromFormData,
@@ -171,4 +172,40 @@ test("getFailures fetches admin failure queue without caching", async () => {
   assert.deepEqual(requestInit, { cache: "no-store" });
   assert.equal(failures[0].failureStage, "source_ingest");
   assert.equal(failures[0].sourceTitle, "OpenAI News");
+});
+
+test("getFeedback fetches admin feedback without caching", async () => {
+  const previousFetch = globalThis.fetch;
+  let requestUrl = "";
+  let requestInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    requestUrl = String(url);
+    requestInit = init;
+    return Response.json({
+      feedback: [
+        {
+          id: 20,
+          rawEntryId: 1,
+          rawEntryTitle: "Sample AI item",
+          boardSlug: "ai",
+          boardName: "AI",
+          sourceTitle: "OpenAI News",
+          feedbackType: "quality_issue",
+          message: "Summary is too vague.",
+          createdAt: "2026-05-20T00:00:00.000Z"
+        }
+      ]
+    });
+  }) as typeof fetch;
+  test.after(() => {
+    globalThis.fetch = previousFetch;
+  });
+
+  const feedback = await getFeedback();
+
+  assert.equal(requestUrl, "http://localhost:3001/admin/feedback");
+  assert.deepEqual(requestInit, { cache: "no-store" });
+  assert.equal(feedback[0].feedbackType, "quality_issue");
+  assert.equal(feedback[0].rawEntryTitle, "Sample AI item");
 });
