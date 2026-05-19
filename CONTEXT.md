@@ -224,6 +224,14 @@ _Avoid_: Cleanup daemon, remote monitor, storage autoscaler
 A bounded rule for how much local container log history may remain on disk.
 _Avoid_: Observability platform, audit log, content archive
 
+**Production Audit Finding**:
+A recorded readiness evidence item or gap found while checking whether the MVP has enough operational evidence for a production-like launch decision.
+_Avoid_: Deployment approval, incident, runtime alert
+
+**Residual Production Gap**:
+A known production-readiness limitation that remains after current MVP verification and must be accepted, deferred, or explicitly scoped before a real production launch.
+_Avoid_: Bug when it is an acknowledged scope gap, blocker when it does not stop the current milestone
+
 ## Relationships
 
 - An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
@@ -261,6 +269,8 @@ _Avoid_: Observability platform, audit log, content archive
 - A **Release Audit** checks readiness evidence but does not add product features by itself.
 - A **Release Gate** may consume **Release Audit** evidence, health checks, and runbook presence, but it must not deploy, publish, or mutate production state by itself.
 - A **Disk Usage Guard** may enforce a **Log Retention Policy** and inspect local disk usage, but it must not delete data or prune Docker resources unless a later issue explicitly scopes destructive cleanup.
+- A **Production Audit Finding** may cite **Release Audit**, **Restore Drill**, **Disk Usage Guard**, and health-check evidence, but it must not approve deployment or mutate production state by itself.
+- A **Residual Production Gap** remains explicit until a later issue scopes the work, an operator accepts the risk, or the gap is reclassified as a release blocker.
 
 ## Example dialogue
 

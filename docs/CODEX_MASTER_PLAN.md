@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 7 |
-| Current Issue | Milestone 7 / next issue planning |
+| Current Issue | Milestone 7 / Issue 025 Production Audit Report |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -66,7 +66,7 @@ MVP v0.1 is frozen.
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
 | Milestone 6 | Search, Feedback, Digest | Done | Issues 016-021 done |
-| Milestone 7 | Backup, Monitoring, Release Audit | In Progress | Issues 022-024 done; next issue planning |
+| Milestone 7 | Backup, Monitoring, Release Audit | In Progress | Issues 022-024 done; Issue 025 planning done |
 
 Status values:
 
@@ -1614,6 +1614,43 @@ Validated:
 Known limitations:
 - This is a local non-destructive Disk Usage Guard only. It intentionally does not add destructive cleanup automation, remote monitoring integration, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
 
+#### Issue 025: Add production audit report foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At |  |
+| PR / Commit |  |
+
+Goal
+
+Create a local Production Audit report that gathers current MVP readiness evidence and residual production gaps without approving production launch or adding production deployment, monitoring, alerting, credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup, or production backup automation.
+
+Required Tasks
+
+- [x] Research Docker Compose production guidance, Docker Engine security guidance, and GitHub deployment environment controls.
+- [x] Add Production Audit Finding and Residual Production Gap terminology to `CONTEXT.md`.
+- [x] Add ADR for treating Production Audit as an evidence report, not deployment approval.
+- [x] Add Issue 025 technical plan and implementation log.
+- [ ] Add documentation-contract tests for Production Audit report sections and forbidden operational behavior.
+- [ ] Add `docs/ops/production-audit.md` with evidence matrix, residual gaps, non-goals, and runbook references.
+- [ ] Update README, master plan, goal plan, and implementation log.
+- [ ] Run local Release Health Audit and Disk Usage Guard before closing the report.
+
+Acceptance Criteria
+
+- [ ] `docs/ops/production-audit.md` separates readiness evidence, residual production gaps, and explicit non-goals.
+- [ ] The report cites current local evidence from release audit, backup/restore, disk guard, health checks, and scope-boundary scans.
+- [ ] Residual Production Gaps include missing production deployment target, protected deployment environment, remote monitoring/alerting, production backup schedule/PITR, production secret management, auth/RBAC, Admin identity, and audit logs.
+- [ ] The report states that it is not deployment approval, a release workflow, GitHub release, image push, remote monitor, alerting integration, security certification, or production backup policy.
+- [ ] No production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation is added.
+
+Notes
+
+Keep Issue 025 as local evidence and gap documentation. Do not turn production audit into a launch approval workflow, production deployment design, security certification, or remote operations system.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1670,8 +1707,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 7 issue.
-Do not implement production audit expansion, destructive cleanup automation, remote monitoring integration, alerting, release workflow, production deploy, image push, GitHub release, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation until the next issue is explicitly scoped.
+Implement Issue 025 Production Audit report.
+Do not implement production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
 ---
 ## 9. Codex Operating Rules
 
@@ -1937,6 +1974,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 7 issue.
-Do not implement production audit expansion, destructive cleanup automation, remote monitoring integration, alerting, release workflow, production deploy, image push, GitHub release, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation until the next issue is explicitly scoped.
+Implement Issue 025 Production Audit report.
+Do not implement production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
 ```

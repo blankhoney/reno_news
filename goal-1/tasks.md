@@ -1592,3 +1592,32 @@ Completion notes:
 - Verified `pnpm disk:check:local`; it reported Docker disk usage and `backups` as 0B, then ended with `Disk Usage Guard OK`.
 - Verified `docker compose -f infra/compose/compose.yml config` renders successfully with logging limits.
 - Did not delete backups, prune Docker resources, remove volumes, add destructive cleanup automation, remote monitoring, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+
+## Task 45: Milestone 7 / Issue 025 Production Audit Planning And ADR
+
+Status: Done
+
+Scope:
+- Re-read Milestone 7 production audit, Release Audit, Release Gate, backup/restore, and disk guard boundaries.
+- Research current Docker Compose production guidance, Docker Engine security guidance, and GitHub deployment environment controls relevant to a production audit boundary.
+- Add Production Audit Finding and Residual Production Gap terminology to `CONTEXT.md`.
+- Add ADR 0029 for treating Production Audit as an evidence report, not deployment approval.
+- Add Issue 025 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 025 implementation is next.
+- Do not implement code in this planning task.
+- Do not add production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+
+Verification:
+- `CONTEXT.md` defines Production Audit Finding and Residual Production Gap.
+- ADR 0029 records that Production Audit is a report over evidence and gaps, not production approval.
+- `docs/architecture/issue-025-plan.md` maps Production Audit report work to concrete tasks and acceptance criteria.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 025 implementation and preserves the deferred-scope boundary.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the final Milestone 7 slice: a local Production Audit report that gathers readiness evidence and Residual Production Gaps without approving production launch.
+- Researched Docker Compose production guidance, Docker Engine security guidance, GitHub deployment environments, and GitHub deployment protection rules.
+- Added Production Audit Finding and Residual Production Gap terminology, ADR 0029, `docs/architecture/issue-025-plan.md`, and `docs/logs/2026-05-20-issue-025.md`.
+- Updated `docs/CODEX_MASTER_PLAN.md` and the goal plan so Issue 025 implementation is next.
+- Verified `git diff --check`, required planning files, master-plan next action, and scoped changed-file set.
+- Deferred production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, and production backup automation.
