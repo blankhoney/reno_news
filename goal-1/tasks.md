@@ -897,3 +897,29 @@ Completion notes:
 - Verified full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local Hide/Restore Server Action smoke.
 - Reset the smoke seed entry lifecycle back to `new`.
 - Did not add feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters.
+
+## Task 27: Milestone 6 / Issue 016 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current PostgreSQL full-text search guidance.
+- Re-read local reader projection, rights, manual moderation, and PostgreSQL-first search docs/code.
+- Define the first Milestone 6 issue without implementing search code.
+- Add Reader Search Query and Reader Search Result terminology to `CONTEXT.md`.
+- Add an ADR for reader-safe PostgreSQL search projection.
+- Add Issue 016 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 016 implementation is next.
+- Do not implement feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `docs/architecture/issue-016-plan.md` exists and maps PostgreSQL reader search to concrete tasks and acceptance criteria.
+- ADR 0020 records the reader-safe PostgreSQL projection boundary.
+- `CONTEXT.md` defines Reader Search Query and Reader Search Result.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 016 implementation and does not start feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest first Milestone 6 slice: PostgreSQL reader search over reader-safe metadata and summary fields.
+- Chose not to search private extraction text or translation draft full text, because search results must not leak content the reader UI cannot display.
+- Deferred feedback handling, feedback-to-ranking, digest generation, semantic/vector search, Meilisearch/OpenSearch, `pg_trgm`, `zhparser`, auth/RBAC, backend personal-state APIs, browser automation, and non-RSS adapters.

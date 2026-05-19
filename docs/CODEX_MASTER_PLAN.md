@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 6 |
-| Current Issue | Next Milestone 6 issue planning |
+| Current Issue | Milestone 6 / Issue 016 implementation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -65,7 +65,7 @@ MVP v0.1 is frozen.
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
-| Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
+| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 016 planned |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
 Status values:
@@ -1057,6 +1057,53 @@ Known limitations:
 - Restore returns hidden items to `candidate`; previous lifecycle history is not retained.
 - No feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapter was added.
 
+### Milestone 6: Search, Feedback, Digest
+
+#### Issue 016: Add PostgreSQL reader search foundation
+
+| Field | Value |
+|---|---|
+| Status | Planned |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | |
+
+Goal
+
+Let a Reader search visible reader items using PostgreSQL over reader-safe metadata and summary fields.
+
+Required Tasks
+
+- [x] Research current PostgreSQL full-text search guidance.
+- [x] Add Reader Search Query and Reader Search Result terminology to `CONTEXT.md`.
+- [x] Add ADR for reader-safe PostgreSQL search projection.
+- [x] Add Issue 016 technical plan and implementation log.
+- [ ] Add DB integration tests for title, source, summary, board filter, hidden, blocked, disabled-source, and no-result search behavior.
+- [ ] Implement reader search repository method over reader-safe fields.
+- [ ] Add API tests for `GET /reader/search`.
+- [ ] Implement `GET /reader/search` with Fastify v5 full JSON Schema query validation.
+- [ ] Add web API client tests for search query URL construction.
+- [ ] Add `/search` page and reader search form entrypoint.
+- [ ] Update README, Reader API docs, master plan, and log.
+
+Acceptance Criteria
+
+- [ ] Reader can search visible items by title.
+- [ ] Reader can search visible items by source title.
+- [ ] Reader can search visible items by summary text.
+- [ ] Reader can filter search by board.
+- [ ] Hidden raw entries are excluded from search results.
+- [ ] Blocked items and disabled-source items are excluded from search results.
+- [ ] Missing or empty query is rejected by the API.
+- [ ] Search results do not expose extracted full text, translation draft full text, private model payloads, or admin-only diagnostics.
+- [ ] No feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use PostgreSQL built-in text search over reader-safe fields first.
+Do not add Meilisearch, OpenSearch, `pg_trgm`, `zhparser`, semantic search, feedback logic, or digest generation in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1113,8 +1160,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the first Milestone 6 search, feedback, or digest issue.
-Do not implement moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, browser automation, or non-RSS adapters yet.
+Implement Issue 016: PostgreSQL reader search foundation.
+Do not implement feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1380,6 +1427,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the first Milestone 6 search, feedback, or digest issue.
-Do not implement moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, browser automation, or non-RSS adapters yet.
+Implement Issue 016: PostgreSQL reader search foundation.
+Do not implement feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters yet.
 ```

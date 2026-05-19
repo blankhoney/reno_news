@@ -1,0 +1,3 @@
+# Reader search uses a reader-safe PostgreSQL projection
+
+Issue 016 should start search inside PostgreSQL over the same reader-safe projection used by listing and detail pages, not by indexing private extraction text, translation drafts, admin diagnostics, or a new external search service. This preserves the PostgreSQL-first MVP decision while preventing search results from leaking content that the reader UI is not allowed to display. Later semantic search, `pg_trgm`, Chinese tokenization, or external indexing can be added from the same reader-safe source when scale or query quality requires it.

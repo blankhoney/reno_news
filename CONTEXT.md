@@ -104,6 +104,14 @@ _Avoid_: Admin raw entry detail, unrestricted extraction result, automatic trans
 A reader-selected presentation mode for one detail page, such as original-source view or Chinese-first summary view.
 _Avoid_: Translation publishing decision, locale, user preference
 
+**Reader Search Query**:
+Reader-authored text used to find policy-visible items in the public pool.
+_Avoid_: Admin filter, crawler query, ranking signal
+
+**Reader Search Result**:
+A policy-filtered reader item returned because reader-safe metadata or summary text matches a Reader Search Query.
+_Avoid_: Admin raw entry, private full-text match, recommendation
+
 **Rubric**:
 The scoring standard used to evaluate a content item for a board.
 _Avoid_: Prompt, ranking formula
@@ -181,6 +189,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Summary Block** explains an evaluated item but does not itself publish, rank, index, or place the item.
 - A **Reader Item Card** may present safe metadata and summary snippets without exposing full extracted or translated text.
 - A **Reader Detail Projection** may expose an item in one or more **Language Views**, but it must still obey **Rights Policy** and cannot publish **Translation Drafts** by implication.
+- A **Reader Search Query** returns **Reader Search Results** only from the same policy-visible item set used by reader listings and detail projections.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.
 - A **Saved Item** or **Read Later Item** belongs to a **Reader**'s **Personal Space** and does not affect public ranking or admin curation by itself.
 - **Feedback** belongs to one **Reader** and one **Content Item**.
