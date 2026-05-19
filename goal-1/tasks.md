@@ -617,3 +617,21 @@ Completion notes:
 - Verified full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local dev reader detail smoke.
 - Did not expose translation draft full text.
 - Did not add saved/read-later, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters.
+
+## Check-Debug Loop 6
+
+Status: Done
+
+Run after Tasks 16-18:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit docs, code, tests, and running behavior against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 16-18 on 2026-05-20.
+- Re-read goal input, plan, and tasks.
+- Confirmed Issue 010 and Issue 011 are complete, and `docs/CODEX_MASTER_PLAN.md` points to the next Milestone 4 planning step.
+- Ran deferred-scope file scan and found no search, digest, saved/read-later, browser automation, or non-RSS adapter implementation files.
+- Confirmed reader detail projection does not select translation draft full text or model payloads, and original extracted text remains rights-filtered.
+- Reused Task 18 verification evidence for full repo install, lint, tests, build, DB migration/seed, DB integration, worker tests, Compose status, health smoke, and local reader detail smoke.
+- Found no blocker to planning the next Milestone 4 issue.
