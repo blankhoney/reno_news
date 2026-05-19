@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { runMigrations, runSeed } from "./runner";
+import { createReaderRepository } from "./readerRepository";
 import { createSourceRepository } from "./sourceRepository";
 
 const databaseUrl =
@@ -157,5 +158,34 @@ test("source repository can create, update, and list worker-readable policies", 
     const finalCleanupPool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
     await finalCleanupPool.query("delete from sources where url = $1", [testUrl]);
     await finalCleanupPool.end();
+  }
+});
+
+test("reader repository lists boards and policy-filtered item cards", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    const boards = await repository.listReaderBoards();
+    const items = await repository.listReaderItems();
+    const aiItems = await repository.listReaderItems({ boardSlug: "ai" });
+
+    assert.equal(boards.length, 5);
+    assert.deepEqual(
+      boards.map((board) => board.slug),
+      ["ai", "software-engineering", "semiconductor", "employment-trends", "open-source"]
+    );
+    const sampleAiItem = aiItems.find((item) => item.title === "Sample AI item");
+
+    assert.ok(items.length >= 5);
+    assert.ok(aiItems.length >= 1);
+    assert.ok(aiItems.every((item) => item.boardSlug === "ai"));
+    assert.equal(sampleAiItem?.summary, "Development seed item for the AI board.");
+    assert.equal(sampleAiItem ? "extractedText" in sampleAiItem : true, false);
+    assert.equal(sampleAiItem ? "translatedText" in sampleAiItem : true, false);
+  } finally {
+    await repository.close();
   }
 });

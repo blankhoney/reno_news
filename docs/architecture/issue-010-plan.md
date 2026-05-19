@@ -59,12 +59,20 @@ Reader item card fields:
 
 ## TDD Plan
 
-1. Add DB repository tests for board listing and reader item card projection.
-2. Add API tests for `GET /reader/boards` and `GET /reader/items`.
-3. Add web API client tests for URL joining and payload parsing.
-4. Implement repository and API endpoints.
-5. Implement home and board pages using Server Components.
-6. Update API docs, README, master plan, and log.
+1. [x] Add DB repository tests for board listing and reader item card projection.
+2. [x] Add API tests for `GET /reader/boards` and `GET /reader/items`.
+3. [x] Add web API client tests for URL joining and payload parsing.
+4. [x] Implement repository and API endpoints.
+5. [x] Implement home and board pages using Server Components.
+6. [x] Update API docs, README, master plan, and log.
+
+## Implemented Boundary
+
+- `packages/db/src/readerRepository.ts` owns the reader board and item-card projection.
+- `apps/api` exposes `GET /reader/boards` and `GET /reader/items`.
+- `apps/web` uses Server Components and `next/link` for the home page and `/boards/[slug]`.
+- `docs/api/reader.md` documents the reader endpoints.
+- Reader cards do not include extracted full text, translated full text, private model payloads, or admin-only diagnostics.
 
 ## Acceptance Criteria
 

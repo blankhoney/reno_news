@@ -7,10 +7,10 @@ Execute `docs/CODEX_MASTER_PLAN.md` in order until the final milestone is comple
 ## Current Context
 
 - Current milestone: Milestone 4.
-- Current issue: Issue 010, "Add reader home and board listing foundation".
+- Current issue: next Milestone 4 issue planning.
 - Existing durable docs: `CONTEXT.md` and `docs/adr/`.
 - Execution source of truth: `docs/CODEX_MASTER_PLAN.md`.
-- Completed baseline: Issues 001-009 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, basic admin/debug views, full-text extraction foundation, model-call logging, AI evaluation adapter foundation, Chinese translation draft foundation, and summary block draft foundation in place.
+- Completed baseline: Issues 001-010 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, basic admin/debug views, full-text extraction foundation, model-call logging, AI evaluation adapter foundation, Chinese translation draft foundation, summary block draft foundation, and reader home/board listing foundation in place.
 
 ## Execution Approach
 

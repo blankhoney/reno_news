@@ -63,7 +63,7 @@ MVP v0.1 is frozen.
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
-| Milestone 4 | Reader UI | In Progress | Issue 010 planned; implementation next |
+| Milestone 4 | Reader UI | In Progress | Issue 010 done; next issue planning needed |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
@@ -674,11 +674,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -690,27 +690,47 @@ Required Tasks
 - [x] Add Reader Item Card terminology to `CONTEXT.md`.
 - [x] Add ADR for reader card projection boundaries.
 - [x] Add Issue 010 technical plan.
-- [ ] Add DB reader projection for boards and item cards.
-- [ ] Add API endpoints for reader boards and reader item cards.
-- [ ] Add web API client for reader data.
-- [ ] Replace the placeholder home page with reader board navigation and latest item cards.
-- [ ] Add `/boards/[slug]` reader board page.
-- [ ] Add reader API documentation.
+- [x] Add DB reader projection for boards and item cards.
+- [x] Add API endpoints for reader boards and reader item cards.
+- [x] Add web API client for reader data.
+- [x] Replace the placeholder home page with reader board navigation and latest item cards.
+- [x] Add `/boards/[slug]` reader board page.
+- [x] Add reader API documentation.
 
 Acceptance Criteria
 
-- [ ] Home page shows the five MVP boards.
-- [ ] Home page can render latest reader item cards or a clear empty state.
-- [ ] Board page filters cards by board slug and handles unknown boards according to the API contract.
-- [ ] Reader cards never include extracted full text, translated full text, private model payloads, or admin-only diagnostics.
-- [ ] New reader API endpoints are documented.
-- [ ] No article page, search, digest generation, saved/read-later, personalization, browser automation, public publishing workflow, or non-RSS adapter is added.
+- [x] Home page shows the five MVP boards.
+- [x] Home page can render latest reader item cards or a clear empty state.
+- [x] Board page filters cards by board slug and handles unknown boards according to the API contract.
+- [x] Reader cards never include extracted full text, translated full text, private model payloads, or admin-only diagnostics.
+- [x] New reader API endpoints are documented.
+- [x] No article page, search, digest generation, saved/read-later, personalization, browser automation, public publishing workflow, or non-RSS adapter is added.
 
 Notes
 
 Use Server Components and `next/link`.
 Do not add client-side state unless the page needs it.
 Do not implement article detail pages in this issue.
+
+**Implementation Note**
+
+Implemented:
+- DB reader projection for boards and metadata/summary item cards.
+- API endpoints `GET /reader/boards` and `GET /reader/items`.
+- Web reader API client with no-store fetches.
+- Reader home page with board navigation and latest cards.
+- Reader board page at `/boards/[slug]`.
+- Reader API documentation and README endpoint notes.
+
+Validated:
+- DB integration covers board listing, board filtering, summary fallback, and absence of full text fields.
+- API tests cover reader boards and board-filtered item cards.
+- Web tests cover reader API client fetch behavior.
+- Full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, Compose service status, health smoke, and `uv lock --check`.
+- Local dev smoke on `http://localhost:3100/`, `http://localhost:3100/boards/ai`, and reader API endpoints on `http://localhost:3101`.
+
+Known limitations:
+- No article page, Chinese/original switch, search, digest generation, saved/read-later, personalization, public publishing workflow, browser automation, or non-RSS adapter was added.
 
 ---
 
@@ -768,9 +788,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Continue Issue 010 implementation.
-Keep Issue 010 to reader home and board listing over metadata/summary cards.
-Do not implement article pages, search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
+Plan the next Milestone 4 reader UI issue.
+Do not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1037,6 +1056,6 @@ Focus:
 Current required next action:
 
 ```text
-Continue Issue 010 implementation.
-Do not implement article pages, search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
+Plan the next Milestone 4 reader UI issue.
+Do not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
 ```

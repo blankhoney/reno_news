@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import type {
   RawEntryRecord,
   RawEntryRepository,
+  ReaderBoard,
+  ReaderItemCard,
+  ReaderRepository,
   SourceRepository,
   SourceRecord
 } from "@reno-news/db";
@@ -59,6 +62,33 @@ function fakeRawEntryRepository(
   return {
     listRawEntries: async () => [rawEntryRecord],
     getRawEntry: async () => rawEntryRecord,
+    close: async () => undefined,
+    ...overrides
+  };
+}
+
+const readerBoard: ReaderBoard = {
+  slug: "ai",
+  name: "AI",
+  description: "Artificial intelligence research, products, and policy."
+};
+
+const readerItem: ReaderItemCard = {
+  id: 1,
+  boardSlug: "ai",
+  boardName: "AI",
+  sourceTitle: "OpenAI News",
+  title: "Sample AI item",
+  url: "https://example.invalid/ai/sample-ai-001",
+  summary: "Development seed item for the AI board.",
+  publishedAt: "2026-05-20T00:00:00.000Z",
+  createdAt: "2026-05-20T00:00:00.000Z"
+};
+
+function fakeReaderRepository(overrides: Partial<ReaderRepository> = {}): ReaderRepository {
+  return {
+    listReaderBoards: async () => [readerBoard],
+    listReaderItems: async () => [readerItem],
     close: async () => undefined,
     ...overrides
   };
@@ -336,4 +366,46 @@ test("GET /raw-entries/:id returns 404 for missing raw entries", async () => {
   });
 
   assert.equal(response.statusCode, 404);
+});
+
+test("GET /reader/boards lists reader boards", async () => {
+  const app = buildApp({ logger: false }, { readerRepository: fakeReaderRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/boards"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), { boards: [readerBoard] });
+});
+
+test("GET /reader/items passes optional board filter", async () => {
+  let receivedBoardSlug: string | undefined;
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        listReaderItems: async (input) => {
+          receivedBoardSlug = input?.boardSlug;
+          return [readerItem];
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/items?board=ai"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(receivedBoardSlug, "ai");
+  assert.deepEqual(response.json(), { items: [readerItem] });
 });

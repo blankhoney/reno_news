@@ -520,7 +520,7 @@ Completion notes:
 
 ## Task 16: Milestone 4 / Issue 010 Reader Home And Board Listing Foundation
 
-Status: Pending
+Status: Done
 
 Scope:
 - Add DB reader projection for boards and item cards.
@@ -531,7 +531,26 @@ Scope:
 - Add reader API documentation.
 
 Verification:
-- Pending until implementation starts.
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `uv run python -m unittest discover -s tests`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:migrate`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:seed`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test uv run python -m unittest tests/test_rss_ingest.py tests/test_scheduler.py tests/test_health.py tests/test_extraction.py tests/test_ai_evaluation.py tests/test_translation.py tests/test_summary_blocks.py`
+- `uv lock --check`
+- `docker compose -f infra/compose/compose.yml ps`
+- Direct and Caddy-proxied health smoke for web, API, and worker.
+- Local dev smoke on `http://localhost:3100/`, `http://localhost:3100/boards/ai`, `http://localhost:3101/reader/boards`, and `http://localhost:3101/reader/items?board=ai`.
 
 Completion notes:
-- Pending.
+- Completed Issue 010 on 2026-05-20.
+- Added DB reader projection for boards and item cards.
+- Added API endpoints for reader boards and reader item cards.
+- Added web reader API client, reader home page, and `/boards/[slug]` board page.
+- Added reader API documentation and README endpoint notes.
+- Did not add article pages, Chinese/original switch, search, digest generation, saved/read-later, personalization, public publishing workflow, browser automation, or non-RSS adapters.

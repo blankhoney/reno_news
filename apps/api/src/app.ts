@@ -6,10 +6,12 @@ import Fastify, {
 import {
   BoardNotFoundError,
   createRawEntryRepository,
+  createReaderRepository,
   createSourceRepository,
   isUniqueViolation,
   type CreateSourceInput,
   type RawEntryRepository,
+  type ReaderRepository,
   type SourceRepository,
   type UpdateSourceInput
 } from "@reno-news/db";
@@ -17,10 +19,15 @@ import {
 type AppDependencies = {
   sourceRepository?: SourceRepository;
   rawEntryRepository?: RawEntryRepository;
+  readerRepository?: ReaderRepository;
 };
 
 type SourceParams = {
   id: string;
+};
+
+type ReaderItemsQuery = {
+  board?: string;
 };
 
 class DatabaseNotConfiguredError extends Error {
@@ -90,6 +97,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   const sourceRepository = dependencies.sourceRepository ?? sourceRepositoryFromEnvironment(app);
   const rawEntryRepository =
     dependencies.rawEntryRepository ?? rawEntryRepositoryFromEnvironment(app);
+  const readerRepository = dependencies.readerRepository ?? readerRepositoryFromEnvironment(app);
 
   app.get("/healthz", async () => ({
     status: "ok",
@@ -201,6 +209,25 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   );
 
+  app.get("/reader/boards", async (_request, reply) => {
+    try {
+      const boards = await readerRepository.listReaderBoards();
+      return { boards };
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  });
+
+  app.get("/reader/items", async (request, reply) => {
+    try {
+      const query = request.query as ReaderItemsQuery;
+      const items = await readerRepository.listReaderItems({ boardSlug: query.board });
+      return { items };
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  });
+
   return app;
 }
 
@@ -236,6 +263,22 @@ function rawEntryRepositoryFromEnvironment(app: FastifyInstance): RawEntryReposi
   return repository;
 }
 
+function readerRepositoryFromEnvironment(app: FastifyInstance): ReaderRepository {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredReaderRepository;
+  }
+
+  const repository = createReaderRepository(databaseUrl);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return repository;
+}
+
 const unconfiguredSourceRepository: SourceRepository = {
   listSources: async () => {
     throw new DatabaseNotConfiguredError();
@@ -259,6 +302,16 @@ const unconfiguredRawEntryRepository: RawEntryRepository = {
     throw new DatabaseNotConfiguredError();
   },
   getRawEntry: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  close: async () => undefined
+};
+
+const unconfiguredReaderRepository: ReaderRepository = {
+  listReaderBoards: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  listReaderItems: async () => {
     throw new DatabaseNotConfiguredError();
   },
   close: async () => undefined
