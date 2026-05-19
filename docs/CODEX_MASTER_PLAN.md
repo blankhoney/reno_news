@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 5 |
-| Current Issue | Next Milestone 5 issue planning |
+| Current Issue | Issue 014: Admin failure queue foundation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -64,7 +64,7 @@ MVP v0.1 is frozen.
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
-| Milestone 5 | Admin UI | In Progress | Issue 013 done |
+| Milestone 5 | Admin UI | In Progress | Issue 013 done; Issue 014 planned |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
@@ -924,6 +924,49 @@ Known limitations:
 - Policy edits mutate the current Source Policy only.
 - No source creation UI, policy history table, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter was added.
 
+#### Issue 014: Add admin failure queue foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | Pending |
+| PR / Commit | pending |
+
+Goal
+
+Let an Admin inspect recent source ingest, extraction, and model-processing failures from one read-only admin page.
+
+Required Tasks
+
+- [x] Research current Fastify v5 route and JSON Schema guidance.
+- [x] Add Failure Queue terminology to `CONTEXT.md`.
+- [x] Add ADR for failure queue using existing attempt logs.
+- [x] Add Issue 014 technical plan.
+- [ ] Add DB repository tests for failure queue projection.
+- [ ] Implement failure queue repository.
+- [ ] Add API tests for `GET /admin/failures`.
+- [ ] Implement `GET /admin/failures`.
+- [ ] Add web API client tests for failure queue loading.
+- [ ] Add `/admin/failures` page and admin links.
+- [ ] Update README, API docs, master plan, and log.
+
+Acceptance Criteria
+
+- [ ] Admin can view recent source ingest failures.
+- [ ] Admin can view recent extraction failures.
+- [ ] Admin can view recent failed model calls.
+- [ ] Failure rows are ordered newest first.
+- [ ] Failure rows include enough source or raw-entry context for inspection when that context exists.
+- [ ] The endpoint uses Fastify v5 full JSON Schema for any query validation.
+- [ ] No retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use existing attempt/model-call records as a read-only projection.
+Do not add retry or resolution workflow in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -980,8 +1023,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 5 admin UI issue.
-Do not implement source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters yet.
+Implement Issue 014 admin failure queue foundation.
+Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1248,6 +1291,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 5 admin UI issue.
-Do not implement source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters yet.
+Implement Issue 014 admin failure queue foundation.
+Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters yet.
 ```

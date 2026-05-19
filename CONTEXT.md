@@ -40,6 +40,10 @@ _Avoid_: Crawler when the source is structured
 A recorded attempt to discover candidate items from a source, including success, skip, or failure outcome.
 _Avoid_: Crawl job when the source is structured RSS/Atom
 
+**Failure Queue**:
+An admin-facing collection of failed ingest, extraction, or model-processing attempts that need inspection.
+_Avoid_: Work queue, retry queue, reader error list
+
 **Source Policy**:
 Rules that decide whether and how a source may be accessed, rate-limited, retried, and processed.
 _Avoid_: Crawl config, fetch settings
@@ -158,6 +162,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Source** uses one **Source Adapter** to discover **Candidate Items**.
 - A **Policy Change** applies to one **Source** and changes its **Source Policy** or **Rights Policy**.
 - An **Ingest Attempt** records one **Source Adapter** execution for one **Source**.
+- A **Failure Queue** can include failed **Ingest Attempts**, failed **Extraction Attempts**, and failed **Model Calls**.
 - An **Extraction Attempt** fetches and extracts readable text for one **Candidate Item** when **Source Policy** and **Rights Policy** allow it.
 - An **Extraction Result** may feed later normalization into a **Content Item**.
 - A **Candidate Item** may become a **Content Item** after normalization, deduplication, and policy checks.

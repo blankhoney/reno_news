@@ -761,3 +761,48 @@ Completion notes:
 - Updated README, Sources API docs, Issue 013 plan, implementation log, and master plan.
 - Verified targeted web tests, web lint, web build, full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local admin policy form smoke through Next Server Action.
 - Did not add source creation UI, policy history, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters.
+
+## Task 23: Milestone 5 / Issue 014 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current Fastify v5 route and JSON Schema guidance.
+- Re-read local admin, attempt, and model-call domain docs.
+- Define the next Milestone 5 issue without implementing failure queue code.
+- Add Failure Queue terminology to `CONTEXT.md`.
+- Add an ADR for failure queue using existing attempt and model-call logs.
+- Add Issue 014 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 014 implementation is next.
+- Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `docs/architecture/issue-014-plan.md` exists and maps Milestone 5 failure queue focus to concrete tasks and acceptance criteria.
+- ADR 0018 records the existing attempt/model-call log projection boundary.
+- `CONTEXT.md` defines Failure Queue.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 014 implementation and does not start retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next Milestone 5 admin UI slice: read-only recent failure inspection from existing source ingest attempts, extraction attempts, and model calls.
+- Deferred retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, and non-RSS adapters.
+
+## Task 24: Milestone 5 / Issue 014 Admin Failure Queue Foundation
+
+Status: Pending
+
+Scope:
+- Add DB repository tests for failure queue projection.
+- Implement failure queue repository.
+- Add API tests for `GET /admin/failures`.
+- Implement `GET /admin/failures`.
+- Add web API client tests for failure queue loading.
+- Add `/admin/failures` page and admin links.
+- Update README, API docs, master plan, and log.
+- Do not add retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters.
+
+Verification:
+- `pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- Full repo checks as needed for touched surfaces.
