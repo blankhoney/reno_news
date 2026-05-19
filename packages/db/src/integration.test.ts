@@ -565,6 +565,104 @@ test("reader repository searches reader-safe visible item fields", async () => {
   }
 });
 
+test("reader repository lists related items from the reader-safe visible pool", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from boards where slug = 'related-empty'");
+    await pool.query(
+      "insert into boards (slug, name, description) values ('related-empty', 'Related Empty', 'Temporary related-items test board')"
+    );
+
+    const targetId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-target",
+      title: "Related Graph Target",
+      summaryOneSentence: "Shared related graph marker",
+      sourceUrl: "https://example.invalid/reader-detail-related-target.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const sameBoardId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-same-board",
+      title: "Related Graph Same Board",
+      summaryOneSentence: "Shared related graph follow-up",
+      sourceUrl: "https://example.invalid/reader-detail-related-same-board.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const otherBoardId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-other-board",
+      title: "Related Graph Target Other Board",
+      boardSlug: "software-engineering",
+      summaryOneSentence: "Shared related graph marker software angle",
+      sourceUrl: "https://example.invalid/reader-detail-related-other-board.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const hiddenId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-hidden",
+      title: "Related Graph Hidden",
+      summaryOneSentence: "Shared related graph hidden",
+      sourceUrl: "https://example.invalid/reader-detail-related-hidden.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true,
+      lifecycleStatus: "hidden"
+    });
+    const blockedId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-blocked",
+      title: "Related Graph Blocked",
+      summaryOneSentence: "Shared related graph blocked",
+      sourceUrl: "https://example.invalid/reader-detail-related-blocked.xml",
+      rightsStatus: "blocked",
+      sourceEnabled: true
+    });
+    const disabledId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-disabled",
+      title: "Related Graph Disabled",
+      summaryOneSentence: "Shared related graph disabled",
+      sourceUrl: "https://example.invalid/reader-detail-related-disabled.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: false
+    });
+    const isolatedId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-isolated",
+      title: "Isolated Unmatched Zyxwvu",
+      boardSlug: "related-empty",
+      summaryOneSentence: "No shared related signal qxjz",
+      sourceUrl: "https://example.invalid/reader-detail-related-isolated.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+
+    const related = await repository.listRelatedReaderItems({ id: targetId, limit: 10 });
+    const limited = await repository.listRelatedReaderItems({ id: targetId, limit: 1 });
+    const isolated = await repository.listRelatedReaderItems({ id: isolatedId, limit: 10 });
+
+    assert.ok(related);
+    assert.equal(related[0].id, sameBoardId);
+    assert.equal(limited?.length, 1);
+    assert.equal(limited?.[0].id, sameBoardId);
+    assert.equal(related.some((item) => item.id === targetId), false);
+    assert.equal(related.some((item) => item.id === sameBoardId), true);
+    assert.equal(related.some((item) => item.id === otherBoardId), true);
+    assert.equal(related.some((item) => item.id === hiddenId), false);
+    assert.equal(related.some((item) => item.id === blockedId), false);
+    assert.equal(related.some((item) => item.id === disabledId), false);
+    assert.deepEqual(isolated, []);
+    assert.equal(await repository.listRelatedReaderItems({ id: 999_999_999 }), null);
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from boards where slug = 'related-empty'");
+    await pool.end();
+  }
+});
+
 test("feedback repository stores feedback only for visible reader items", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });

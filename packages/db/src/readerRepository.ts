@@ -44,10 +44,16 @@ export type SearchReaderItemsInput = {
   boardSlug?: string;
 };
 
+export type ListRelatedReaderItemsInput = {
+  id: number;
+  limit?: number;
+};
+
 export type ReaderRepository = {
   listReaderBoards(): Promise<ReaderBoard[]>;
   listReaderItems(input?: ListReaderItemsInput): Promise<ReaderItemCard[]>;
   searchReaderItems(input: SearchReaderItemsInput): Promise<ReaderItemCard[]>;
+  listRelatedReaderItems(input: ListRelatedReaderItemsInput): Promise<ReaderItemCard[] | null>;
   getReaderItemDetail(id: number): Promise<ReaderItemDetail | null>;
   close(): Promise<void>;
 };
@@ -92,6 +98,7 @@ export function createReaderRepository(databaseUrl: string): ReaderRepository {
     listReaderBoards: async () => listReaderBoards(pool),
     listReaderItems: async (input) => listReaderItems(pool, input),
     searchReaderItems: async (input) => searchReaderItems(pool, input),
+    listRelatedReaderItems: async (input) => listRelatedReaderItems(pool, input),
     getReaderItemDetail: async (id) => getReaderItemDetail(pool, id),
     close: async () => {
       await pool.end();
@@ -230,6 +237,130 @@ async function searchReaderItems(
     `,
     values
   );
+  return result.rows.map(mapReaderItemRow);
+}
+
+async function listRelatedReaderItems(
+  queryable: Queryable,
+  input: ListRelatedReaderItemsInput
+): Promise<ReaderItemCard[] | null> {
+  const limit = input.limit ?? 6;
+  const target = await queryable.query<{ id: number }>(
+    `
+    select re.id::int as "id"
+    from raw_entries re
+    join sources s on s.id = re.source_id
+    where re.id = $1
+      and s.enabled = true
+      and re.lifecycle_status != 'hidden'
+      and re.rights_status != 'blocked'
+    `,
+    [input.id]
+  );
+
+  if (!target.rows[0]) {
+    return null;
+  }
+
+  const result = await queryable.query<ReaderItemRow>(
+    `
+    with target as (
+      select
+        re.id,
+        re.source_id,
+        b.slug as board_slug,
+        concat_ws(
+          ' ',
+          re.title,
+          re.summary_raw,
+          sb.one_sentence,
+          sb.detailed_summary,
+          sb.why_it_matters,
+          sb.source_note,
+          sb.china_relevance
+        ) as text
+      from raw_entries re
+      join sources s on s.id = re.source_id
+      join boards b on b.id = s.board_id
+      left join lateral (
+        select
+          one_sentence,
+          detailed_summary,
+          why_it_matters,
+          source_note,
+          china_relevance
+        from summary_blocks
+        where raw_entry_id = re.id
+        order by id desc
+        limit 1
+      ) sb on true
+      where re.id = $1
+    )
+    select
+      re.id::int as "id",
+      b.slug as "boardSlug",
+      b.name as "boardName",
+      s.title as "sourceTitle",
+      re.title as "title",
+      re.url as "url",
+      coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
+      re.published_at as "publishedAt",
+      re.created_at as "createdAt"
+    from target
+    join raw_entries re on re.id != target.id
+    join sources s on s.id = re.source_id
+    join boards b on b.id = s.board_id
+    left join lateral (
+      select
+        one_sentence,
+        detailed_summary,
+        why_it_matters,
+        source_note,
+        china_relevance
+      from summary_blocks
+      where raw_entry_id = re.id
+      order by id desc
+      limit 1
+    ) sb on true
+    cross join lateral (
+      select concat_ws(
+        ' ',
+        re.title,
+        re.url,
+        s.title,
+        b.name,
+        re.summary_raw,
+        sb.one_sentence,
+        sb.detailed_summary,
+        sb.why_it_matters,
+        sb.source_note,
+        sb.china_relevance
+      ) as text
+    ) related_document
+    cross join lateral (
+      select
+        to_tsvector('simple', related_document.text) as document,
+        websearch_to_tsquery('simple', target.text) as query
+    ) related_index
+    where s.enabled = true
+      and re.lifecycle_status != 'hidden'
+      and re.rights_status != 'blocked'
+      and (
+        s.id = target.source_id
+        or b.slug = target.board_slug
+        or related_index.document @@ related_index.query
+      )
+    order by
+      case when s.id = target.source_id then 0 else 1 end,
+      case when b.slug = target.board_slug then 0 else 1 end,
+      ts_rank_cd(related_index.document, related_index.query) desc,
+      coalesce(re.published_at, re.created_at) desc,
+      re.id desc
+    limit $2
+    `,
+    [input.id, limit]
+  );
+
   return result.rows.map(mapReaderItemRow);
 }
 

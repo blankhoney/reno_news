@@ -1,6 +1,6 @@
 # Reno News
 
-Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, admin/debug views with source policy editing, failure inspection, raw-entry hide/restore, reader feedback inspection, reader home/board listings, reader item detail pages, PostgreSQL reader search, item-scoped feedback capture, and local saved/read-later state.
+Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, admin/debug views with source policy editing, failure inspection, raw-entry hide/restore, reader feedback inspection, reader home/board listings, reader item detail pages with related items, PostgreSQL reader search, item-scoped feedback capture, and local saved/read-later state.
 
 ## Requirements
 
@@ -80,8 +80,9 @@ Reader endpoints:
 - API reader items: `http://localhost:3001/reader/items`
 - API reader search: `http://localhost:3001/reader/search?q=Sample`
 - API reader item detail: `http://localhost:3001/reader/items/1`
+- API reader related items: `http://localhost:3001/reader/items/1/related`
 - API reader item feedback: `POST http://localhost:3001/reader/items/1/feedback`
 
 ## Scope Boundary
 
-Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, or auth/RBAC yet. Saved/read-later state is local to the browser and is not synced to a server. Reader feedback is stored as append-only item-scoped events and does not mutate lifecycle, ranking, search order, digest inclusion, moderation state, or personal saved/read-later state. Reader search is PostgreSQL-only over reader-safe metadata and summary fields. The current reader surface does not implement auth, backend personal-state APIs, digest generation, public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
+Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, or auth/RBAC yet. Saved/read-later state is local to the browser and is not synced to a server. Reader feedback is stored as append-only item-scoped events and does not mutate lifecycle, ranking, search order, digest inclusion, moderation state, or personal saved/read-later state. Reader search and related items are PostgreSQL-only over reader-safe metadata and summary fields. The current reader surface does not implement auth, backend personal-state APIs, digest generation, public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, feedback-to-ranking, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.

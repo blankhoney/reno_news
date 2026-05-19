@@ -4,6 +4,7 @@ import {
   getReaderBoards,
   getReaderItemDetail,
   getReaderItems,
+  getReaderRelatedItems,
   getReaderSearchItems,
   joinServiceUrl,
   readerFeedbackFromFormData,
@@ -103,6 +104,40 @@ test("getReaderSearchItems appends query and optional board filter", async () =>
   try {
     const items = await getReaderSearchItems("quantum ai", "ai");
     assert.equal(items[0].title, "Quantum AI item");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("getReaderRelatedItems fetches related items with optional limit", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    assert.equal(String(input), "http://localhost:3001/reader/items/1/related?limit=3");
+    assert.equal(init?.cache, "no-store");
+    return new Response(
+      JSON.stringify({
+        items: [
+          {
+            id: 2,
+            boardSlug: "ai",
+            boardName: "AI",
+            sourceTitle: "OpenAI News",
+            title: "Related AI item",
+            url: "https://example.invalid/ai/related-ai-001",
+            summary: "Related summary",
+            publishedAt: "2026-05-20T00:00:00.000Z",
+            createdAt: "2026-05-20T00:00:00.000Z"
+          }
+        ]
+      }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
+  }) as typeof fetch;
+
+  try {
+    const items = await getReaderRelatedItems(1, 3);
+    assert.ok(items);
+    assert.equal(items[0].id, 2);
   } finally {
     globalThis.fetch = originalFetch;
   }

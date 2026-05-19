@@ -1095,3 +1095,39 @@ Completion notes:
 - Deferred feedback weighting, personalized recommendations, moderation workflow, digest generation, semantic/vector search, external search services, search extensions, auth/RBAC, backend personal-state sync, browser automation, and non-RSS adapters.
 - Added Related Item terminology, ADR 0022, `docs/architecture/issue-018-plan.md`, and `docs/logs/2026-05-20-issue-018.md`.
 - Updated `docs/CODEX_MASTER_PLAN.md` so Issue 018 implementation is next.
+
+## Task 32: Milestone 6 / Issue 018 Reader-Safe Related Items Foundation
+
+Status: Done
+
+Scope:
+- Add DB integration tests for related item visibility, self exclusion, ordering signals, missing target, and empty-result behavior.
+- Implement reader related-items repository method over reader-safe fields.
+- Add API tests for `GET /reader/items/:id/related`.
+- Implement `GET /reader/items/:id/related` with Fastify v5 full JSON Schema params/query validation.
+- Add web API client tests for related item loading.
+- Add related item section to the reader item detail page.
+- Update README, Reader API docs, master plan, and log.
+- Do not add feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
+
+Verification:
+- `pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 018 on 2026-05-20.
+- Added DB integration tests for related item visibility, self exclusion, same-board and text-match behavior, hidden raw entries, blocked items, disabled-source items, missing targets, bounded limits, and empty results.
+- Added `ReaderRepository.listRelatedReaderItems` over reader-safe title, source, board, raw summary, and summary block fields.
+- Added deterministic ordering with shared source, shared board, PostgreSQL full-text rank, recency, and id tie-breakers.
+- Added `GET /reader/items/:id/related` with optional bounded `limit` and Fastify v5 full JSON Schema params/query validation.
+- Added web related-items helper tests and rendered related item cards on reader item detail pages.
+- Updated README, Reader API docs, Issue 018 plan, implementation log, master plan, and goal plan.
+- Verified targeted DB integration, API, and web tests.
+- Verified full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local current-code related-items smoke on API `3101` and web `3100`.
+- Deleted the related-items smoke fixture after verification.
+- Ran deferred-scope scan and found only documentation boundary references plus one existing worker test string for browser automation; no deferred implementation was added.
+- Confirmed no related-items smoke rows remain and ports `3100` and `3101` are not listening.
+- Rebuilt web after local dev smoke so `apps/web/next-env.d.ts` points back to production route types.
+- Did not add feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.

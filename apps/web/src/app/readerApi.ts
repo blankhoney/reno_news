@@ -95,6 +95,27 @@ export async function getReaderSearchItems(
   return payload.items;
 }
 
+export async function getReaderRelatedItems(
+  id: number,
+  limit?: number
+): Promise<ReaderItemCard[] | null> {
+  const params = new URLSearchParams();
+  if (limit) {
+    params.set("limit", String(limit));
+  }
+  const query = params.toString();
+  const path = `/reader/items/${id}/related${query ? `?${query}` : ""}`;
+  const response = await fetch(apiUrl(path), { cache: "no-store" });
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(`Failed to load related reader items for item ${id}: ${response.status}`);
+  }
+  const payload = (await response.json()) as { items: ReaderItemCard[] };
+  return payload.items;
+}
+
 export async function getReaderItemDetail(id: number): Promise<ReaderItemDetail | null> {
   const response = await fetch(apiUrl(`/reader/items/${id}`), { cache: "no-store" });
   if (response.status === 404) {

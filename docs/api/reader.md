@@ -114,3 +114,33 @@ Response:
   }
 }
 ```
+
+## `GET /reader/items/:id/related`
+
+Returns a small set of related reader item cards for one visible item. The endpoint returns `404` if the target item is missing, hidden, blocked, or belongs to a disabled source.
+
+Optional query:
+
+- `limit`: bounded related item count, 1 to 12.
+
+Related item selection uses the same reader-visible pool as reader lists, item details, and search. It excludes the current item and does not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": 2,
+      "boardSlug": "ai",
+      "boardName": "AI",
+      "sourceTitle": "OpenAI News",
+      "title": "Related AI item",
+      "url": "https://example.invalid/ai/related-ai-001",
+      "summary": "Related summary.",
+      "publishedAt": "2026-05-20T00:00:00.000Z",
+      "createdAt": "2026-05-20T00:00:00.000Z"
+    }
+  ]
+}
+```

@@ -162,6 +162,7 @@ function fakeReaderRepository(overrides: Partial<ReaderRepository> = {}): Reader
     listReaderBoards: async () => [readerBoard],
     listReaderItems: async () => [readerItem],
     searchReaderItems: async () => [readerItem],
+    listRelatedReaderItems: async () => [readerItem],
     getReaderItemDetail: async () => readerItemDetail,
     close: async () => undefined,
     ...overrides
@@ -696,6 +697,68 @@ test("GET /reader/search rejects empty query", async () => {
   const response = await app.inject({
     method: "GET",
     url: "/reader/search?q=%20"
+  });
+
+  assert.equal(response.statusCode, 400);
+});
+
+test("GET /reader/items/:id/related returns related item cards with optional limit", async () => {
+  let receivedInput: unknown;
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        listRelatedReaderItems: async (input) => {
+          receivedInput = input;
+          return [readerItem];
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/items/1/related?limit=3"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(receivedInput, { id: 1, limit: 3 });
+  assert.deepEqual(response.json(), { items: [readerItem] });
+});
+
+test("GET /reader/items/:id/related returns 404 for missing reader items", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        listRelatedReaderItems: async () => null
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/items/999/related"
+  });
+
+  assert.equal(response.statusCode, 404);
+});
+
+test("GET /reader/items/:id/related rejects invalid limits", async () => {
+  const app = buildApp({ logger: false }, { readerRepository: fakeReaderRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/items/1/related?limit=0"
   });
 
   assert.equal(response.statusCode, 400);

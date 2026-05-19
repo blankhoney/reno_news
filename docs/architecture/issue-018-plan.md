@@ -33,23 +33,23 @@ The initial ordering should stay PostgreSQL-first and cheap enough for the MVP h
 
 ## TDD Plan
 
-1. [ ] Add DB integration tests for related items from the same visible reader pool, self exclusion, board/source/text signal ordering, hidden raw-entry exclusion, blocked item exclusion, disabled-source exclusion, missing target handling, and empty-result behavior.
-2. [ ] Implement `ReaderRepository.listRelatedReaderItems`.
-3. [ ] Add API tests for `GET /reader/items/:id/related`, optional `limit`, missing target, invalid id, and invalid limit.
-4. [ ] Implement Fastify route with full JSON Schema params/query validation.
-5. [ ] Add web API client tests for related item loading.
-6. [ ] Render a related-items section on the reader item detail page.
-7. [ ] Update README, Reader API docs, master plan, goal plan, and implementation log.
+1. [x] Add DB integration tests for related items from the same visible reader pool, self exclusion, board/source/text signal ordering, hidden raw-entry exclusion, blocked item exclusion, disabled-source exclusion, missing target handling, and empty-result behavior.
+2. [x] Implement `ReaderRepository.listRelatedReaderItems`.
+3. [x] Add API tests for `GET /reader/items/:id/related`, optional `limit`, missing target, invalid id, and invalid limit.
+4. [x] Implement Fastify route with full JSON Schema params/query validation.
+5. [x] Add web API client tests for related item loading.
+6. [x] Render a related-items section on the reader item detail page.
+7. [x] Update README, Reader API docs, master plan, goal plan, and implementation log.
 
 ## Acceptance Criteria
 
-- [ ] Reader item detail can show related item cards for a visible item.
-- [ ] The current item is never returned as its own Related Item.
-- [ ] Related Items come only from reader-visible items.
-- [ ] Hidden raw entries, blocked items, disabled-source items, and missing items are excluded.
-- [ ] API validates item id and bounded limit with Fastify v5 full JSON Schema.
-- [ ] Related Items do not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
-- [ ] No feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter is added.
+- [x] Reader item detail can show related item cards for a visible item.
+- [x] The current item is never returned as its own Related Item.
+- [x] Related Items come only from reader-visible items.
+- [x] Hidden raw entries, blocked items, disabled-source items, and missing items are excluded.
+- [x] API validates item id and bounded limit with Fastify v5 full JSON Schema.
+- [x] Related Items do not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
+- [x] No feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter is added.
 
 ## Research References
 

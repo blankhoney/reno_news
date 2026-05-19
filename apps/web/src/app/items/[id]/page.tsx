@@ -6,7 +6,9 @@ import { submitReaderFeedbackAction } from "./actions";
 import {
   READER_FEEDBACK_TYPE_OPTIONS,
   getReaderItemDetail,
+  getReaderRelatedItems,
   readerItemPath,
+  type ReaderItemCard,
   type ReaderItemDetail,
   type ReaderLanguageView
 } from "../../readerApi";
@@ -29,6 +31,7 @@ export default async function ItemPage({ params, searchParams }: ItemPageProps) 
     notFound();
   }
 
+  const relatedItems = (await getReaderRelatedItems(item.id)) ?? [];
   const { view } = await searchParams;
   const selectedView: ReaderLanguageView = view === "original" ? "original" : "zh";
 
@@ -71,6 +74,7 @@ export default async function ItemPage({ params, searchParams }: ItemPageProps) 
         <ChineseView item={item} />
       )}
 
+      <RelatedItems items={relatedItems} />
       <FeedbackForm itemId={item.id} />
     </main>
   );
@@ -159,6 +163,35 @@ function SourceLink({ url }: { url: string }) {
     <p className="source-link">
       <a href={url}>Open source</a>
     </p>
+  );
+}
+
+function RelatedItems({ items }: { items: ReaderItemCard[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="reader-related">
+      <h2>Related items</h2>
+      <div className="reader-list">
+        {items.map((item) => (
+          <article className="reader-card" key={item.id}>
+            <div>
+              <span>{item.boardName}</span>
+              <span>{item.sourceTitle}</span>
+              <time dateTime={item.publishedAt ?? item.createdAt}>
+                {(item.publishedAt ?? item.createdAt).slice(0, 10)}
+              </time>
+            </div>
+            <h3>
+              <Link href={`/items/${item.id}`}>{item.title}</Link>
+            </h3>
+            <p>{item.summary}</p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 

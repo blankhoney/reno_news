@@ -41,6 +41,10 @@ type ReaderSearchQuery = {
   board?: string;
 };
 
+type ReaderRelatedItemsQuery = {
+  limit?: number;
+};
+
 type ReaderFeedbackBody = {
   feedbackType: "correction" | "quality_issue" | "duplicate" | "broken_link" | "rights_concern";
   message?: string;
@@ -133,6 +137,14 @@ const failureQueueQuerySchema = {
 };
 
 const feedbackQuerySchema = failureQueueQuerySchema;
+
+const readerRelatedItemsQuerySchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    limit: { type: "integer", minimum: 1, maximum: 12 }
+  }
+};
 
 const readerSearchQuerySchema = {
   type: "object",
@@ -417,6 +429,34 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   );
 
   app.get(
+    "/reader/items/:id/related",
+    {
+      schema: {
+        params: sourceParamsSchema,
+        querystring: readerRelatedItemsQuerySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const query = request.query as ReaderRelatedItemsQuery;
+        const items = await readerRepository.listRelatedReaderItems({
+          id: Number(id),
+          limit: query.limit
+        });
+
+        if (!items) {
+          return reply.code(404).send({ error: "Reader item not found" });
+        }
+
+        return { items };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.get(
     "/reader/items/:id",
     {
       schema: {
@@ -561,6 +601,9 @@ const unconfiguredReaderRepository: ReaderRepository = {
     throw new DatabaseNotConfiguredError();
   },
   searchReaderItems: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  listRelatedReaderItems: async () => {
     throw new DatabaseNotConfiguredError();
   },
   getReaderItemDetail: async () => {
