@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   getReaderBoards,
+  getReaderDigestItems,
   getReaderItemDetail,
   getReaderItems,
   getReaderRelatedItems,
@@ -138,6 +139,39 @@ test("getReaderRelatedItems fetches related items with optional limit", async ()
     const items = await getReaderRelatedItems(1, 3);
     assert.ok(items);
     assert.equal(items[0].id, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("getReaderDigestItems fetches digest items with optional filters", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    assert.equal(String(input), "http://localhost:3001/reader/digest?board=ai&limit=5");
+    assert.equal(init?.cache, "no-store");
+    return new Response(
+      JSON.stringify({
+        items: [
+          {
+            id: 3,
+            boardSlug: "ai",
+            boardName: "AI",
+            sourceTitle: "OpenAI News",
+            title: "Digest AI item",
+            url: "https://example.invalid/ai/digest-ai-001",
+            summary: "Digest summary",
+            publishedAt: "2026-05-20T00:00:00.000Z",
+            createdAt: "2026-05-20T00:00:00.000Z"
+          }
+        ]
+      }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
+  }) as typeof fetch;
+
+  try {
+    const items = await getReaderDigestItems({ boardSlug: "ai", limit: 5 });
+    assert.equal(items[0].id, 3);
   } finally {
     globalThis.fetch = originalFetch;
   }

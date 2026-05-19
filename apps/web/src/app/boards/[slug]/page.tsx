@@ -24,6 +24,7 @@ export default async function BoardPage({ params }: { params: Promise<{ slug: st
           <p>{board.description}</p>
         </div>
         <nav className="reader-header-links">
+          <Link href={`/digest?board=${board.slug}`}>Digest</Link>
           <Link href="/personal">Personal</Link>
           <Link href="/admin">Admin</Link>
         </nav>

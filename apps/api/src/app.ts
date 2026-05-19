@@ -45,6 +45,11 @@ type ReaderRelatedItemsQuery = {
   limit?: number;
 };
 
+type ReaderDigestQuery = {
+  board?: string;
+  limit?: number;
+};
+
 type ReaderFeedbackBody = {
   feedbackType: "correction" | "quality_issue" | "duplicate" | "broken_link" | "rights_concern";
   message?: string;
@@ -143,6 +148,15 @@ const readerRelatedItemsQuerySchema = {
   additionalProperties: false,
   properties: {
     limit: { type: "integer", minimum: 1, maximum: 12 }
+  }
+};
+
+const readerDigestQuerySchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    board: { type: "string", minLength: 1 },
+    limit: { type: "integer", minimum: 1, maximum: 24 }
   }
 };
 
@@ -367,6 +381,27 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
       return sendSourceError(reply, error);
     }
   });
+
+  app.get(
+    "/reader/digest",
+    {
+      schema: {
+        querystring: readerDigestQuerySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const query = request.query as ReaderDigestQuery;
+        const items = await readerRepository.listReaderDigestItems({
+          boardSlug: query.board,
+          limit: query.limit
+        });
+        return { items };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
 
   app.get("/reader/items", async (request, reply) => {
     try {
@@ -604,6 +639,9 @@ const unconfiguredReaderRepository: ReaderRepository = {
     throw new DatabaseNotConfiguredError();
   },
   listRelatedReaderItems: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  listReaderDigestItems: async () => {
     throw new DatabaseNotConfiguredError();
   },
   getReaderItemDetail: async () => {

@@ -76,6 +76,28 @@ export async function getReaderItems(boardSlug?: string): Promise<ReaderItemCard
   return payload.items;
 }
 
+export async function getReaderDigestItems(input: {
+  boardSlug?: string;
+  limit?: number;
+} = {}): Promise<ReaderItemCard[]> {
+  const params = new URLSearchParams();
+  if (input.boardSlug) {
+    params.set("board", input.boardSlug);
+  }
+  if (input.limit) {
+    params.set("limit", String(input.limit));
+  }
+  const query = params.toString();
+  const response = await fetch(apiUrl(`/reader/digest${query ? `?${query}` : ""}`), {
+    cache: "no-store"
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load reader digest: ${response.status}`);
+  }
+  const payload = (await response.json()) as { items: ReaderItemCard[] };
+  return payload.items;
+}
+
 export async function getReaderSearchItems(
   query: string,
   boardSlug?: string

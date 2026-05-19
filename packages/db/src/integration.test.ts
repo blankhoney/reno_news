@@ -663,6 +663,91 @@ test("reader repository lists related items from the reader-safe visible pool", 
   }
 });
 
+test("reader repository lists digest items from the reader-safe visible pool", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from boards where slug = 'digest-empty'");
+    await pool.query(
+      "insert into boards (slug, name, description) values ('digest-empty', 'Digest Empty', 'Temporary digest test board')"
+    );
+
+    const aiId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-ai",
+      title: "Digest AI Item",
+      summaryOneSentence: "Digest AI summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-ai.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const softwareId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-software",
+      title: "Digest Software Item",
+      boardSlug: "software-engineering",
+      summaryOneSentence: "Digest software summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-software.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const hiddenId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-hidden",
+      title: "Digest Hidden Item",
+      summaryOneSentence: "Digest hidden summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-hidden.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true,
+      lifecycleStatus: "hidden"
+    });
+    const blockedId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-blocked",
+      title: "Digest Blocked Item",
+      summaryOneSentence: "Digest blocked summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-blocked.xml",
+      rightsStatus: "blocked",
+      sourceEnabled: true
+    });
+    const disabledId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-disabled",
+      title: "Digest Disabled Item",
+      summaryOneSentence: "Digest disabled summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-disabled.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: false
+    });
+
+    const allDigestItems = await repository.listReaderDigestItems({ limit: 20 });
+    const aiDigestItems = await repository.listReaderDigestItems({
+      boardSlug: "ai",
+      limit: 20
+    });
+    const limitedDigestItems = await repository.listReaderDigestItems({ limit: 1 });
+    const emptyDigestItems = await repository.listReaderDigestItems({
+      boardSlug: "digest-empty",
+      limit: 20
+    });
+
+    assert.equal(allDigestItems.some((item) => item.id === aiId), true);
+    assert.equal(allDigestItems.some((item) => item.id === softwareId), true);
+    assert.equal(allDigestItems.some((item) => item.id === hiddenId), false);
+    assert.equal(allDigestItems.some((item) => item.id === blockedId), false);
+    assert.equal(allDigestItems.some((item) => item.id === disabledId), false);
+    assert.equal(aiDigestItems.some((item) => item.id === aiId), true);
+    assert.equal(aiDigestItems.some((item) => item.id === softwareId), false);
+    assert.equal(limitedDigestItems.length, 1);
+    assert.deepEqual(emptyDigestItems, []);
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from boards where slug = 'digest-empty'");
+    await pool.end();
+  }
+});
+
 test("feedback repository stores feedback only for visible reader items", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });

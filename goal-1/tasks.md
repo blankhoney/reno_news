@@ -1179,3 +1179,40 @@ Completion notes:
 - Verified Compose service status plus direct and Caddy-proxied health endpoints for web, API, and worker.
 - Confirmed `apps/web/next-env.d.ts` has no diff after the final web build.
 - Found no blocker to starting Issue 019 implementation.
+
+## Task 34: Milestone 6 / Issue 019 Reader-Safe Digest Preview Foundation
+
+Status: Done
+
+Scope:
+- Add DB integration tests for digest item visibility, board filtering, bounded limit, hidden raw-entry exclusion, blocked item exclusion, disabled-source exclusion, and empty-result behavior.
+- Implement reader digest repository method over reader-safe fields.
+- Add API tests for `GET /reader/digest`.
+- Implement `GET /reader/digest` with Fastify v5 full JSON Schema query validation.
+- Add web API client tests for digest loading.
+- Add `/digest` reader page and navigation entrypoint.
+- Update README, Reader API docs, master plan, and log.
+- Do not add email delivery, scheduler job, persisted digest table, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter.
+
+Verification:
+- `pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 019 on 2026-05-20.
+- Added DB integration tests for digest visibility, board filtering, bounded limit, hidden raw entries, blocked items, disabled-source items, and empty board results.
+- Added `ReaderRepository.listReaderDigestItems` over reader-safe item card fields.
+- Added `GET /reader/digest` with optional board and bounded limit validation.
+- Added web digest helper tests, `/digest` page, and reader navigation entrypoints.
+- Updated README, Reader API docs, Issue 019 plan, implementation log, master plan, and goal plan.
+- Verified targeted DB integration, API, and web tests.
+- Verified full repo install, lint, tests, and build.
+- Verified worker discovery tests and worker lock consistency.
+- Verified Compose service status, direct health checks, and Caddy-proxied health checks on port `8080`.
+- Verified local current-code digest smoke on API `3101` and web `3100`; `/reader/digest?board=ai&limit=3` and `/digest?board=ai` both surfaced the seeded AI digest item.
+- Stopped the local smoke servers and confirmed no listeners remain on `3100` or `3101`.
+- Rebuilt web after local dev smoke and confirmed `apps/web/next-env.d.ts` has no diff.
+- Ran deferred-scope scan and found only documentation boundary references plus one existing worker test string for browser automation; no deferred implementation was added.
+- Did not add email delivery, scheduler job, persisted digest table, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter.

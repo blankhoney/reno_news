@@ -163,6 +163,7 @@ function fakeReaderRepository(overrides: Partial<ReaderRepository> = {}): Reader
     listReaderItems: async () => [readerItem],
     searchReaderItems: async () => [readerItem],
     listRelatedReaderItems: async () => [readerItem],
+    listReaderDigestItems: async () => [readerItem],
     getReaderItemDetail: async () => readerItemDetail,
     close: async () => undefined,
     ...overrides
@@ -697,6 +698,47 @@ test("GET /reader/search rejects empty query", async () => {
   const response = await app.inject({
     method: "GET",
     url: "/reader/search?q=%20"
+  });
+
+  assert.equal(response.statusCode, 400);
+});
+
+test("GET /reader/digest returns digest item cards with optional filters", async () => {
+  let receivedInput: unknown;
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        listReaderDigestItems: async (input) => {
+          receivedInput = input;
+          return [readerItem];
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/digest?board=ai&limit=5"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(receivedInput, { boardSlug: "ai", limit: 5 });
+  assert.deepEqual(response.json(), { items: [readerItem] });
+});
+
+test("GET /reader/digest rejects invalid limits", async () => {
+  const app = buildApp({ logger: false }, { readerRepository: fakeReaderRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/digest?limit=0"
   });
 
   assert.equal(response.statusCode, 400);

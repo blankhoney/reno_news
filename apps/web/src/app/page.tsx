@@ -20,6 +20,7 @@ export default async function Home() {
           <p>Public Intelligence Pool</p>
         </div>
         <nav className="reader-header-links">
+          <Link href="/digest">Digest</Link>
           <Link href="/personal">Personal</Link>
           <Link href="/admin">Admin</Link>
         </nav>

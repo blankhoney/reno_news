@@ -30,22 +30,22 @@ The implementation should treat Digest Window as a selection boundary, not as a 
 
 ## TDD Plan
 
-1. [ ] Add DB integration tests for digest item visibility, board filtering, bounded limit, hidden raw-entry exclusion, blocked item exclusion, disabled-source exclusion, and empty-result behavior.
-2. [ ] Implement `ReaderRepository.listReaderDigestItems`.
-3. [ ] Add API tests for `GET /reader/digest`, optional `board`, optional `limit`, and invalid limit.
-4. [ ] Implement Fastify route with full JSON Schema query validation.
-5. [ ] Add web API client tests for digest loading.
-6. [ ] Add `/digest` reader page and navigation entrypoint.
-7. [ ] Update README, Reader API docs, master plan, goal plan, and implementation log.
+1. [x] Add DB integration tests for digest item visibility, board filtering, bounded limit, hidden raw-entry exclusion, blocked item exclusion, disabled-source exclusion, and empty-result behavior.
+2. [x] Implement `ReaderRepository.listReaderDigestItems`.
+3. [x] Add API tests for `GET /reader/digest`, optional `board`, optional `limit`, and invalid limit.
+4. [x] Implement Fastify route with full JSON Schema query validation.
+5. [x] Add web API client tests for digest loading.
+6. [x] Add `/digest` reader page and navigation entrypoint.
+7. [x] Update README, Reader API docs, master plan, goal plan, and implementation log.
 
 ## Acceptance Criteria
 
-- [ ] Reader can view a digest preview of visible item cards.
-- [ ] Reader can filter digest preview by board.
-- [ ] Digest limit is bounded by API validation.
-- [ ] Hidden raw entries, blocked items, and disabled-source items are excluded.
-- [ ] Digest Items do not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
-- [ ] No email delivery, scheduler job, persisted digest table, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter is added.
+- [x] Reader can view a digest preview of visible item cards.
+- [x] Reader can filter digest preview by board.
+- [x] Digest limit is bounded by API validation.
+- [x] Hidden raw entries, blocked items, and disabled-source items are excluded.
+- [x] Digest Items do not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
+- [x] No email delivery, scheduler job, persisted digest table, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter is added.
 
 ## Research References
 

@@ -49,11 +49,17 @@ export type ListRelatedReaderItemsInput = {
   limit?: number;
 };
 
+export type ListReaderDigestItemsInput = {
+  boardSlug?: string;
+  limit?: number;
+};
+
 export type ReaderRepository = {
   listReaderBoards(): Promise<ReaderBoard[]>;
   listReaderItems(input?: ListReaderItemsInput): Promise<ReaderItemCard[]>;
   searchReaderItems(input: SearchReaderItemsInput): Promise<ReaderItemCard[]>;
   listRelatedReaderItems(input: ListRelatedReaderItemsInput): Promise<ReaderItemCard[] | null>;
+  listReaderDigestItems(input?: ListReaderDigestItemsInput): Promise<ReaderItemCard[]>;
   getReaderItemDetail(id: number): Promise<ReaderItemDetail | null>;
   close(): Promise<void>;
 };
@@ -99,6 +105,7 @@ export function createReaderRepository(databaseUrl: string): ReaderRepository {
     listReaderItems: async (input) => listReaderItems(pool, input),
     searchReaderItems: async (input) => searchReaderItems(pool, input),
     listRelatedReaderItems: async (input) => listRelatedReaderItems(pool, input),
+    listReaderDigestItems: async (input) => listReaderDigestItems(pool, input),
     getReaderItemDetail: async (id) => getReaderItemDetail(pool, id),
     close: async () => {
       await pool.end();
@@ -361,6 +368,53 @@ async function listRelatedReaderItems(
     [input.id, limit]
   );
 
+  return result.rows.map(mapReaderItemRow);
+}
+
+async function listReaderDigestItems(
+  queryable: Queryable,
+  input: ListReaderDigestItemsInput = {}
+): Promise<ReaderItemCard[]> {
+  const values: unknown[] = [input.limit ?? 12];
+  const filters = [
+    "s.enabled = true",
+    "re.lifecycle_status != 'hidden'",
+    "re.rights_status != 'blocked'"
+  ];
+
+  if (input.boardSlug) {
+    values.push(input.boardSlug);
+    filters.push(`b.slug = $${values.length}`);
+  }
+
+  const result = await queryable.query<ReaderItemRow>(
+    `
+    select
+      re.id::int as "id",
+      b.slug as "boardSlug",
+      b.name as "boardName",
+      s.title as "sourceTitle",
+      re.title as "title",
+      re.url as "url",
+      coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
+      re.published_at as "publishedAt",
+      re.created_at as "createdAt"
+    from raw_entries re
+    join sources s on s.id = re.source_id
+    join boards b on b.id = s.board_id
+    left join lateral (
+      select one_sentence
+      from summary_blocks
+      where raw_entry_id = re.id
+      order by id desc
+      limit 1
+    ) sb on true
+    where ${filters.join(" and ")}
+    order by coalesce(re.published_at, re.created_at) desc, re.id desc
+    limit $1
+    `,
+    values
+  );
   return result.rows.map(mapReaderItemRow);
 }
 

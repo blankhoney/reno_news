@@ -75,6 +75,35 @@ Response:
 }
 ```
 
+## `GET /reader/digest`
+
+Returns a reader-safe digest preview of visible item cards. Optional query parameters:
+
+- `board`: board slug filter.
+- `limit`: bounded digest item count, 1 to 24.
+
+Digest preview uses the same reader-visible pool as reader lists, item details, search, and related items. It does not create a persisted digest, schedule delivery, send email, consume feedback, or expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "boardSlug": "ai",
+      "boardName": "AI",
+      "sourceTitle": "OpenAI News",
+      "title": "Sample AI item",
+      "url": "https://example.invalid/ai/sample-ai-001",
+      "summary": "Development seed item for the AI board.",
+      "publishedAt": "2026-05-20T00:00:00.000Z",
+      "createdAt": "2026-05-20T00:00:00.000Z"
+    }
+  ]
+}
+```
+
 ## `GET /reader/items/:id`
 
 Returns one reader item detail projection. The endpoint returns `404` if the item is missing, hidden, blocked, or belongs to a disabled source.
