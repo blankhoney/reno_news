@@ -1157,3 +1157,25 @@ Completion notes:
 - Chose not to add email delivery, subscriptions, reader accounts, scheduler jobs, persisted digest history, editorial approval, feedback-to-ranking, semantic/vector search, external search services, search extensions, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
 - Added Digest Window and Digest Item terminology, ADR 0023, `docs/architecture/issue-019-plan.md`, and `docs/logs/2026-05-20-issue-019.md`.
 - Updated `docs/CODEX_MASTER_PLAN.md` so Issue 019 implementation is next.
+
+## Check-Debug Loop 11
+
+Status: Done
+
+Run after Tasks 31-33:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit Issue 018 implementation, Issue 019 planning, docs, tests, running services, smoke cleanup, and deferred-scope boundaries against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 31-33 on 2026-05-20.
+- Re-read goal input, plan, recent task history, recent commits, and current worktree state.
+- Confirmed Issue 018 is complete and Issue 019 planning points to reader-safe Digest preview implementation.
+- Ran deferred-scope scan across code, package manifests, worker config, README, master plan, Issue 019 plan/log, ADR 0023, and goal notes. Found only documentation boundary references plus one existing worker test string for browser automation; no email delivery, scheduler job, persisted digest table, editorial workflow, feedback-to-ranking, moderation workflow, semantic/vector search, external search service, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter implementation was added.
+- Confirmed no related-items smoke rows remain and local current-code smoke ports `3100` and `3101` are not listening.
+- Verified `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, and `pnpm build`.
+- Verified DB integration with `pnpm --filter @reno-news/db test:integration`.
+- Verified worker tests with `uv --project services/worker run python -m unittest discover -s services/worker/tests` and worker lock consistency with `uv lock --check`.
+- Verified Compose service status plus direct and Caddy-proxied health endpoints for web, API, and worker.
+- Confirmed `apps/web/next-env.d.ts` has no diff after the final web build.
+- Found no blocker to starting Issue 019 implementation.
