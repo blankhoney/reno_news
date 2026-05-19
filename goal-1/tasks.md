@@ -1131,3 +1131,29 @@ Completion notes:
 - Confirmed no related-items smoke rows remain and ports `3100` and `3101` are not listening.
 - Rebuilt web after local dev smoke so `apps/web/next-env.d.ts` points back to production route types.
 - Did not add feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
+
+## Task 33: Milestone 6 / Issue 019 Reader-Safe Digest Preview Planning And ADR
+
+Status: Done
+
+Scope:
+- Re-read current reader-safe projection, Related Item, Feedback, and Digest boundaries.
+- Define the next Milestone 6 issue without implementing digest code.
+- Add Digest Window and Digest Item terminology to `CONTEXT.md`.
+- Add an ADR for starting MVP Digest as a reader-safe preview.
+- Add Issue 019 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 019 implementation is next.
+- Do not implement email delivery, scheduler jobs, persisted digest tables, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `docs/architecture/issue-019-plan.md` exists and maps reader-safe Digest preview to concrete tasks and acceptance criteria.
+- ADR 0023 records the no-delivery, no-persistence, reader-safe Digest preview boundary.
+- `CONTEXT.md` defines Digest Window and Digest Item.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 019 implementation and does not start email delivery, scheduler jobs, persisted digest tables, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next Milestone 6 slice: reader-safe Digest preview over existing visible item cards.
+- Chose not to add email delivery, subscriptions, reader accounts, scheduler jobs, persisted digest history, editorial approval, feedback-to-ranking, semantic/vector search, external search services, search extensions, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
+- Added Digest Window and Digest Item terminology, ADR 0023, `docs/architecture/issue-019-plan.md`, and `docs/logs/2026-05-20-issue-019.md`.
+- Updated `docs/CODEX_MASTER_PLAN.md` so Issue 019 implementation is next.

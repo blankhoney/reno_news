@@ -7,10 +7,10 @@ Execute `docs/CODEX_MASTER_PLAN.md` in order until the final milestone is comple
 ## Current Context
 
 - Current milestone: Milestone 6.
-- Current issue: Milestone 6 / next issue planning.
+- Current issue: Issue 019 / reader-safe digest preview implementation.
 - Existing durable docs: `CONTEXT.md` and `docs/adr/`.
 - Execution source of truth: `docs/CODEX_MASTER_PLAN.md`.
-- Completed baseline: Issues 001-018 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, basic admin/debug views, full-text extraction foundation, model-call logging, AI evaluation adapter foundation, Chinese translation draft foundation, summary block draft foundation, reader home/board listing foundation, reader detail/language view foundation, local saved/read-later foundation, admin source policy edit foundation, admin failure queue foundation, admin raw-entry hide/restore foundation, PostgreSQL reader search foundation, reader feedback capture foundation, and reader-safe related items foundation in place.
+- Completed baseline: Issues 001-018 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, basic admin/debug views, full-text extraction foundation, model-call logging, AI evaluation adapter foundation, Chinese translation draft foundation, summary block draft foundation, reader home/board listing foundation, reader detail/language view foundation, local saved/read-later foundation, admin source policy edit foundation, admin failure queue foundation, admin raw-entry hide/restore foundation, PostgreSQL reader search foundation, reader feedback capture foundation, and reader-safe related items foundation in place. Issue 019 planning, Digest Window and Digest Item terminology, and ADR 0023 are in place; implementation is next.
 
 ## Execution Approach
 

@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 6 |
-| Current Issue | Milestone 6 / next issue planning |
+| Current Issue | Issue 019 / reader-safe digest preview implementation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -65,7 +65,7 @@ MVP v0.1 is frozen.
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
-| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 018 done; next issue planning |
+| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 019 planned; implementation next |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
 Status values:
@@ -1249,6 +1249,48 @@ Validated:
 Known limitations:
 - Related Items are PostgreSQL-only and intentionally do not add feedback-to-ranking, personalization, digest generation, semantic/vector search, external search services, search extensions, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
 
+#### Issue 019: Add reader-safe digest preview foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | TBD |
+| PR / Commit | pending |
+
+Goal
+
+Let a Reader view a small Digest preview of policy-visible items for a board or homepage period without adding email delivery, scheduled generation, persisted digest tables, editorial workflow, feedback-to-ranking, or personalization.
+
+Required Tasks
+
+- [x] Re-read current reader-safe projection and Digest boundaries.
+- [x] Add Digest Window and Digest Item terminology to `CONTEXT.md`.
+- [x] Add ADR for starting MVP Digest as a reader-safe preview.
+- [x] Add Issue 019 technical plan and implementation log.
+- [ ] Add DB integration tests for digest item visibility, board filtering, bounded limit, hidden raw-entry exclusion, blocked item exclusion, disabled-source exclusion, and empty-result behavior.
+- [ ] Implement reader digest repository method over reader-safe fields.
+- [ ] Add API tests for `GET /reader/digest`.
+- [ ] Implement `GET /reader/digest` with Fastify v5 full JSON Schema query validation.
+- [ ] Add web API client tests for digest loading.
+- [ ] Add `/digest` reader page and navigation entrypoint.
+- [ ] Update README, Reader API docs, master plan, and log.
+
+Acceptance Criteria
+
+- [ ] Reader can view a digest preview of visible item cards.
+- [ ] Reader can filter digest preview by board.
+- [ ] Digest limit is bounded by API validation.
+- [ ] Hidden raw entries, blocked items, and disabled-source items are excluded.
+- [ ] Digest Items do not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
+- [ ] No email delivery, scheduler job, persisted digest table, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use the existing reader-safe PostgreSQL projection first.
+Do not add delivery, scheduling, durable digest editions, editorial workflow, or feedback weighting in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1305,8 +1347,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 6 issue.
-Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters until the next issue is explicitly scoped in this master plan.
+Implement Issue 019: reader-safe digest preview foundation.
+Do not implement email delivery, scheduler jobs, persisted digest tables, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
 ---
 ## 9. Codex Operating Rules
 
@@ -1572,6 +1614,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 6 issue.
-Do not implement feedback-to-ranking consumption, moderation workflow, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters until the next issue is explicitly scoped in this master plan.
+Implement Issue 019: reader-safe digest preview foundation.
+Do not implement email delivery, scheduler jobs, persisted digest tables, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapters.
 ```

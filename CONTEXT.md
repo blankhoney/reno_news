@@ -176,6 +176,14 @@ _Avoid_: Free-form status, ranking formula, moderation state
 A curated summary of notable published items for a board or homepage period.
 _Avoid_: Newsletter unless email delivery is specifically meant
 
+**Digest Window**:
+The board and time boundary used to select items for one Digest.
+_Avoid_: Cron schedule, email cadence, reader session
+
+**Digest Item**:
+A policy-visible item selected for inclusion in a Digest.
+_Avoid_: Ranking winner, recommendation, feedback target
+
 ## Relationships
 
 - An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
@@ -203,7 +211,8 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Saved Item** or **Read Later Item** belongs to a **Reader**'s **Personal Space** and does not affect public ranking or admin curation by itself.
 - **Feedback** belongs to one **Reader** action and one **Content Item**, but MVP feedback capture does not imply reader accounts, backend personal-state sync, moderation workflow, or ranking mutation.
 - A **Feedback Type** constrains what a **Feedback** event means before any later moderation or ranking logic consumes it.
-- A **Digest** contains selected **Published Items**.
+- A **Digest** contains selected **Digest Items** from one **Digest Window**.
+- A **Digest Item** must still be a policy-visible **Published Item** and must not expose private extraction text, translation drafts, feedback events, or admin diagnostics.
 
 ## Example dialogue
 
