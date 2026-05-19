@@ -1455,3 +1455,30 @@ Completion notes:
 - Deleted the temporary dump file and confirmed `reno_news_restore_drill` no longer exists.
 - Verified Compose service status, direct/Caddy health endpoints, empty local `backups/` dump state, no `apps/web/next-env.d.ts` diff, and no production-backup deferred-scope implementation hits.
 - Did not add production backup automation, cron/systemd timers, remote object storage, WAL archiving, point-in-time recovery, monitoring integrations, alerting, production credentials, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters.
+
+## Task 41: Milestone 7 / Issue 023 Release Health Audit Planning And ADR
+
+Status: Done
+
+Scope:
+- Re-read Milestone 7 release checklist, health check, disk usage, and production audit boundaries.
+- Research current Docker Compose service status/health output and GitHub Actions permission guidance relevant to release audit boundaries.
+- Add Release Gate terminology to `CONTEXT.md`.
+- Add an ADR for a local, non-deploying Release Health Audit.
+- Add Issue 023 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 023 implementation is next.
+- Do not implement release workflow, production deploy, remote monitoring integration, alerting, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation in this planning task.
+
+Verification:
+- `CONTEXT.md` defines Release Gate.
+- ADR 0027 records the local non-deploying release audit boundary.
+- `docs/architecture/issue-023-plan.md` maps Release Health Audit to concrete TDD steps and acceptance criteria.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 023 implementation and preserves the deferred-scope boundary.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the next Milestone 7 slice: a local, non-deploying Release Health Audit foundation.
+- Chose a Release Gate that aggregates existing package checks, worker checks, Compose service status, direct/Caddy health probes, backup/restore readiness, and deferred-scope checks.
+- Added Release Gate terminology, ADR 0027, `docs/architecture/issue-023-plan.md`, and `docs/logs/2026-05-20-issue-023.md`.
+- Updated `docs/CODEX_MASTER_PLAN.md` so Issue 023 implementation is next.
+- Deferred release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, and production backup automation.

@@ -212,6 +212,10 @@ _Avoid_: Product spec, architecture plan, automated workflow
 A pre-release check that verifies health, data safety, scope boundaries, and documented rollback paths.
 _Avoid_: Code review, CI status only, product launch plan
 
+**Release Gate**:
+A release-blocking local check that must pass before an operator treats the current build as releasable.
+_Avoid_: Deployment workflow, approval system, production monitor
+
 ## Relationships
 
 - An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
@@ -247,6 +251,7 @@ _Avoid_: Code review, CI status only, product launch plan
 - A **Restore Drill** must use a disposable target and must not mutate the primary project database.
 - An **Operational Runbook** records repeatable operator steps; implementation may automate local commands only after the runbook boundary is explicit.
 - A **Release Audit** checks readiness evidence but does not add product features by itself.
+- A **Release Gate** may consume **Release Audit** evidence, health checks, and runbook presence, but it must not deploy, publish, or mutate production state by itself.
 
 ## Example dialogue
 

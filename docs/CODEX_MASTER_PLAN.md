@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 7 |
-| Current Issue | Milestone 7 / next issue planning |
+| Current Issue | Issue 023 / release health audit implementation |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -66,7 +66,7 @@ MVP v0.1 is frozen.
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
 | Milestone 6 | Search, Feedback, Digest | Done | Issues 016-021 done |
-| Milestone 7 | Backup, Monitoring, Release Audit | In Progress | Issue 022 done; next issue planning |
+| Milestone 7 | Backup, Monitoring, Release Audit | In Progress | Issue 022 done; Issue 023 planned; implementation next |
 
 Status values:
 
@@ -1501,6 +1501,46 @@ Validated:
 Known limitations:
 - This is a local manual logical dump and restore drill only. It intentionally does not add production backup scheduling, remote object storage, WAL archiving, point-in-time recovery, monitoring integrations, alerting, production credentials, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters.
 
+#### Issue 023: Add local release health audit foundation
+
+| Field | Value |
+|---|---|
+| Status | Planned |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | TBD |
+| PR / Commit | pending |
+
+Goal
+
+Let an operator run a local Release Health Audit before treating the current build as releasable, without adding a deployment workflow, remote monitoring integration, alerting, or production automation.
+
+Required Tasks
+
+- [x] Research Docker Compose service status/health output and GitHub Actions permission guidance relevant to release audit boundaries.
+- [x] Add Release Gate terminology to `CONTEXT.md`.
+- [x] Add ADR for a local, non-deploying Release Health Audit.
+- [x] Add Issue 023 technical plan and implementation log.
+- [ ] Add script-contract tests for the release audit command and forbidden deployment operations.
+- [ ] Add a root package script for running the local Release Health Audit.
+- [ ] Implement a local audit script that runs existing checks and health probes with clear failure output.
+- [ ] Add `docs/ops/release-health-audit.md` with prerequisites, expected evidence, failure handling, rollback references, and limitations.
+- [ ] Update README, master plan, goal plan, and implementation log.
+- [ ] Run the Release Health Audit locally against the current Compose stack.
+
+Acceptance Criteria
+
+- [ ] A local operator can run one command from the repo root to perform the Release Health Audit.
+- [ ] The audit verifies existing package checks, worker checks, Compose service status, and direct/Caddy health endpoints.
+- [ ] The audit verifies backup/restore readiness without creating a production backup schedule or mutating the primary database.
+- [ ] The audit fails clearly when a required check or health probe fails.
+- [ ] The runbook documents prerequisites, expected evidence, failure handling, rollback references, and limitations.
+- [ ] No release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credential, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation is added.
+
+Notes
+
+Keep Issue 023 local and non-deploying. It is a Release Gate over current evidence, not a production deployment workflow or remote monitoring system.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1557,8 +1597,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 7 issue.
-Do not implement production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters until the next issue is explicitly scoped.
+Implement Issue 023: local Release Health Audit foundation.
+Do not implement release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation beyond the local non-deploying audit explicitly scoped in Issue 023.
 ---
 ## 9. Codex Operating Rules
 
@@ -1824,6 +1864,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 7 issue.
-Do not implement production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters until the next issue is explicitly scoped.
+Implement Issue 023: local Release Health Audit foundation.
+Do not implement release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation beyond the local non-deploying audit explicitly scoped in Issue 023.
 ```
