@@ -73,6 +73,24 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 - Stores extractor identity, final URL, optional metadata, extracted text, text length, and extraction confidence.
 - `extraction_confidence` is constrained to the inclusive range `0..1`.
 
+## Model Calls
+
+`model_calls`
+
+- Records one AI provider interaction or internal prefilter decision.
+- Stores provider, model, purpose, schema version, status, optional latency, optional error code, and redacted request/response JSON.
+- `status` is constrained to `success`, `failure`, or `skipped`.
+- Redacted payload fields are metadata only; raw extracted text and full provider responses should not be stored here.
+
+## AI Evaluations
+
+`ai_evaluations`
+
+- Stores structured AI evaluation output for one raw entry and, when present, one extraction result.
+- Links each evaluation to the model call that produced it.
+- Stores the versioned schema and separate JSON objects for scores, rationale, evidence, and summary.
+- Reader display, translation publishing, and search indexing are not represented by this table.
+
 ## Status Boundaries
 
 The constrained status fields are deliberately broad MVP values. They are not AI, extraction, or publishing workflows by themselves.

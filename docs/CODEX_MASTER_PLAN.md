@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 3 |
-| Current Issue | Issue 007 |
+| Current Issue | Next Milestone 3 issue |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -62,7 +62,7 @@ MVP v0.1 is frozen.
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
-| Milestone 3 | AI Pipeline | In Progress | Issue 007 planned; implementation next |
+| Milestone 3 | AI Pipeline | In Progress | Issue 007 done; next issue planning needed |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
@@ -488,11 +488,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -504,29 +504,47 @@ Required Tasks
 - [x] Add Model Call and Prefilter terminology to `CONTEXT.md`.
 - [x] Add ADR for Responses API Structured Outputs.
 - [x] Add Issue 007 technical plan.
-- [ ] Add SQL migration for `model_calls` and `ai_evaluations`.
-- [ ] Add versioned AI evaluation output schema.
-- [ ] Add provider-neutral adapter interface.
-- [ ] Add deterministic fake adapter for tests.
-- [ ] Add prefilter skip path.
-- [ ] Add model-call logging for success, failure, and skipped evaluation.
-- [ ] Store structured scores, rationale, evidence, and summary output.
-- [ ] Add OpenAI adapter boundary without requiring live API tests.
+- [x] Add SQL migration for `model_calls` and `ai_evaluations`.
+- [x] Add versioned AI evaluation output schema.
+- [x] Add provider-neutral adapter interface.
+- [x] Add deterministic fake adapter for tests.
+- [x] Add prefilter skip path.
+- [x] Add model-call logging for success, failure, and skipped evaluation.
+- [x] Store structured scores, rationale, evidence, and summary output.
+- [x] Add OpenAI adapter boundary without requiring live API tests.
 
 Acceptance Criteria
 
-- [ ] One extracted item can be evaluated through a fake adapter and stored without network access.
-- [ ] Every attempted evaluation creates a model-call record.
-- [ ] Structured evaluation output includes scores, rationale, evidence, and summary fields.
-- [ ] Prefilter can skip missing or policy-blocked text without calling the adapter.
-- [ ] Provider/model/schema version are durable.
-- [ ] No reader UI, search, translation publishing, browser automation, or non-RSS adapter is added.
+- [x] One extracted item can be evaluated through a fake adapter and stored without network access.
+- [x] Every attempted evaluation creates a model-call record.
+- [x] Structured evaluation output includes scores, rationale, evidence, and summary fields.
+- [x] Prefilter can skip missing or policy-blocked text without calling the adapter.
+- [x] Provider/model/schema version are durable.
+- [x] No reader UI, search, translation publishing, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Use fake adapters for tests.
 Do not require `OPENAI_API_KEY` for local verification.
 Do not add reader-facing summaries or translations in this issue.
+
+**Implementation Note**
+
+Implemented:
+- `model_calls` and `ai_evaluations` SQL migration.
+- Versioned AI evaluation schema and provider-neutral adapter result contract.
+- Worker prefilter for missing extraction text or blocked rights.
+- Model-call logging for success, skipped, and failure outcomes.
+- Structured persistence for scores, rationale, evidence, and summary output.
+- Injectable OpenAI Responses adapter boundary using Structured Outputs, without live API tests.
+
+Validated:
+- Migration and seed integration tests include AI table existence and model-call status constraints.
+- Worker tests cover fake-adapter success, prefilter skip, adapter failure logging, and OpenAI boundary request/parse behavior.
+- Full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, Compose service status, health smoke, and `uv lock --check`.
+
+Known limitations:
+- No reader UI, search indexing, translation publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapter was added.
 
 ---
 
@@ -584,8 +602,7 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Continue Issue 007 implementation.
-Keep Issue 007 to AI adapter, structured schema, model-call logging, prefilter, scoring/evidence/summary persistence.
+Plan the next Milestone 3 issue.
 Do not implement search, reader UI, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
@@ -853,6 +870,6 @@ Focus:
 Current required next action:
 
 ```text
-Continue Issue 007 implementation.
+Plan the next Milestone 3 issue.
 Do not implement search, reader UI, browser automation, or non-RSS adapters yet.
 ```

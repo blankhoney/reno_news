@@ -93,7 +93,7 @@ A cheap eligibility check that decides whether an extracted item should receive 
 _Avoid_: Final ranking, moderation, publication decision
 
 **AI Evaluation**:
-A structured assessment of a content item against a rubric, including scores, rationale, and supporting evidence.
+A structured assessment of an extracted candidate item, or later content item, against a rubric, including scores, rationale, supporting evidence, and summary output.
 _Avoid_: Summary, model answer
 
 **Evidence Span**:
@@ -128,7 +128,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Rubric** evaluates **Content Items** for one or more **Boards**.
 - A **Model Call** records the provider interaction that may produce an **AI Evaluation**.
 - A **Prefilter** may skip expensive **AI Evaluation** when an extracted item is clearly ineligible.
-- An **AI Evaluation** belongs to one **Content Item** and cites zero or more **Evidence Spans**.
+- An **AI Evaluation** belongs to one extracted **Candidate Item** at the current MVP stage, and may later be attached to a normalized **Content Item**.
 - A **Content Item** may have zero or more **Translations**.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.
 - **Feedback** belongs to one **Reader** and one **Content Item**.

@@ -62,12 +62,20 @@ Use OpenAI Responses API Structured Outputs for the production adapter plan. In 
 
 ## TDD Plan
 
-1. Add migration tests for `model_calls` and `ai_evaluations`.
-2. Add schema fixture tests for the AI evaluation output shape.
-3. Add worker tests for prefilter skip, fake-adapter success, fake-adapter failure logging, and persistence.
-4. Implement SQL migration and repository helpers.
-5. Implement provider-neutral adapter interface and fake adapter.
-6. Add OpenAI adapter boundary after fake-adapter behavior is stable, without requiring live API tests.
+1. [x] Add migration tests for `model_calls` and `ai_evaluations`.
+2. [x] Add schema fixture tests for the AI evaluation output shape.
+3. [x] Add worker tests for prefilter skip, fake-adapter success, fake-adapter failure logging, and persistence.
+4. [x] Implement SQL migration and persistence helpers.
+5. [x] Implement provider-neutral adapter interface and fake adapter.
+6. [x] Add OpenAI adapter boundary after fake-adapter behavior is stable, without requiring live API tests.
+
+## Implemented Boundary
+
+- `infra/db/migrations/0005_ai_evaluation.sql` adds `model_calls` and `ai_evaluations`.
+- `services/worker/src/reno_worker/ai_evaluation.py` owns prefiltering, adapter execution, model-call logging, and evaluation persistence.
+- The fake adapter keeps tests deterministic and network-free.
+- The OpenAI Responses boundary is an injectable client adapter that builds a `text.format` JSON Schema request and parses structured output text.
+- Local verification does not require `OPENAI_API_KEY`.
 
 ## Acceptance Criteria
 

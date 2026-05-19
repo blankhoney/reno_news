@@ -28,12 +28,16 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     const extractionTables = await pool.query<{ count: string }>(
       "select count(*) from information_schema.tables where table_schema = 'public' and table_name in ('raw_entry_extraction_attempts', 'raw_entry_extractions')"
     );
+    const aiTables = await pool.query<{ count: string }>(
+      "select count(*) from information_schema.tables where table_schema = 'public' and table_name in ('model_calls', 'ai_evaluations')"
+    );
 
     assert.equal(Number(boards.rows[0].count), 5);
     assert.equal(Number(sources.rows[0].count), 5);
     assert.equal(Number(sourcePolicies.rows[0].count), 5);
     assert.equal(Number(rawEntries.rows[0].count), 5);
     assert.equal(Number(extractionTables.rows[0].count), 2);
+    assert.equal(Number(aiTables.rows[0].count), 2);
 
     await assert.rejects(
       pool.query(
@@ -62,6 +66,11 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     await assert.rejects(
       pool.query(
         "insert into raw_entry_extractions (raw_entry_id, extractor_name, extractor_version, final_url, extracted_text, text_length, extraction_confidence) select id, 'test', '0', url, 'text', 4, 1.5 from raw_entries limit 1"
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "insert into model_calls (provider, model, purpose, schema_version, status) values ('test', 'test', 'ai_evaluation', 'v1', 'invalid')"
       )
     );
   } finally {
