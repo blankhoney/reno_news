@@ -22,9 +22,20 @@ This document describes the SQL schema introduced by Issue 002. SQL files in `in
 
 `sources`
 
-- Minimal seedable source records for development.
-- `kind` is constrained to `rss` or `atom` for the current RSS/Atom-only startup path.
-- Full Source Policy modeling is deferred to Issue 003.
+- Source Registry records.
+- `source_type` is constrained to `rss` or `atom` for the current RSS/Atom-only startup path.
+- Each source belongs to one board.
+- Source-specific access and rights controls live in `source_policies`.
+
+## Source Policies
+
+`source_policies`
+
+- One policy row per source.
+- `crawl_enabled` controls whether worker ingest may consider the source.
+- `fetch_interval_minutes` and `max_requests_per_hour` define source-level crawl/rate policy.
+- `save_level`, `rights_policy`, `translation_policy`, and `risk_level` define operational and rights boundaries.
+- Rights policy is stored separately from UI display logic.
 
 ## Development Raw Entries
 

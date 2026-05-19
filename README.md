@@ -1,6 +1,6 @@
 # Reno News
 
-Reno News is a Chinese-first public intelligence reading system. The current implementation covers Milestone 0 infrastructure and SQL migration bootstrap.
+Reno News is a Chinese-first public intelligence reading system. The current implementation covers Milestone 0 infrastructure, SQL migration bootstrap, Source Registry, and Source Policy.
 
 ## Requirements
 
@@ -32,6 +32,12 @@ With the Compose PostgreSQL service running:
 ```bash
 DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news pnpm db:migrate
 DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news pnpm db:seed
+```
+
+Local API and worker processes use the same variable:
+
+```bash
+DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news
 ```
 
 ## Local Services

@@ -1,0 +1,47 @@
+# Sources API
+
+Issue 003 introduces basic Source Registry endpoints for admin/debug operation. These endpoints are not RSS ingest endpoints.
+
+## `GET /sources`
+
+Returns all sources with board identity and Source Policy fields.
+
+Response fields:
+- `id`
+- `boardId`
+- `boardSlug`
+- `sourceType`
+- `title`
+- `url`
+- `enabled`
+- `policy`
+
+## `POST /sources`
+
+Creates a source and Source Policy.
+
+Required body fields:
+- `boardSlug`
+- `sourceType`
+- `title`
+- `url`
+
+Optional body fields:
+- `enabled`
+- `policy`
+
+## `PATCH /sources/:id`
+
+Updates source metadata, enable/disable state, and policy fields.
+
+Allowed body fields:
+- `boardSlug`
+- `sourceType`
+- `title`
+- `url`
+- `enabled`
+- `policy`
+
+## Validation Boundary
+
+Fastify JSON Schema rejects invalid request shape before repository calls. PostgreSQL check constraints remain the durable policy vocabulary guard.

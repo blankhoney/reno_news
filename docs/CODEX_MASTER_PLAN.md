@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 1 |
-| Current Issue | Issue 003 |
+| Current Issue | Issue 004 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -60,7 +60,7 @@ MVP v0.1 is frozen.
 | Milestone | Name | Status | Notes |
 |---|---|---|---|
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
-| Milestone 1 | Source Registry + RSS Ingest | Not Started | RSS adapter only |
+| Milestone 1 | Source Registry + RSS Ingest | In Progress | Issue 003 done; Issue 004 next |
 | Milestone 2 | Fetch & Extraction | Not Started | trafilatura main path |
 | Milestone 3 | AI Pipeline | Not Started | adapter + schema first |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
@@ -224,11 +224,11 @@ Do not add AI tables beyond placeholders unless required by migration structure.
 
 | Field | Value |
 |---|---|
-| Status | Not Started |
+| Status | Done |
 | Owner | Codex |
-| Started At | |
-| Completed At | |
-| PR / Commit | |
+| Started At | 2026-05-20 |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -236,27 +236,49 @@ Create the source registry and source policy foundation.
 
 Required Tasks
 
-- [ ] Create sources table.
-- [ ] Create source_policies table.
-- [ ] Add source type field.
-- [ ] Add board association.
-- [ ] Add crawl policy fields.
-- [ ] Add rights policy fields.
-- [ ] Add rate-limit fields.
-- [ ] Add save-level fields.
-- [ ] Add translation policy fields.
-- [ ] Add risk-level fields.
-- [ ] Add basic API endpoints for listing sources.
-- [ ] Add basic API endpoints for creating/updating sources.
-- [ ] Add validation for source policy.
+- [x] Create sources table.
+- [x] Create source_policies table.
+- [x] Add source type field.
+- [x] Add board association.
+- [x] Add crawl policy fields.
+- [x] Add rights policy fields.
+- [x] Add rate-limit fields.
+- [x] Add save-level fields.
+- [x] Add translation policy fields.
+- [x] Add risk-level fields.
+- [x] Add basic API endpoints for listing sources.
+- [x] Add basic API endpoints for creating/updating sources.
+- [x] Add validation for source policy.
 
 Acceptance Criteria
 
-- [ ] Admin can create a source.
-- [ ] Admin can view sources.
-- [ ] Admin can enable/disable a source.
-- [ ] Worker can read source policy.
-- [ ] Rights policy is stored separately from UI display logic.
+- [x] Admin can create a source.
+- [x] Admin can view sources.
+- [x] Admin can enable/disable a source.
+- [x] Worker can read source policy.
+- [x] Rights policy is stored separately from UI display logic.
+
+**Completion Note**
+
+Implemented:
+- Extended the existing `sources` table into the Source Registry foundation.
+- Added `source_policies` with crawl, rate-limit, save-level, rights, translation, and risk fields.
+- Added Fastify source list/create/update routes with JSON Schema validation.
+- Added Source Repository database functions and Python worker Source Policy reader.
+- Updated API docs, DB docs, `CONTEXT.md`, ADR, README, and implementation log.
+
+Validated:
+- API route tests for list/create/update and validation failure.
+- DB integration tests for migration, seed idempotence, Source Repository create/update, policy constraints, and worker-readable policy rows.
+- Worker unit and PostgreSQL integration tests for Source Policy reading.
+- Fresh Issue 003 test database migration from zero and repeated seed.
+- Real local API process against PostgreSQL for `GET /sources`, `POST /sources`, and `PATCH /sources/:id`.
+- Full repo install, lint, tests, build, worker tests, Compose service health, and Caddy proxy health.
+
+Known limitations:
+- RSS fetching is not implemented; it starts in Issue 004.
+- Source admin/debug UI is not implemented; it remains Issue 005.
+- Container image rebuild was blocked by local Docker credential/network behavior, so Source API container endpoint verification is not claimed.
 
 Notes
 
@@ -406,9 +428,9 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Start Issue 003.
-Do not implement Issue 004 until Issue 003 meets acceptance criteria.
-Do not implement any adapter before Issue 004.
+Start Issue 004.
+Do not implement Issue 005 until Issue 004 meets acceptance criteria.
+Implement RSS/Atom adapter only in Issue 004.
 Do not implement any non-RSS adapter in Milestone 1.
 ---
 ## 9. Codex Operating Rules
@@ -558,10 +580,10 @@ Milestone 0 is complete only when:
 
 Milestone 1 is complete only when:
 
-- [ ] Source Registry tables exist.
-- [ ] Source Policy tables exist.
-- [ ] RSS source can be created.
-- [ ] RSS source can be enabled/disabled.
+- [x] Source Registry tables exist.
+- [x] Source Policy tables exist.
+- [x] RSS source can be created.
+- [x] RSS source can be enabled/disabled.
 - [ ] RSS source can be fetched by worker.
 - [ ] RSS entries are inserted into `raw_entries`.
 - [ ] Duplicate RSS entries are not inserted twice.
@@ -569,8 +591,8 @@ Milestone 1 is complete only when:
 - [ ] Admin/debug UI can view sources.
 - [ ] Admin/debug UI can view raw entries.
 - [ ] Admin/debug UI can manually trigger RSS ingest.
-- [ ] No GitHub/arXiv/GDELT/RSSHub adapter was added.
-- [ ] `docs/CODEX_MASTER_PLAN.md` is updated.
+- [x] No GitHub/arXiv/GDELT/RSSHub adapter was added.
+- [x] `docs/CODEX_MASTER_PLAN.md` is updated.
 
 ---
 
@@ -659,8 +681,8 @@ Focus:
 Current required next action:
 
 ```text
-Start Issue 003.
-Do not start Issue 004 yet.
-Do not implement RSS ingest yet.
+Start Issue 004.
+Do not start Issue 005 yet.
+Implement RSS/Atom ingest only.
 Do not implement AI, search, reader UI, or non-RSS adapters yet.
 ```

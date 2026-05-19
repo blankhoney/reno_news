@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { runMigrations, runSeed } from "./runner";
+import { createSourceRepository } from "./sourceRepository";
 
 const databaseUrl =
   process.env.DATABASE_URL ?? "postgres://reno_news:reno_news@localhost:5432/reno_news";
@@ -15,11 +16,19 @@ test("migrations and dev seed can be applied repeatedly", async () => {
 
   try {
     const boards = await pool.query<{ count: string }>("select count(*) from boards");
-    const sources = await pool.query<{ count: string }>("select count(*) from sources");
-    const rawEntries = await pool.query<{ count: string }>("select count(*) from raw_entries");
+    const sources = await pool.query<{ count: string }>(
+      "select count(*) from sources where url in ('https://openai.com/news/rss.xml', 'https://github.blog/engineering.atom', 'https://semiengineering.com/feed/', 'https://www.bls.gov/feed/empsit.rss', 'https://github.blog/feed/')"
+    );
+    const sourcePolicies = await pool.query<{ count: string }>(
+      "select count(*) from source_policies sp join sources s on s.id = sp.source_id where s.url in ('https://openai.com/news/rss.xml', 'https://github.blog/engineering.atom', 'https://semiengineering.com/feed/', 'https://www.bls.gov/feed/empsit.rss', 'https://github.blog/feed/')"
+    );
+    const rawEntries = await pool.query<{ count: string }>(
+      "select count(*) from raw_entries where raw_payload_json @> '{\"seed\": true}'::jsonb"
+    );
 
     assert.equal(Number(boards.rows[0].count), 5);
     assert.equal(Number(sources.rows[0].count), 5);
+    assert.equal(Number(sourcePolicies.rows[0].count), 5);
     assert.equal(Number(rawEntries.rows[0].count), 5);
 
     await assert.rejects(
@@ -36,7 +45,71 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     await assert.rejects(
       pool.query("update raw_entries set failure_type = 'invalid' where external_id = 'sample-ai-001'")
     );
+    await assert.rejects(
+      pool.query(
+        "update source_policies set rights_policy = 'invalid' where source_id = (select id from sources where url = 'https://openai.com/news/rss.xml')"
+      )
+    );
   } finally {
     await pool.end();
+  }
+});
+
+test("source repository can create, update, and list worker-readable policies", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const testUrl = "https://example.invalid/source-registry-test.xml";
+  const cleanupPool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  await cleanupPool.query("delete from sources where url = $1", [testUrl]);
+  await cleanupPool.end();
+
+  const repository = createSourceRepository(databaseUrl);
+
+  try {
+    const created = await repository.createSource({
+      boardSlug: "ai",
+      sourceType: "rss",
+      title: "Source Registry Test",
+      url: testUrl,
+      enabled: true,
+      policy: {
+        crawlEnabled: true,
+        fetchIntervalMinutes: 30,
+        maxRequestsPerHour: 6,
+        saveLevel: "metadata_only",
+        rightsPolicy: "metadata_only",
+        translationPolicy: "none",
+        riskLevel: "low"
+      }
+    });
+
+    assert.equal(created.boardSlug, "ai");
+    assert.equal(created.sourceType, "rss");
+    assert.equal(created.policy.fetchIntervalMinutes, 30);
+
+    const updated = await repository.updateSource(created.id, {
+      enabled: false,
+      policy: {
+        crawlEnabled: false,
+        riskLevel: "high"
+      }
+    });
+
+    assert.ok(updated);
+    assert.equal(updated.enabled, false);
+    assert.equal(updated.policy.crawlEnabled, false);
+    assert.equal(updated.policy.riskLevel, "high");
+
+    const workerPolicies = await repository.listEnabledSourcePolicies();
+
+    assert.ok(workerPolicies.every((source) => source.enabled));
+    assert.ok(workerPolicies.every((source) => source.policy.crawlEnabled));
+    assert.ok(workerPolicies.some((source) => source.url === "https://openai.com/news/rss.xml"));
+  } finally {
+    await repository.close();
+    const finalCleanupPool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+    await finalCleanupPool.query("delete from sources where url = $1", [testUrl]);
+    await finalCleanupPool.end();
   }
 });

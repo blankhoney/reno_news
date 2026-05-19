@@ -88,6 +88,38 @@ Completion notes:
 - Verified master plan status, scope boundaries, forbidden dependency scan, service health, Caddy proxy health, lint, tests, build, worker tests, and DB integration test.
 - Found no blocker to starting Issue 003.
 
+## Task 4: Milestone 1 / Issue 003 Source Registry And Source Policy
+
+Status: Done
+
+Scope:
+- Extend the SQL schema for source registry and source policy.
+- Add source type, board association, crawl policy, rights policy, rate limit, save level, translation policy, and risk fields.
+- Add basic API endpoints for listing, creating, and updating sources.
+- Add validation for source policy.
+- Add a worker-readable source policy path.
+- Do not implement RSS fetching, scheduler ingest, full-text extraction, AI, search, reader UI, or non-RSS adapters.
+
+Verification:
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `pnpm --filter @reno-news/db test:integration`
+- `uv run python -m unittest discover -s tests`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue003_test uv run python -m unittest tests/test_source_policy.py`
+- Fresh Issue 003 test database migration from zero and repeated seed.
+- Real local API smoke for `GET /sources`, `POST /sources`, and `PATCH /sources/:id`.
+- Compose service health using existing images with `--no-build`.
+
+Completion notes:
+- Completed Issue 003 on 2026-05-20.
+- Extended `sources` into the Source Registry and added `source_policies`.
+- Added API list/create/update source endpoints with validation.
+- Added DB Source Repository and Python worker Source Policy reader.
+- Updated CONTEXT, ADR, API docs, DB docs, README, implementation log, and master plan.
+- Docker image rebuild was blocked by local Docker credential/network behavior; Source API was verified via a real local API process against PostgreSQL, and Compose health was verified with existing images.
+
 ## Future Tasks
 
 Tasks for Issues 003+ will be expanded only when earlier tasks are complete, so later implementation is not overdesigned from stale assumptions.

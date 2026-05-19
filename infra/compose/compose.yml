@@ -23,6 +23,7 @@ services:
     environment:
       PORT: "3001"
       HOST: "0.0.0.0"
+      DATABASE_URL: postgres://reno_news:reno_news@postgres:5432/reno_news
     ports:
       - "3001:3001"
     depends_on:
@@ -43,9 +44,12 @@ services:
     environment:
       PORT: "3002"
       HOST: "0.0.0.0"
+      DATABASE_URL: postgres://reno_news:reno_news@postgres:5432/reno_news
     ports:
       - "3002:3002"
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
@@ -62,7 +66,10 @@ services:
     environment:
       PORT: "3003"
       HOST: "0.0.0.0"
+      DATABASE_URL: postgres://reno_news:reno_news@postgres:5432/reno_news
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
 

@@ -24,6 +24,10 @@ _Avoid_: Category, channel, section
 An origin from which candidate items may be discovered, such as a feed, public API, or converted feed.
 _Avoid_: Site, publisher, feed when the origin is not only RSS/Atom
 
+**Source Registry**:
+The admin-maintained inventory of sources, including source type, board association, URL, title, and enablement state.
+_Avoid_: Feed list, subscription list
+
 **Source Adapter**:
 The source-type-specific path used to discover candidate items from a source.
 _Avoid_: Crawler when the source is structured
@@ -35,6 +39,14 @@ _Avoid_: Crawl config, fetch settings
 **Rights Policy**:
 Rules that decide whether retrieved content may be stored, translated, snapshotted, or publicly displayed.
 _Avoid_: Robots policy, copyright flag, share level
+
+**Save Level**:
+The policy value that decides whether metadata, excerpts, snapshots, or full text may be retained for a source.
+_Avoid_: Cache level when the policy is about durable content retention
+
+**Risk Level**:
+The admin review bucket for operational, compliance, or source-quality risk.
+_Avoid_: Ranking score, AI score
 
 **Candidate Item**:
 A discovered item that has not yet been accepted into the public pool.
@@ -78,7 +90,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 
 ## Relationships
 
-- An **Admin** maintains **Sources**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
+- An **Admin** maintains the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
 - A **Source** uses one **Source Adapter** to discover **Candidate Items**.
 - A **Candidate Item** may become a **Content Item** after normalization, deduplication, and policy checks.
 - A **Rights Policy** constrains whether a **Content Item** may be stored, translated, snapshotted, or publicly displayed.

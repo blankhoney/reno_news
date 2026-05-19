@@ -7,10 +7,10 @@ Execute `docs/CODEX_MASTER_PLAN.md` in order until the final milestone is comple
 ## Current Context
 
 - Current milestone: Milestone 1.
-- Current issue: Issue 003, "Build Source Registry and Source Policy tables".
+- Current issue: Issue 004, "Implement minimal RSS adapter ingest flow".
 - Existing durable docs: `CONTEXT.md` and `docs/adr/`.
 - Execution source of truth: `docs/CODEX_MASTER_PLAN.md`.
-- Completed baseline: Issues 001-002 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, and development seed data in place.
+- Completed baseline: Issues 001-003 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, basic source API routes, and worker-readable policies in place.
 
 ## Execution Approach
 

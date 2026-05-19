@@ -10,7 +10,7 @@ set
   name = excluded.name,
   description = excluded.description;
 
-insert into sources (board_id, kind, title, url)
+insert into sources (board_id, source_type, title, url)
 values
   ((select id from boards where slug = 'ai'), 'rss', 'OpenAI News', 'https://openai.com/news/rss.xml'),
   ((select id from boards where slug = 'software-engineering'), 'rss', 'GitHub Engineering', 'https://github.blog/engineering.atom'),
@@ -20,7 +20,7 @@ values
 on conflict (url) do update
 set
   board_id = excluded.board_id,
-  kind = excluded.kind,
+  source_type = excluded.source_type,
   title = excluded.title,
   enabled = true;
 
@@ -114,3 +114,30 @@ set
   lifecycle_status = excluded.lifecycle_status,
   processing_stage = excluded.processing_stage,
   rights_status = excluded.rights_status;
+
+insert into source_policies (
+  source_id,
+  crawl_enabled,
+  fetch_interval_minutes,
+  max_requests_per_hour,
+  save_level,
+  rights_policy,
+  translation_policy,
+  risk_level
+)
+values
+  ((select id from sources where url = 'https://openai.com/news/rss.xml'), true, 60, 12, 'metadata_only', 'metadata_only', 'none', 'medium'),
+  ((select id from sources where url = 'https://github.blog/engineering.atom'), true, 60, 12, 'metadata_only', 'metadata_only', 'none', 'medium'),
+  ((select id from sources where url = 'https://semiengineering.com/feed/'), true, 120, 6, 'metadata_only', 'metadata_only', 'none', 'medium'),
+  ((select id from sources where url = 'https://www.bls.gov/feed/empsit.rss'), true, 180, 4, 'metadata_only', 'metadata_only', 'none', 'low'),
+  ((select id from sources where url = 'https://github.blog/feed/'), true, 60, 12, 'metadata_only', 'metadata_only', 'none', 'medium')
+on conflict (source_id) do update
+set
+  crawl_enabled = excluded.crawl_enabled,
+  fetch_interval_minutes = excluded.fetch_interval_minutes,
+  max_requests_per_hour = excluded.max_requests_per_hour,
+  save_level = excluded.save_level,
+  rights_policy = excluded.rights_policy,
+  translation_policy = excluded.translation_policy,
+  risk_level = excluded.risk_level,
+  updated_at = now();

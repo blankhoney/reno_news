@@ -1,12 +1,192 @@
-import Fastify, { type FastifyServerOptions } from "fastify";
+import Fastify, {
+  type FastifyInstance,
+  type FastifyReply,
+  type FastifyServerOptions
+} from "fastify";
+import {
+  BoardNotFoundError,
+  createSourceRepository,
+  isUniqueViolation,
+  type CreateSourceInput,
+  type SourceRepository,
+  type UpdateSourceInput
+} from "@reno-news/db";
 
-export function buildApp(options: FastifyServerOptions = {}) {
+type AppDependencies = {
+  sourceRepository?: SourceRepository;
+};
+
+type SourceParams = {
+  id: string;
+};
+
+class DatabaseNotConfiguredError extends Error {
+  constructor() {
+    super("DATABASE_URL is required");
+    this.name = "DatabaseNotConfiguredError";
+  }
+}
+
+const sourceTypes = ["rss", "atom"];
+const saveLevels = ["metadata_only", "excerpt", "snapshot", "full_text"];
+const rightsPolicies = [
+  "blocked",
+  "metadata_only",
+  "private_allowed",
+  "public_excerpt_allowed",
+  "public_fulltext_allowed"
+];
+const translationPolicies = ["none", "private_only", "public_excerpt", "public_fulltext"];
+const riskLevels = ["low", "medium", "high"];
+
+const sourcePolicySchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    crawlEnabled: { type: "boolean" },
+    fetchIntervalMinutes: { type: "integer", minimum: 1 },
+    maxRequestsPerHour: { type: "integer", minimum: 1 },
+    saveLevel: { type: "string", enum: saveLevels },
+    rightsPolicy: { type: "string", enum: rightsPolicies },
+    translationPolicy: { type: "string", enum: translationPolicies },
+    riskLevel: { type: "string", enum: riskLevels }
+  }
+};
+
+const createSourceBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["boardSlug", "sourceType", "title", "url"],
+  properties: {
+    boardSlug: { type: "string", minLength: 1 },
+    sourceType: { type: "string", enum: sourceTypes },
+    title: { type: "string", minLength: 1 },
+    url: { type: "string", minLength: 1 },
+    enabled: { type: "boolean" },
+    policy: sourcePolicySchema
+  }
+};
+
+const updateSourceBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  minProperties: 1,
+  properties: createSourceBodySchema.properties
+};
+
+const sourceParamsSchema = {
+  type: "object",
+  required: ["id"],
+  properties: {
+    id: { type: "integer", minimum: 1 }
+  }
+};
+
+export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDependencies = {}) {
   const app = Fastify(options);
+  const sourceRepository = dependencies.sourceRepository ?? sourceRepositoryFromEnvironment(app);
 
   app.get("/healthz", async () => ({
     status: "ok",
     service: "api"
   }));
 
+  app.get("/sources", async (_request, reply) => {
+    try {
+      const sources = await sourceRepository.listSources();
+      return { sources };
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  });
+
+  app.post(
+    "/sources",
+    {
+      schema: {
+        body: createSourceBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const source = await sourceRepository.createSource(request.body as CreateSourceInput);
+        return reply.code(201).send(source);
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.patch(
+    "/sources/:id",
+    {
+      schema: {
+        params: sourceParamsSchema,
+        body: updateSourceBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const source = await sourceRepository.updateSource(Number(id), request.body as UpdateSourceInput);
+
+        if (!source) {
+          return reply.code(404).send({ error: "Source not found" });
+        }
+
+        return source;
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
   return app;
+}
+
+function sourceRepositoryFromEnvironment(app: FastifyInstance): SourceRepository {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredSourceRepository;
+  }
+
+  const repository = createSourceRepository(databaseUrl);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return repository;
+}
+
+const unconfiguredSourceRepository: SourceRepository = {
+  listSources: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  createSource: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  updateSource: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  listEnabledSourcePolicies: async () => {
+    throw new DatabaseNotConfiguredError();
+  }
+};
+
+function sendSourceError(reply: FastifyReply, error: unknown) {
+  if (error instanceof DatabaseNotConfiguredError) {
+    return reply.code(503).send({ error: "Database not configured" });
+  }
+
+  if (error instanceof BoardNotFoundError) {
+    return reply.code(400).send({ error: error.message });
+  }
+
+  if (isUniqueViolation(error)) {
+    return reply.code(409).send({ error: "Source already exists" });
+  }
+
+  throw error;
 }
