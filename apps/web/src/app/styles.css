@@ -8,3 +8,108 @@ body {
 main {
   padding: 2rem;
 }
+
+a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+button {
+  border: 1px solid #0f172a;
+  background: #0f172a;
+  color: white;
+  padding: 0.55rem 0.85rem;
+  font: inherit;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th,
+td {
+  border-bottom: 1px solid #d7dde5;
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+td span {
+  display: block;
+  margin-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-header h1 {
+  margin: 0.25rem 0;
+}
+
+.admin-header p {
+  margin: 0;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.admin-grid h2 {
+  margin-top: 0;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 0.65rem 1rem;
+}
+
+dt {
+  color: #64748b;
+}
+
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 760px) {
+  .admin-header,
+  .admin-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  dl {
+    grid-template-columns: 1fr;
+  }
+}

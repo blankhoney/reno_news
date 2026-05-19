@@ -16,6 +16,10 @@ _Avoid_: User when the action is reader-specific, subscriber, customer
 A trusted operator who maintains sources, policies, boards, rubrics, moderation, and release quality.
 _Avoid_: Owner, editor, operator
 
+**Admin Debug Surface**:
+A functional, local-first admin view used to inspect sources, policies, raw entries, and ingest behavior before polished admin workflows exist.
+_Avoid_: Reader UI, public dashboard, production CMS
+
 **Board**:
 A curated topical collection in the public pool; MVP boards are AI, Software Engineering, Semiconductor, Employment Trends, and Open Source.
 _Avoid_: Category, channel, section
@@ -94,7 +98,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 
 ## Relationships
 
-- An **Admin** maintains the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
+- An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
 - A **Source** uses one **Source Adapter** to discover **Candidate Items**.
 - An **Ingest Attempt** records one **Source Adapter** execution for one **Source**.
 - A **Candidate Item** may become a **Content Item** after normalization, deduplication, and policy checks.

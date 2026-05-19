@@ -152,6 +152,57 @@ Completion notes:
 - Verified deterministic feed ingest, duplicate prevention, disabled-source skip, fetch-failure recording, and scheduler enqueue filtering.
 - Did not add full-text extraction, AI, search, reader UI, admin UI, RSSHub, GitHub, arXiv, GDELT, or other non-RSS adapters.
 
+## Task 6: Milestone 1 / Issue 005 Admin Debug Views
+
+Status: Done
+
+Scope:
+- Add admin/debug route shell.
+- Add source list/detail and raw entry list/detail pages.
+- Show source policy, lifecycle status, processing stage, and failure type.
+- Add enable/disable source action.
+- Add manual RSS ingest trigger.
+- Add basic error display.
+- Do not build the reader UI, full-text extraction, AI processing, search, or non-RSS adapters.
+
+Verification:
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `pnpm --filter @reno-news/db test:integration`
+- `uv run python -m unittest discover -s tests`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:migrate`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:seed`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test uv run python -m unittest tests/test_rss_ingest.py tests/test_scheduler.py`
+- Local web/API/worker smoke for admin pages, source/raw entry API detail endpoints, worker health, and worker manual ingest endpoint.
+
+Completion notes:
+- Completed Issue 005 on 2026-05-20.
+- Added admin/debug source list/detail and raw entry list/detail pages.
+- Added source detail and raw entry read APIs.
+- Added source enable/disable and manual RSS ingest Server Actions.
+- Added worker manual ingest endpoint.
+- Updated `CONTEXT.md`, API docs, README, implementation plan, implementation log, and master plan.
+- Did not add reader UI, full-text extraction, AI processing, search, or non-RSS adapters.
+
+## Check-Debug Loop 2
+
+Status: Done
+
+Run after Tasks 4-6:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit docs, code, tests, and running behavior against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 4-6 on 2026-05-20.
+- Re-read goal input, plan, and tasks.
+- Close-read Issue 005 API, DB, worker, web admin, and documentation changes.
+- Fixed worker manual ingest URL parsing before closing the task.
+- Verified full repo install, lint, tests, build, DB integration, worker discovery, RSS ingest tests, and local web/API/worker smoke.
+- Found no blocker to starting Milestone 2 planning.
+
 ## Future Tasks
 
-Tasks for Issues 003+ will be expanded only when earlier tasks are complete, so later implementation is not overdesigned from stale assumptions.
+Task 7 starts Milestone 2 planning. Do not code full-text extraction until the first Milestone 2 issue is defined with scope, acceptance criteria, tests, and rollback notes.

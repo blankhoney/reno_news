@@ -16,6 +16,14 @@ Response fields:
 - `enabled`
 - `policy`
 
+## `GET /sources/:id`
+
+Returns one source with board identity and Source Policy fields.
+
+Response body is the same source object shape returned inside `GET /sources`.
+
+Returns `404` when the source does not exist.
+
 ## `POST /sources`
 
 Creates a source and Source Policy.

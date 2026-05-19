@@ -6,11 +6,11 @@ Execute `docs/CODEX_MASTER_PLAN.md` in order until the final milestone is comple
 
 ## Current Context
 
-- Current milestone: Milestone 1.
-- Current issue: Issue 005, "Add admin/debug views for sources and raw entries".
+- Current milestone: Milestone 2.
+- Current issue: Milestone 2 planning.
 - Existing durable docs: `CONTEXT.md` and `docs/adr/`.
 - Execution source of truth: `docs/CODEX_MASTER_PLAN.md`.
-- Completed baseline: Issues 001-004 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, basic source API routes, worker-readable policies, and RSS/Atom metadata ingest in place.
+- Completed baseline: Issues 001-005 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, and basic admin/debug views in place.
 
 ## Execution Approach
 

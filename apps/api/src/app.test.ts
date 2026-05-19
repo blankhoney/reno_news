@@ -1,6 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { SourceRepository, SourceRecord } from "@reno-news/db";
+import type {
+  RawEntryRecord,
+  RawEntryRepository,
+  SourceRepository,
+  SourceRecord
+} from "@reno-news/db";
 import { buildApp } from "./app";
 
 const sourceRecord: SourceRecord = {
@@ -27,9 +32,34 @@ const sourceRecord: SourceRecord = {
 function fakeRepository(overrides: Partial<SourceRepository> = {}): SourceRepository {
   return {
     listSources: async () => [sourceRecord],
+    getSource: async () => sourceRecord,
     createSource: async () => sourceRecord,
     updateSource: async () => sourceRecord,
     listEnabledSourcePolicies: async () => [sourceRecord],
+    ...overrides
+  };
+}
+
+const rawEntryRecord: RawEntryRecord = {
+  id: 1,
+  sourceId: 1,
+  sourceTitle: "OpenAI News",
+  title: "Sample AI item",
+  url: "https://example.invalid/ai/sample-ai-001",
+  lifecycleStatus: "new",
+  processingStage: "metadata_ingested",
+  rightsStatus: "metadata_only",
+  failureType: null,
+  createdAt: "2026-05-20T00:00:00.000Z"
+};
+
+function fakeRawEntryRepository(
+  overrides: Partial<RawEntryRepository> = {}
+): RawEntryRepository {
+  return {
+    listRawEntries: async () => [rawEntryRecord],
+    getRawEntry: async () => rawEntryRecord,
+    close: async () => undefined,
     ...overrides
   };
 }
@@ -65,6 +95,21 @@ test("GET /sources lists source registry records", async () => {
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.json(), { sources: [sourceRecord] });
+});
+
+test("GET /sources/:id returns source detail", async () => {
+  const app = buildApp({ logger: false }, { sourceRepository: fakeRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/sources/1"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), sourceRecord);
 });
 
 test("POST /sources creates a source with policy", async () => {
@@ -224,6 +269,70 @@ test("PATCH /sources/:id returns 404 for missing sources", async () => {
     payload: {
       enabled: false
     }
+  });
+
+  assert.equal(response.statusCode, 404);
+});
+
+test("GET /raw-entries lists raw entries", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository()
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/raw-entries"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), { rawEntries: [rawEntryRecord] });
+});
+
+test("GET /raw-entries/:id returns raw entry detail", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository()
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/raw-entries/1"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), rawEntryRecord);
+});
+
+test("GET /raw-entries/:id returns 404 for missing raw entries", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository({
+        getRawEntry: async () => null
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/raw-entries/999"
   });
 
   assert.equal(response.statusCode, 404);

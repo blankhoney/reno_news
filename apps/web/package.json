@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "lint": "tsc --noEmit",
-    "test": "tsx src/app/healthz/route.test.ts",
+    "test": "node --import tsx --test \"src/app/**/*.test.ts\"",
     "build": "next build"
   },
   "dependencies": {

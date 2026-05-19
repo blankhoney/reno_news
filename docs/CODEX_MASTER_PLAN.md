@@ -12,8 +12,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 
 | Field | Value |
 |---|---|
-| Current Milestone | Milestone 1 |
-| Current Issue | Issue 005 |
+| Current Milestone | Milestone 2 |
+| Current Issue | Milestone 2 planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -60,8 +60,8 @@ MVP v0.1 is frozen.
 | Milestone | Name | Status | Notes |
 |---|---|---|---|
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
-| Milestone 1 | Source Registry + RSS Ingest | In Progress | Issues 003-004 done; Issue 005 next |
-| Milestone 2 | Fetch & Extraction | Not Started | trafilatura main path |
+| Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
+| Milestone 2 | Fetch & Extraction | Not Started | Next: plan first extraction issue |
 | Milestone 3 | AI Pipeline | Not Started | adapter + schema first |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
@@ -277,7 +277,7 @@ Validated:
 
 Known limitations:
 - RSS fetching is not implemented; it starts in Issue 004.
-- Source admin/debug UI is not implemented; it remains Issue 005.
+- Source admin/debug UI was not implemented in Issue 004; it was completed in Issue 005.
 - Container image rebuild was blocked by local Docker credential/network behavior, so Source API container endpoint verification is not claimed.
 
 Notes
@@ -355,11 +355,11 @@ Do not fetch article full text yet.
 
 | Field | Value |
 |---|---|
-| Status | Not Started |
+| Status | Done |
 | Owner | Codex |
-| Started At | |
-| Completed At | |
-| PR / Commit | |
+| Started At | 2026-05-20 |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -367,32 +367,54 @@ Create basic admin/debug pages so the system can be operated without direct data
 
 Required Tasks
 
-- [ ] Add admin route shell.
-- [ ] Add sources list page.
-- [ ] Add source detail page.
-- [ ] Add raw entries list page.
-- [ ] Add raw entry detail page.
-- [ ] Show source policy summary.
-- [ ] Show lifecycle status.
-- [ ] Show processing stage.
-- [ ] Show failure type.
-- [ ] Add enable/disable source action.
-- [ ] Add manual RSS ingest trigger.
-- [ ] Add basic error display.
+- [x] Add admin route shell.
+- [x] Add sources list page.
+- [x] Add source detail page.
+- [x] Add raw entries list page.
+- [x] Add raw entry detail page.
+- [x] Show source policy summary.
+- [x] Show lifecycle status.
+- [x] Show processing stage.
+- [x] Show failure type.
+- [x] Add enable/disable source action.
+- [x] Add manual RSS ingest trigger.
+- [x] Add basic error display.
 
 Acceptance Criteria
 
-- [ ] Admin can inspect sources.
-- [ ] Admin can inspect raw entries.
-- [ ] Admin can manually trigger RSS ingest.
-- [ ] Admin can see failed RSS ingest attempts.
-- [ ] UI is functional, not polished.
-- [ ] No unrelated reader UI is added yet.
+- [x] Admin can inspect sources.
+- [x] Admin can inspect raw entries.
+- [x] Admin can manually trigger RSS ingest.
+- [x] Admin can see failed RSS ingest attempts.
+- [x] UI is functional, not polished.
+- [x] No unrelated reader UI is added yet.
 
 Notes
 
 Keep this as an admin/debug UI.
 Do not start the full reading experience yet.
+
+**Completion Note**
+
+Implemented:
+- Fastify source detail and raw entry list/detail endpoints.
+- DB Raw Entry Repository for read-only admin inspection.
+- Worker `POST /ingest/source/:id` endpoint for manual RSS ingest.
+- Next.js App Router admin/debug pages for source list/detail and raw entry list/detail.
+- Server actions for source enable/disable and manual RSS ingest trigger.
+- Basic admin error boundary.
+
+Validated:
+- API route tests for source detail, raw entry list/detail, and missing raw entries.
+- Worker HTTP tests for health and manual ingest routing.
+- Web tests for admin service URL construction.
+- Local web/API/worker smoke for `/admin`, `/admin/sources/1`, `/admin/raw-entries`, `/admin/raw-entries/983`, API detail endpoints, worker health, and manual ingest endpoint.
+- Full repo install, lint, tests, build, DB integration, worker discovery, and RSS ingest tests with PostgreSQL.
+
+Known limitations:
+- Admin/debug UI is intentionally unpolished and unauthenticated for local MVP operation.
+- Failed ingest attempts are recorded in `source_ingest_attempts`; Issue 005 exposes failure status on raw entries but does not build a dedicated failure queue.
+- Reader UI, full-text extraction, AI processing, search, and non-RSS adapters were not added.
 
 ---
 
@@ -450,10 +472,10 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Start Issue 005.
-Do not implement Milestone 2 until Issue 005 meets acceptance criteria.
-Keep Issue 005 to admin/debug views for existing Source Registry and raw entries.
-Do not implement any non-RSS adapter in Milestone 1.
+Start Milestone 2 planning.
+Define the first extraction issue before coding.
+Keep Milestone 2 to full-text fetch, extraction, extraction failure tracking, extracted text storage, and extraction confidence.
+Do not implement AI, search, reader UI, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -478,6 +500,7 @@ Issue 002
 Issue 003
 Issue 004
 Issue 005
+Milestone 2 issue planning
 ```
 
 An issue is not complete until all acceptance criteria are met.
@@ -610,9 +633,9 @@ Milestone 1 is complete only when:
 - [x] RSS entries are inserted into `raw_entries`.
 - [x] Duplicate RSS entries are not inserted twice.
 - [x] Failed RSS fetches are recorded.
-- [ ] Admin/debug UI can view sources.
-- [ ] Admin/debug UI can view raw entries.
-- [ ] Admin/debug UI can manually trigger RSS ingest.
+- [x] Admin/debug UI can view sources.
+- [x] Admin/debug UI can view raw entries.
+- [x] Admin/debug UI can manually trigger RSS ingest.
 - [x] No GitHub/arXiv/GDELT/RSSHub adapter was added.
 - [x] `docs/CODEX_MASTER_PLAN.md` is updated.
 
@@ -703,8 +726,7 @@ Focus:
 Current required next action:
 
 ```text
-Start Issue 005.
-Do not start Milestone 2 yet.
-Build admin/debug views only.
-Do not implement full-text extraction, AI, search, reader UI, or non-RSS adapters yet.
+Start Milestone 2 planning.
+Define the first extraction issue before implementation.
+Do not implement AI, search, reader UI, or non-RSS adapters yet.
 ```

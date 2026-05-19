@@ -51,6 +51,7 @@ export type UpdateSourceInput = Partial<Omit<CreateSourceInput, "policy">> & {
 
 export type SourceRepository = {
   listSources(): Promise<SourceRecord[]>;
+  getSource(id: number): Promise<SourceRecord | null>;
   createSource(input: CreateSourceInput): Promise<SourceRecord>;
   updateSource(id: number, input: UpdateSourceInput): Promise<SourceRecord | null>;
   listEnabledSourcePolicies(): Promise<SourceRecord[]>;
@@ -140,6 +141,7 @@ export function createSourceRepository(databaseUrl: string): ClosableSourceRepos
 
   return {
     listSources: async () => listSources(pool),
+    getSource: async (id) => getSourceById(pool, id),
     createSource: async (input) => createSource(pool, input),
     updateSource: async (id, input) => updateSource(pool, id, input),
     listEnabledSourcePolicies: async () => listEnabledSourcePolicies(pool),

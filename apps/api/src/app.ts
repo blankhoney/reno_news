@@ -5,15 +5,18 @@ import Fastify, {
 } from "fastify";
 import {
   BoardNotFoundError,
+  createRawEntryRepository,
   createSourceRepository,
   isUniqueViolation,
   type CreateSourceInput,
+  type RawEntryRepository,
   type SourceRepository,
   type UpdateSourceInput
 } from "@reno-news/db";
 
 type AppDependencies = {
   sourceRepository?: SourceRepository;
+  rawEntryRepository?: RawEntryRepository;
 };
 
 type SourceParams = {
@@ -85,6 +88,8 @@ const sourceParamsSchema = {
 export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDependencies = {}) {
   const app = Fastify(options);
   const sourceRepository = dependencies.sourceRepository ?? sourceRepositoryFromEnvironment(app);
+  const rawEntryRepository =
+    dependencies.rawEntryRepository ?? rawEntryRepositoryFromEnvironment(app);
 
   app.get("/healthz", async () => ({
     status: "ok",
@@ -99,6 +104,29 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
       return sendSourceError(reply, error);
     }
   });
+
+  app.get(
+    "/sources/:id",
+    {
+      schema: {
+        params: sourceParamsSchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const source = await sourceRepository.getSource(Number(id));
+
+        if (!source) {
+          return reply.code(404).send({ error: "Source not found" });
+        }
+
+        return source;
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
 
   app.post(
     "/sources",
@@ -141,6 +169,38 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   );
 
+  app.get("/raw-entries", async (_request, reply) => {
+    try {
+      const rawEntries = await rawEntryRepository.listRawEntries();
+      return { rawEntries };
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  });
+
+  app.get(
+    "/raw-entries/:id",
+    {
+      schema: {
+        params: sourceParamsSchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const rawEntry = await rawEntryRepository.getRawEntry(Number(id));
+
+        if (!rawEntry) {
+          return reply.code(404).send({ error: "Raw entry not found" });
+        }
+
+        return rawEntry;
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
   return app;
 }
 
@@ -160,8 +220,27 @@ function sourceRepositoryFromEnvironment(app: FastifyInstance): SourceRepository
   return repository;
 }
 
+function rawEntryRepositoryFromEnvironment(app: FastifyInstance): RawEntryRepository {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredRawEntryRepository;
+  }
+
+  const repository = createRawEntryRepository(databaseUrl);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return repository;
+}
+
 const unconfiguredSourceRepository: SourceRepository = {
   listSources: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  getSource: async () => {
     throw new DatabaseNotConfiguredError();
   },
   createSource: async () => {
@@ -173,6 +252,16 @@ const unconfiguredSourceRepository: SourceRepository = {
   listEnabledSourcePolicies: async () => {
     throw new DatabaseNotConfiguredError();
   }
+};
+
+const unconfiguredRawEntryRepository: RawEntryRepository = {
+  listRawEntries: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  getRawEntry: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  close: async () => undefined
 };
 
 function sendSourceError(reply: FastifyReply, error: unknown) {

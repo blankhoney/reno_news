@@ -1,6 +1,6 @@
 # Reno News
 
-Reno News is a Chinese-first public intelligence reading system. The current implementation covers Milestone 0 infrastructure, SQL migration bootstrap, Source Registry, and Source Policy.
+Reno News is a Chinese-first public intelligence reading system. The current implementation covers Milestone 0 infrastructure, SQL migration bootstrap, Source Registry, Source Policy, RSS/Atom metadata ingest, and basic admin/debug views.
 
 ## Requirements
 
@@ -55,6 +55,13 @@ Health endpoints:
 - Caddy API proxy: `http://localhost:8080/api/healthz`
 - Caddy worker proxy: `http://localhost:8080/worker/healthz`
 
+Admin/debug endpoints:
+
+- Web admin: `http://localhost:3000/admin`
+- API sources: `http://localhost:3001/sources`
+- API raw entries: `http://localhost:3001/raw-entries`
+- Worker manual ingest: `POST http://localhost:3002/ingest/source/:id`
+
 ## Scope Boundary
 
-Milestone 0 does not implement RSS ingest, crawling, AI, search, reader UI, or admin workflows. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
+The current Milestone 1 surface does not implement full-text extraction, AI processing, search, reader UI, or non-RSS adapters. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
