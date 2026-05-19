@@ -22,22 +22,22 @@ This is not a cleanup daemon or monitoring integration. The implementation shoul
 
 ## TDD Plan
 
-1. [ ] Add script-contract tests for Disk Usage Guard command boundaries and forbidden destructive operations.
-2. [ ] Add Compose logging limits for all services.
-3. [ ] Add a root package script for a local read-only disk usage check.
-4. [ ] Implement a local disk usage check script that reports Docker disk usage and local backup artifact size with clear failure output for missing tools or oversized local artifacts.
-5. [ ] Add `docs/ops/disk-usage.md` with prerequisites, command, expected evidence, failure handling, manual cleanup references, and limitations.
-6. [ ] Update README with the local disk usage guard entrypoint.
-7. [ ] Run the disk usage check locally and verify Compose config still renders.
-8. [ ] Update master plan, goal plan, and implementation log.
+1. [x] Add script-contract tests for Disk Usage Guard command boundaries and forbidden destructive operations.
+2. [x] Add Compose logging limits for all services.
+3. [x] Add a root package script for a local read-only disk usage check.
+4. [x] Implement a local disk usage check script that reports Docker disk usage and local backup artifact size with clear failure output for missing tools or oversized local artifacts.
+5. [x] Add `docs/ops/disk-usage.md` with prerequisites, command, expected evidence, failure handling, manual cleanup references, and limitations.
+6. [x] Update README with the local disk usage guard entrypoint.
+7. [x] Run the disk usage check locally and verify Compose config still renders.
+8. [x] Update master plan, goal plan, and implementation log.
 
 ## Acceptance Criteria
 
-- [ ] Compose services have bounded local log retention settings.
-- [ ] A local operator can run one read-only command from the repo root to inspect Docker disk usage and local backup artifact size.
-- [ ] The disk usage check fails clearly if Docker disk usage cannot be inspected or if local backup artifacts exceed a documented threshold.
-- [ ] The runbook documents manual failure handling and explicitly separates checking from destructive cleanup.
-- [ ] The implementation does not delete backups, prune Docker resources, remove volumes, add remote monitoring, send alerts, deploy, push images, create GitHub releases, add auth/RBAC, add Admin identity, add audit logs, add semantic/vector search, add external search services, add digest delivery, add persisted digest tables, add editorial workflow, add browser automation, add non-RSS adapters, or add production backup automation.
+- [x] Compose services have bounded local log retention settings.
+- [x] A local operator can run one read-only command from the repo root to inspect Docker disk usage and local backup artifact size.
+- [x] The disk usage check fails clearly if Docker disk usage cannot be inspected or if local backup artifacts exceed a documented threshold.
+- [x] The runbook documents manual failure handling and explicitly separates checking from destructive cleanup.
+- [x] The implementation does not delete backups, prune Docker resources, remove volumes, add remote monitoring, send alerts, deploy, push images, create GitHub releases, add auth/RBAC, add Admin identity, add audit logs, add semantic/vector search, add external search services, add digest delivery, add persisted digest tables, add editorial workflow, add browser automation, add non-RSS adapters, or add production backup automation.
 
 ## Research References
 

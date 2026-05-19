@@ -1559,3 +1559,36 @@ Completion notes:
 - Added Disk Usage Guard and Log Retention Policy terminology, ADR 0028, `docs/architecture/issue-024-plan.md`, and `docs/logs/2026-05-20-issue-024.md`.
 - Updated `docs/CODEX_MASTER_PLAN.md` so Issue 024 implementation is next.
 - Deferred destructive prune/cleanup automation, remote monitoring integration, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, and production backup automation.
+
+## Task 44: Milestone 7 / Issue 024 Disk Usage Guard Foundation
+
+Status: Done
+
+Scope:
+- Add script-contract tests for Disk Usage Guard command boundaries and forbidden destructive operations.
+- Add Compose logging limits for all services.
+- Add a root package script for a local read-only disk usage check.
+- Implement a local disk usage check script that reports Docker disk usage and local backup artifact size.
+- Add `docs/ops/disk-usage.md` with prerequisites, expected evidence, failure handling, manual cleanup references, and limitations.
+- Update README, master plan, goal plan, and implementation log.
+- Run the disk usage check locally and verify Compose config still renders.
+- Do not delete backups, prune Docker resources, remove volumes, add destructive cleanup automation, remote monitoring, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+
+Verification:
+- `pnpm --filter @reno-news/db test`
+- `pnpm disk:check:local`
+- `docker compose -f infra/compose/compose.yml config`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 024 on 2026-05-20.
+- Added script-contract tests for Disk Usage Guard command boundaries and forbidden destructive operations.
+- Added Compose `json-file` logging limits for all services.
+- Added root script `disk:check:local`.
+- Added `scripts/disk-usage-check.mjs` for read-only Docker disk usage and local backup artifact inspection.
+- Added `docs/ops/disk-usage.md`.
+- Updated README, Issue 024 plan, implementation log, master plan, and goal plan.
+- Verified `pnpm --filter @reno-news/db test`.
+- Verified `pnpm disk:check:local`; it reported Docker disk usage and `backups` as 0B, then ended with `Disk Usage Guard OK`.
+- Verified `docker compose -f infra/compose/compose.yml config` renders successfully with logging limits.
+- Did not delete backups, prune Docker resources, remove volumes, add destructive cleanup automation, remote monitoring, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.

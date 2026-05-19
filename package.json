@@ -15,7 +15,8 @@
     "db:seed": "pnpm --filter @reno-news/db db:seed",
     "db:backup:local": "sh scripts/db-backup.sh",
     "db:restore:drill": "sh scripts/db-restore-drill.sh",
-    "release:audit:local": "node scripts/release-health-audit.mjs"
+    "release:audit:local": "node scripts/release-health-audit.mjs",
+    "disk:check:local": "node scripts/disk-usage-check.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

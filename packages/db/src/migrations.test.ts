@@ -141,3 +141,48 @@ test("release health audit stays local and non-deploying", async () => {
     /docker compose (pull|push|up)|git push|gh release|scp|ssh|webhook|alertmanager|uptime/i
   );
 });
+
+test("disk usage guard stays read-only and log-bounded", async () => {
+  const packageJson = JSON.parse(
+    await readFile(join(process.cwd(), "../../package.json"), "utf8")
+  ) as { scripts: Record<string, string> };
+  const composeFile = await readFile(
+    join(process.cwd(), "../../infra/compose/compose.yml"),
+    "utf8"
+  );
+  const diskScript = await readFile(
+    join(process.cwd(), "../../scripts/disk-usage-check.mjs"),
+    "utf8"
+  );
+  const runbook = await readFile(join(process.cwd(), "../../docs/ops/disk-usage.md"), "utf8");
+
+  assert.equal(packageJson.scripts["disk:check:local"], "node scripts/disk-usage-check.mjs");
+
+  for (const serviceName of ["web", "api", "worker", "scheduler", "postgres", "redis", "caddy"]) {
+    const serviceBlock = composeFile.match(
+      new RegExp(`\\n  ${serviceName}:\\n([\\s\\S]*?)(?=\\n  [a-z]|$)`)
+    )?.[1];
+    assert.ok(serviceBlock, `missing Compose service ${serviceName}`);
+    assert.match(serviceBlock, /\n    logging:/);
+  }
+  assert.equal((composeFile.match(/driver: "json-file"/g) ?? []).length, 7);
+  assert.equal((composeFile.match(/max-size: "10m"/g) ?? []).length, 7);
+  assert.equal((composeFile.match(/max-file: "5"/g) ?? []).length, 7);
+
+  for (const expectedCheck of [
+    "docker system df",
+    "DISK_BACKUP_MAX_BYTES",
+    "backups",
+    "docs/ops/disk-usage.md"
+  ]) {
+    assert.match(diskScript, new RegExp(expectedCheck.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+
+  assert.match(runbook, /Failure Handling/);
+  assert.match(runbook, /Manual Cleanup/);
+  assert.match(runbook, /Limitations/);
+  assert.doesNotMatch(
+    diskScript,
+    /docker system prune|docker volume rm|docker rm|rm -rf|unlink|rmdir|writeFile|fs\.rm/i
+  );
+});

@@ -15,6 +15,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   api:
     build:
@@ -36,6 +41,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   worker:
     build:
@@ -57,6 +67,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   scheduler:
     build:
@@ -72,6 +87,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   postgres:
     image: postgres:18-alpine
@@ -86,6 +106,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   redis:
     image: redis:8-alpine
@@ -96,6 +121,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   caddy:
     image: caddy:2-alpine
@@ -110,3 +140,8 @@ services:
         condition: service_healthy
       worker:
         condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"

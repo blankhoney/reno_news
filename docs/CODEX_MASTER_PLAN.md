@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 7 |
-| Current Issue | Issue 024 / disk usage guard implementation |
+| Current Issue | Milestone 7 / next issue planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -66,7 +66,7 @@ MVP v0.1 is frozen.
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
 | Milestone 6 | Search, Feedback, Digest | Done | Issues 016-021 done |
-| Milestone 7 | Backup, Monitoring, Release Audit | In Progress | Issues 022-023 done; Issue 024 planned; implementation next |
+| Milestone 7 | Backup, Monitoring, Release Audit | In Progress | Issues 022-024 done; next issue planning |
 
 Status values:
 
@@ -1561,11 +1561,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | Planned |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | TBD |
-| PR / Commit | pending |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -1577,25 +1577,42 @@ Required Tasks
 - [x] Add Disk Usage Guard and Log Retention Policy terminology to `CONTEXT.md`.
 - [x] Add ADR for local disk usage guardrails using Compose log rotation and read-only disk checks.
 - [x] Add Issue 024 technical plan and implementation log.
-- [ ] Add script-contract tests for Disk Usage Guard command boundaries and forbidden destructive operations.
-- [ ] Add Compose logging limits for all services.
-- [ ] Add a root package script for a local read-only disk usage check.
-- [ ] Implement a local disk usage check script that reports Docker disk usage and local backup artifact size.
-- [ ] Add `docs/ops/disk-usage.md` with prerequisites, expected evidence, failure handling, manual cleanup references, and limitations.
-- [ ] Update README, master plan, goal plan, and implementation log.
-- [ ] Run the disk usage check locally and verify Compose config still renders.
+- [x] Add script-contract tests for Disk Usage Guard command boundaries and forbidden destructive operations.
+- [x] Add Compose logging limits for all services.
+- [x] Add a root package script for a local read-only disk usage check.
+- [x] Implement a local disk usage check script that reports Docker disk usage and local backup artifact size.
+- [x] Add `docs/ops/disk-usage.md` with prerequisites, expected evidence, failure handling, manual cleanup references, and limitations.
+- [x] Update README, master plan, goal plan, and implementation log.
+- [x] Run the disk usage check locally and verify Compose config still renders.
 
 Acceptance Criteria
 
-- [ ] Compose services have bounded local log retention settings.
-- [ ] A local operator can run one read-only command from the repo root to inspect Docker disk usage and local backup artifact size.
-- [ ] The disk usage check fails clearly if Docker disk usage cannot be inspected or if local backup artifacts exceed a documented threshold.
-- [ ] The runbook documents manual failure handling and explicitly separates checking from destructive cleanup.
-- [ ] No backups are deleted, no Docker resources are pruned, no volumes are removed, and no destructive cleanup automation, remote monitoring, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation is added.
+- [x] Compose services have bounded local log retention settings.
+- [x] A local operator can run one read-only command from the repo root to inspect Docker disk usage and local backup artifact size.
+- [x] The disk usage check fails clearly if Docker disk usage cannot be inspected or if local backup artifacts exceed a documented threshold.
+- [x] The runbook documents manual failure handling and explicitly separates checking from destructive cleanup.
+- [x] No backups are deleted, no Docker resources are pruned, no volumes are removed, and no destructive cleanup automation, remote monitoring, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation is added.
 
 Notes
 
 Keep Issue 024 local and non-destructive. Use disk inspection and bounded log retention only; do not add automated cleanup or remote observability.
+
+**Completion Note**
+
+Implemented:
+- Compose `json-file` logging limits for web, API, worker, scheduler, PostgreSQL, Redis, and Caddy.
+- Root script `disk:check:local`.
+- `scripts/disk-usage-check.mjs` for read-only Docker disk usage and local backup artifact inspection.
+- `docs/ops/disk-usage.md` runbook.
+- README, Issue 024 plan, implementation log, master plan, and goal plan updates.
+
+Validated:
+- Script-contract tests verify logging limits, read-only disk check behavior, runbook sections, and forbidden destructive operations.
+- `pnpm disk:check:local` completed successfully and ended with `Disk Usage Guard OK`.
+- `docker compose -f infra/compose/compose.yml config` rendered successfully with logging limits.
+
+Known limitations:
+- This is a local non-destructive Disk Usage Guard only. It intentionally does not add destructive cleanup automation, remote monitoring integration, alerting, production deploy, image push, GitHub release, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
 
 ---
 
@@ -1653,8 +1670,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 024: local Disk Usage Guard foundation.
-Do not implement destructive cleanup automation, remote monitoring integration, alerting, production audit expansion, release workflow, production deploy, image push, GitHub release, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation beyond the local non-destructive disk guardrails explicitly scoped in Issue 024.
+Plan the next Milestone 7 issue.
+Do not implement production audit expansion, destructive cleanup automation, remote monitoring integration, alerting, release workflow, production deploy, image push, GitHub release, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation until the next issue is explicitly scoped.
 ---
 ## 9. Codex Operating Rules
 
@@ -1920,6 +1937,6 @@ Focus:
 Current required next action:
 
 ```text
-Implement Issue 024: local Disk Usage Guard foundation.
-Do not implement destructive cleanup automation, remote monitoring integration, alerting, production audit expansion, release workflow, production deploy, image push, GitHub release, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation beyond the local non-destructive disk guardrails explicitly scoped in Issue 024.
+Plan the next Milestone 7 issue.
+Do not implement production audit expansion, destructive cleanup automation, remote monitoring integration, alerting, release workflow, production deploy, image push, GitHub release, production credentials, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation until the next issue is explicitly scoped.
 ```
