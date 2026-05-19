@@ -84,6 +84,14 @@ _Avoid_: Ready item, public article
 A compact reader UI presentation of policy-eligible item metadata and optional summary snippet.
 _Avoid_: Article page, full-text copy, admin debug row
 
+**Reader Detail Projection**:
+A reader-facing detail view of one policy-eligible item, assembled from safe metadata, summary blocks, and rights-filtered original or Chinese presentation fields.
+_Avoid_: Admin raw entry detail, unrestricted extraction result, automatic translation publication
+
+**Language View**:
+A reader-selected presentation mode for one detail page, such as original-source view or Chinese-first summary view.
+_Avoid_: Translation publishing decision, locale, user preference
+
 **Rubric**:
 The scoring standard used to evaluate a content item for a board.
 _Avoid_: Prompt, ranking formula
@@ -149,6 +157,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Translation Draft** contains one or more **Translation Segments** and must pass publishing policy before it can become reader-facing.
 - A **Summary Block** explains an evaluated item but does not itself publish, rank, index, or place the item.
 - A **Reader Item Card** may present safe metadata and summary snippets without exposing full extracted or translated text.
+- A **Reader Detail Projection** may expose an item in one or more **Language Views**, but it must still obey **Rights Policy** and cannot publish **Translation Drafts** by implication.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.
 - **Feedback** belongs to one **Reader** and one **Content Item**.
 - A **Digest** contains selected **Published Items**.

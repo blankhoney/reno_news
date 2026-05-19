@@ -554,3 +554,61 @@ Completion notes:
 - Added web reader API client, reader home page, and `/boards/[slug]` board page.
 - Added reader API documentation and README endpoint notes.
 - Did not add article pages, Chinese/original switch, search, digest generation, saved/read-later, personalization, public publishing workflow, browser automation, or non-RSS adapters.
+
+## Task 17: Milestone 4 / Issue 011 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current Next.js App Router dynamic route, `notFound()`, Server Component fetch, and Link guidance.
+- Re-read local reader, rights, translation, and summary boundaries.
+- Define the next Milestone 4 issue without implementing detail-page code.
+- Add Reader Detail Projection and Language View terminology to `CONTEXT.md`.
+- Add an ADR for rights-filtered detail language views.
+- Add Issue 011 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 011 implementation is next.
+- Do not implement detail-page code in this planning task.
+
+Verification:
+- `docs/architecture/issue-011-plan.md` exists and maps Milestone 4 detail/language-view focus to concrete tasks and acceptance criteria.
+- ADR 0015 records the detail-page rights boundary.
+- `CONTEXT.md` defines Reader Detail Projection and Language View.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 011 implementation and does not start search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next reader UI vertical slice: item detail page and safe Chinese/original language view over a rights-filtered projection.
+- Deferred saved/read-later, search, digest generation, public publishing workflow, browser automation, and non-RSS adapters.
+
+## Task 18: Milestone 4 / Issue 011 Reader Item Detail And Language View Foundation
+
+Status: Pending
+
+Scope:
+- Add DB reader detail projection for one item.
+- Add API endpoint for reader item detail.
+- Add web API client path for reader item detail.
+- Link reader item cards to internal detail pages.
+- Add `/items/[id]` reader detail page.
+- Add query-string Chinese/original language switch without client-side state.
+- Update reader API documentation.
+- Do not expose translation draft full text.
+- Do not add saved/read-later, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters.
+
+Verification:
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `uv run python -m unittest discover -s tests`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:migrate`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:seed`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test uv run python -m unittest tests/test_rss_ingest.py tests/test_scheduler.py tests/test_health.py tests/test_extraction.py tests/test_ai_evaluation.py tests/test_translation.py tests/test_summary_blocks.py`
+- `uv lock --check`
+- Direct/local smoke for reader detail API and `/items/[id]`.
+
+Completion notes:
+- Pending.

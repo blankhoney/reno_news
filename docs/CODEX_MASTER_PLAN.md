@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 4 |
-| Current Issue | Issue 010 |
+| Current Issue | Issue 011 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -63,7 +63,7 @@ MVP v0.1 is frozen.
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
-| Milestone 4 | Reader UI | In Progress | Issue 010 done; next issue planning needed |
+| Milestone 4 | Reader UI | In Progress | Issue 010 done; Issue 011 planned, implementation next |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
@@ -732,6 +732,52 @@ Validated:
 Known limitations:
 - No article page, Chinese/original switch, search, digest generation, saved/read-later, personalization, public publishing workflow, browser automation, or non-RSS adapter was added.
 
+#### Issue 011: Add reader item detail and language view foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | pending |
+
+Goal
+
+Add a reader-facing item detail page and safe Chinese/original language view switch.
+
+Required Tasks
+
+- [x] Research current Next.js App Router dynamic route, `notFound()`, Server Component fetch, and Link guidance.
+- [x] Add Reader Detail Projection and Language View terminology to `CONTEXT.md`.
+- [x] Add ADR for rights-filtered detail language views.
+- [x] Add Issue 011 technical plan.
+- [ ] Add DB reader detail projection for one item.
+- [ ] Add API endpoint for reader item detail.
+- [ ] Add web API client path for reader item detail.
+- [ ] Link reader item cards to internal detail pages.
+- [ ] Add `/items/[id]` reader detail page.
+- [ ] Add query-string Chinese/original language switch without client-side state.
+- [ ] Update reader API documentation.
+
+Acceptance Criteria
+
+- [ ] Reader item cards link to internal detail pages.
+- [ ] Detail page renders for a policy-eligible item.
+- [ ] Unknown, blocked, or disabled-source items do not render as reader details.
+- [ ] Chinese/original switch works without client-side state.
+- [ ] Extracted full text is only exposed for `public_fulltext_allowed`.
+- [ ] Extracted excerpts are bounded and only exposed for `public_excerpt_allowed`.
+- [ ] Translation draft full text is not exposed.
+- [ ] New reader detail API is documented.
+- [ ] No search, digest generation, saved/read-later, personalization, public publishing workflow, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use Server Components, awaited dynamic route params, `notFound()`, and `next/link`.
+Do not turn translation drafts into public reader copy in this issue.
+Do not implement saved/read-later in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -788,7 +834,7 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 4 reader UI issue.
+Implement Issue 011 reader item detail and language view foundation.
 Do not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
@@ -1056,6 +1102,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 4 reader UI issue.
+Implement Issue 011 reader item detail and language view foundation.
 Do not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
 ```
