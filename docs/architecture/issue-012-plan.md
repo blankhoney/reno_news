@@ -60,12 +60,21 @@ Each array contains item snapshots, not only ids, so `/personal` can render imme
 
 ## TDD Plan
 
-1. [ ] Add pure local personal-state helper tests for empty state, toggle, remove, ordering, and corrupted storage.
-2. [ ] Implement local personal-state helpers.
-3. [ ] Add Client Component controls for save/read-later.
-4. [ ] Add controls to reader cards and detail pages using serializable snapshots.
-5. [ ] Add `/personal` page and client-rendered saved/read-later lists.
-6. [ ] Update README, docs, master plan, and log.
+1. [x] Add pure local personal-state helper tests for empty state, toggle, remove, ordering, and corrupted storage.
+2. [x] Implement local personal-state helpers.
+3. [x] Add Client Component controls for save/read-later.
+4. [x] Add controls to reader cards and detail pages using serializable snapshots.
+5. [x] Add `/personal` page and client-rendered saved/read-later lists.
+6. [x] Update README, docs, master plan, and log.
+
+## Implemented Boundary
+
+- `apps/web/src/app/personalState.ts` owns the local storage schema and pure state helpers.
+- `apps/web/src/app/PersonalControls.tsx` is the small Client Component boundary for item actions.
+- `apps/web/src/app/PersonalPageClient.tsx` renders local saved/read-later lists.
+- Server Components pass only `PersonalItemSnapshot` data into Client Components.
+- The stored snapshot excludes extracted full text, translation draft full text, model payloads, admin policy fields, and reader identity.
+- `docs/web/personal-state.md` documents the local state contract.
 
 ## Acceptance Criteria
 

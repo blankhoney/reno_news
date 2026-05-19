@@ -663,7 +663,7 @@ Completion notes:
 
 ## Task 20: Milestone 4 / Issue 012 Local Saved And Read Later Foundation
 
-Status: Pending
+Status: Done
 
 Scope:
 - Add pure local personal-state helper tests.
@@ -684,4 +684,8 @@ Verification:
 - Local browser/dev smoke for save/read-later persistence and `/personal`.
 
 Completion notes:
-- Pending.
+- Completed Issue 012 on 2026-05-20.
+- Added pure local personal-state helpers and tests, Client Component save/read-later controls, controls on card/detail surfaces, `/personal`, and local personal-state docs.
+- Verified web state helpers for empty storage, saved/read-later toggles, independent removal, persistence, corrupted-state recovery, and snapshot stripping.
+- Verified full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and headless Chrome localStorage persistence smoke.
+- Did not add auth, backend personal-state APIs, ranking changes, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters.

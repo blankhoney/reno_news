@@ -1,6 +1,6 @@
 # Reno News
 
-Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, basic admin/debug views, reader home/board listings, and reader item detail pages.
+Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, basic admin/debug views, reader home/board listings, reader item detail pages, and local saved/read-later state.
 
 ## Requirements
 
@@ -67,10 +67,11 @@ Reader endpoints:
 - Web reader home: `http://localhost:3000/`
 - Web reader board: `http://localhost:3000/boards/ai`
 - Web reader item detail: `http://localhost:3000/items/1`
+- Web reader personal space: `http://localhost:3000/personal`
 - API reader boards: `http://localhost:3001/reader/boards`
 - API reader items: `http://localhost:3001/reader/items`
 - API reader item detail: `http://localhost:3001/reader/items/1`
 
 ## Scope Boundary
 
-The current reader surface does not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
+Saved/read-later state is local to the browser and is not synced to a server. The current reader surface does not implement auth, backend personal-state APIs, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.

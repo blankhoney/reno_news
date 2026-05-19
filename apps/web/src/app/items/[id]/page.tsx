@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PersonalControls } from "../../PersonalControls";
+import { toPersonalItemSnapshot } from "../../personalState";
 import {
   getReaderItemDetail,
   readerItemPath,
@@ -38,8 +40,13 @@ export default async function ItemPage({ params, searchParams }: ItemPageProps) 
             {item.sourceTitle} · {(item.publishedAt ?? item.createdAt).slice(0, 10)}
           </p>
         </div>
-        <Link href="/">Home</Link>
+        <nav className="reader-header-links">
+          <Link href="/personal">Personal</Link>
+          <Link href="/">Home</Link>
+        </nav>
       </header>
+
+      <PersonalControls item={toPersonalItemSnapshot(item)} />
 
       <nav className="language-switch" aria-label="Language view">
         <Link

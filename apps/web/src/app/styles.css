@@ -71,6 +71,11 @@ td span {
   color: #64748b;
 }
 
+.reader-header-links {
+  display: flex;
+  gap: 0.75rem;
+}
+
 .board-nav {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -118,6 +123,28 @@ td span {
 .reader-card p {
   margin: 0 0 0.75rem;
   color: #334155;
+}
+
+.personal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.personal-actions button[aria-pressed="true"] {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.personal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.personal-section h2 {
+  margin-top: 0;
 }
 
 .language-switch {
@@ -234,13 +261,15 @@ dd {
 @media (max-width: 760px) {
   .admin-header,
   .admin-actions,
-  .reader-header {
+  .reader-header,
+  .reader-header-links {
     align-items: flex-start;
     flex-direction: column;
   }
 
   .admin-grid,
-  .board-nav {
+  .board-nav,
+  .personal-grid {
     grid-template-columns: 1fr;
   }
 

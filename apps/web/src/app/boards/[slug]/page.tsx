@@ -22,7 +22,10 @@ export default async function BoardPage({ params }: { params: Promise<{ slug: st
           <h1>{board.name}</h1>
           <p>{board.description}</p>
         </div>
-        <Link href="/admin">Admin</Link>
+        <nav className="reader-header-links">
+          <Link href="/personal">Personal</Link>
+          <Link href="/admin">Admin</Link>
+        </nav>
       </header>
 
       <ReaderItemList items={items} />

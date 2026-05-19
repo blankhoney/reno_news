@@ -12,8 +12,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 
 | Field | Value |
 |---|---|
-| Current Milestone | Milestone 4 |
-| Current Issue | Issue 012 |
+| Current Milestone | Milestone 5 |
+| Current Issue | Next Milestone 5 issue planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -63,7 +63,7 @@ MVP v0.1 is frozen.
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
-| Milestone 4 | Reader UI | In Progress | Issues 010-011 done; Issue 012 planned, implementation next |
+| Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
@@ -804,11 +804,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | pending |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -820,27 +820,46 @@ Required Tasks
 - [x] Add Saved Item and Read Later Item terminology to `CONTEXT.md`.
 - [x] Add ADR for local browser personal state.
 - [x] Add Issue 012 technical plan.
-- [ ] Add pure local personal-state helper tests.
-- [ ] Implement local personal-state helpers.
-- [ ] Add Client Component controls for save/read-later.
-- [ ] Add controls to reader cards and detail pages.
-- [ ] Add `/personal` page for local saved/read-later lists.
-- [ ] Add local personal-state documentation.
+- [x] Add pure local personal-state helper tests.
+- [x] Implement local personal-state helpers.
+- [x] Add Client Component controls for save/read-later.
+- [x] Add controls to reader cards and detail pages.
+- [x] Add `/personal` page for local saved/read-later lists.
+- [x] Add local personal-state documentation.
 
 Acceptance Criteria
 
-- [ ] Reader can save and unsave an item from card and detail surfaces.
-- [ ] Reader can add/remove read-later from card and detail surfaces.
-- [ ] Saved/read-later state persists across reloads in the same browser.
-- [ ] `/personal` shows saved and read-later lists from local state.
-- [ ] Corrupted local state recovers to an empty state.
-- [ ] Server Components pass only serializable item snapshots to Client Components.
-- [ ] No auth, backend personal-state API, ranking change, search, digest generation, public publishing workflow, browser automation, or non-RSS adapter is added.
+- [x] Reader can save and unsave an item from card and detail surfaces.
+- [x] Reader can add/remove read-later from card and detail surfaces.
+- [x] Saved/read-later state persists across reloads in the same browser.
+- [x] `/personal` shows saved and read-later lists from local state.
+- [x] Corrupted local state recovers to an empty state.
+- [x] Server Components pass only serializable item snapshots to Client Components.
+- [x] No auth, backend personal-state API, ranking change, search, digest generation, public publishing workflow, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Use a small Client Component boundary for browser state.
 Do not add reader accounts or database-backed personal state in this issue.
+
+**Implementation Note**
+
+Implemented:
+- Pure local personal-state helpers and tests.
+- Client Component save/read-later controls.
+- Controls on reader cards, board lists, and item detail pages.
+- `/personal` local saved/read-later page.
+- Local personal-state documentation and README endpoint notes.
+
+Validated:
+- Web tests cover empty storage, saved toggle, read-later toggle, independent removal, persistence, corrupted-state recovery, and snapshot stripping.
+- Web lint and build cover the Client Component boundary and `/personal` route.
+- Full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, and direct/Caddy health smoke.
+- Headless Chrome smoke verified Save and Read later clicks write localStorage, `/personal` renders both lists, and state persists after reload.
+
+Known limitations:
+- Saved/read-later is local to one browser.
+- No auth, backend personal-state API, ranking change, search, digest generation, public publishing workflow, browser automation, or non-RSS adapter was added.
 
 ---
 
@@ -898,8 +917,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 012 local saved and read-later foundation.
-Do not implement auth, backend personal-state APIs, ranking changes, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters yet.
+Plan the first Milestone 5 admin UI issue.
+Do not implement search, digest generation, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1166,6 +1185,6 @@ Focus:
 Current required next action:
 
 ```text
-Implement Issue 012 local saved and read-later foundation.
-Do not implement auth, backend personal-state APIs, ranking changes, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters yet.
+Plan the first Milestone 5 admin UI issue.
+Do not implement search, digest generation, browser automation, or non-RSS adapters yet.
 ```

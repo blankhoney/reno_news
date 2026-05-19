@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { PersonalControls } from "./PersonalControls";
 import {
   getReaderBoards,
   getReaderItems,
   readerItemPath,
   type ReaderItemCard
 } from "./readerApi";
+import { toPersonalItemSnapshot } from "./personalState";
 
 export default async function Home() {
   const [boards, items] = await Promise.all([getReaderBoards(), getReaderItems()]);
@@ -16,7 +18,10 @@ export default async function Home() {
           <h1>Reno News</h1>
           <p>Public Intelligence Pool</p>
         </div>
-        <Link href="/admin">Admin</Link>
+        <nav className="reader-header-links">
+          <Link href="/personal">Personal</Link>
+          <Link href="/admin">Admin</Link>
+        </nav>
       </header>
 
       <section className="board-nav" aria-label="Boards">
@@ -56,6 +61,7 @@ export function ReaderItemList({ items }: { items: ReaderItemCard[] }) {
           <time dateTime={item.publishedAt ?? item.createdAt}>
             {(item.publishedAt ?? item.createdAt).slice(0, 10)}
           </time>
+          <PersonalControls item={toPersonalItemSnapshot(item)} />
         </article>
       ))}
     </div>
