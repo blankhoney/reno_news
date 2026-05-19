@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 2 |
-| Current Issue | Milestone 2 planning |
+| Current Issue | Issue 006 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -61,7 +61,7 @@ MVP v0.1 is frozen.
 |---|---|---|---|
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
-| Milestone 2 | Fetch & Extraction | Not Started | Next: plan first extraction issue |
+| Milestone 2 | Fetch & Extraction | In Progress | Issue 006 planned; implementation next |
 | Milestone 3 | AI Pipeline | Not Started | adapter + schema first |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
@@ -416,6 +416,53 @@ Known limitations:
 - Failed ingest attempts are recorded in `source_ingest_attempts`; Issue 005 exposes failure status on raw entries but does not build a dedicated failure queue.
 - Reader UI, full-text extraction, AI processing, search, and non-RSS adapters were not added.
 
+### Milestone 2: Fetch & Extraction
+
+#### Issue 006: Add full-text extraction foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | |
+
+Goal
+
+Fetch and extract readable text for one eligible raw entry, store extraction output separately from raw feed metadata, and record extraction failures.
+
+Required Tasks
+
+- [x] Research current Trafilatura and HTTPX extraction/fetch APIs.
+- [x] Add extraction terminology to `CONTEXT.md`.
+- [x] Add ADR for extraction result storage boundary.
+- [x] Add Issue 006 technical plan.
+- [ ] Add SQL migration for extraction attempts and results.
+- [ ] Add worker repository path for raw entry extraction inputs.
+- [ ] Add policy gate before article body fetch.
+- [ ] Add HTTPX article fetch path.
+- [ ] Add Trafilatura extraction path.
+- [ ] Store extracted text and extraction confidence.
+- [ ] Record policy, network/status, and no-text extraction failures.
+- [ ] Add deterministic fixture tests.
+- [ ] Add worker trigger for one raw entry.
+
+Acceptance Criteria
+
+- [ ] One eligible raw entry can be fetched, extracted, and stored in tests without external network.
+- [ ] Metadata-only sources are skipped before article body fetch.
+- [ ] HTTP/status failures are recorded.
+- [ ] Empty or unusable extraction output is recorded as an extraction failure.
+- [ ] Extraction confidence is stored as a bounded numeric value.
+- [ ] No AI, search, reader UI, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Keep extraction output private and separate from publication.
+Do not create reader-facing content pages in this issue.
+Do not add Playwright/Crawl4AI or commercial fetch fallbacks in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -472,10 +519,9 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Start Milestone 2 planning.
-Define the first extraction issue before coding.
-Keep Milestone 2 to full-text fetch, extraction, extraction failure tracking, extracted text storage, and extraction confidence.
-Do not implement AI, search, reader UI, or non-RSS adapters yet.
+Continue Issue 006 implementation.
+Keep Issue 006 to full-text fetch, extraction, extraction failure tracking, extracted text storage, and extraction confidence.
+Do not implement AI, search, reader UI, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -500,7 +546,7 @@ Issue 002
 Issue 003
 Issue 004
 Issue 005
-Milestone 2 issue planning
+Issue 006
 ```
 
 An issue is not complete until all acceptance criteria are met.
@@ -726,7 +772,6 @@ Focus:
 Current required next action:
 
 ```text
-Start Milestone 2 planning.
-Define the first extraction issue before implementation.
-Do not implement AI, search, reader UI, or non-RSS adapters yet.
+Continue Issue 006 implementation.
+Do not implement AI, search, reader UI, browser automation, or non-RSS adapters yet.
 ```

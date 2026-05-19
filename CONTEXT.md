@@ -60,6 +60,18 @@ _Avoid_: Ranking score, AI score
 A discovered item that has not yet been accepted into the public pool.
 _Avoid_: Article, story, post
 
+**Extraction Attempt**:
+A recorded attempt to fetch and extract readable text from one candidate item's URL.
+_Avoid_: Crawl job, AI processing run
+
+**Extraction Result**:
+The durable output of a successful extraction attempt, including extracted text, metadata, extractor identity, and confidence.
+_Avoid_: Published article, reader copy
+
+**Extraction Confidence**:
+A bounded operational signal estimating whether extraction produced enough usable text for later evaluation.
+_Avoid_: Quality score, credibility score, AI score
+
 **Content Item**:
 A normalized item being evaluated for, or already present in, the public pool.
 _Avoid_: Article when the item may not be an article, raw entry, story
@@ -101,6 +113,8 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
 - A **Source** uses one **Source Adapter** to discover **Candidate Items**.
 - An **Ingest Attempt** records one **Source Adapter** execution for one **Source**.
+- An **Extraction Attempt** fetches and extracts readable text for one **Candidate Item** when **Source Policy** and **Rights Policy** allow it.
+- An **Extraction Result** may feed later normalization into a **Content Item**.
 - A **Candidate Item** may become a **Content Item** after normalization, deduplication, and policy checks.
 - A **Rights Policy** constrains whether a **Content Item** may be stored, translated, snapshotted, or publicly displayed.
 - A **Rubric** evaluates **Content Items** for one or more **Boards**.

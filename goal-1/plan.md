@@ -7,10 +7,10 @@ Execute `docs/CODEX_MASTER_PLAN.md` in order until the final milestone is comple
 ## Current Context
 
 - Current milestone: Milestone 2.
-- Current issue: Milestone 2 planning.
+- Current issue: Issue 006, "Add full-text extraction foundation".
 - Existing durable docs: `CONTEXT.md` and `docs/adr/`.
 - Execution source of truth: `docs/CODEX_MASTER_PLAN.md`.
-- Completed baseline: Issues 001-005 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, and basic admin/debug views in place.
+- Completed baseline: Issues 001-005 are done, with `pnpm`, `uv`, Docker Compose, SQL migrations, constrained status fields, development seed data, Source Registry, Source Policy, source and raw entry API routes, worker-readable policies, RSS/Atom metadata ingest, and basic admin/debug views in place. Issue 006 planning is in progress.
 
 ## Execution Approach
 

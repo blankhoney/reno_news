@@ -205,4 +205,47 @@ Completion notes:
 
 ## Future Tasks
 
-Task 7 starts Milestone 2 planning. Do not code full-text extraction until the first Milestone 2 issue is defined with scope, acceptance criteria, tests, and rollback notes.
+## Task 7: Milestone 2 / Issue 006 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current Trafilatura and HTTPX docs for extraction/fetch APIs.
+- Re-read local research and current domain docs for extraction boundaries.
+- Define the first Milestone 2 issue without redesigning later milestones.
+- Add extraction terminology to `CONTEXT.md`.
+- Add an ADR for extraction result storage boundary.
+- Add Issue 006 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 006 is the active issue.
+- Do not implement extraction code in this planning task.
+
+Verification:
+- `docs/architecture/issue-006-plan.md` exists and maps Milestone 2 focus to concrete tasks and acceptance criteria.
+- ADR 0010 records the extraction storage boundary.
+- `CONTEXT.md` defines Extraction Attempt, Extraction Result, and Extraction Confidence.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 006 and does not start AI, search, reader UI, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next vertical slice: extraction for one eligible raw entry.
+- Deferred reader UI, AI, search, browser automation, and non-RSS adapters.
+
+## Task 8: Milestone 2 / Issue 006 Full-Text Extraction Foundation
+
+Status: Pending
+
+Scope:
+- Add SQL migration for extraction attempts and results.
+- Add worker repository path for raw entry extraction inputs.
+- Add policy gate before article body fetch.
+- Add HTTPX article fetch path.
+- Add Trafilatura extraction path.
+- Store extracted text and bounded extraction confidence.
+- Record policy, network/status, and no-text extraction failures.
+- Add deterministic fixture tests and worker trigger for one raw entry.
+
+Verification:
+- Pending until implementation starts.
+
+Completion notes:
+- Pending.
