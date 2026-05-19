@@ -1216,3 +1216,30 @@ Completion notes:
 - Rebuilt web after local dev smoke and confirmed `apps/web/next-env.d.ts` has no diff.
 - Ran deferred-scope scan and found only documentation boundary references plus one existing worker test string for browser automation; no deferred implementation was added.
 - Did not add email delivery, scheduler job, persisted digest table, editorial workflow, feedback-to-ranking consumption, moderation workflow, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state sync, browser automation, or non-RSS adapter.
+
+## Task 35: Milestone 6 / Issue 020 Feedback Quality Penalty Planning And ADR
+
+Status: Done
+
+Scope:
+- Re-read current feedback capture, Digest preview, and ranking boundaries.
+- Research PostgreSQL aggregate/query behavior, Fastify v5 route schema guidance, and Next.js App Router server page guidance relevant to the next slice.
+- Add Quality Feedback Penalty terminology to `CONTEXT.md`.
+- Add ADR for bounded, non-moderating feedback consumption.
+- Add Issue 020 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 020 implementation is next.
+- Do not implement moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `docs/architecture/issue-020-plan.md` exists and maps bounded Quality Feedback Penalty to concrete tasks and acceptance criteria.
+- ADR 0024 records that feedback consumption is digest-only, bounded, and non-moderating.
+- `CONTEXT.md` defines Quality Feedback Penalty and separates it from votes, personal preferences, hide rules, and moderation workflow.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 020 implementation and does not start moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next Milestone 6 slice: apply a bounded Quality Feedback Penalty to Digest preview ordering only.
+- Chose to derive the penalty from existing item-scoped `reader_feedback` rows, with no new rank table or persisted digest edition.
+- Chose not to add automatic hide/restore, moderation resolution, reader accounts, trust weighting, personalization, backend personal-state sync, semantic/vector search, external search services, search extensions, digest delivery, editorial workflow, browser automation, or non-RSS adapters.
+- Added Quality Feedback Penalty terminology, ADR 0024, `docs/architecture/issue-020-plan.md`, and `docs/logs/2026-05-20-issue-020.md`.
+- Updated `docs/CODEX_MASTER_PLAN.md` so Issue 020 implementation is next.

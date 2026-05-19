@@ -172,6 +172,10 @@ _Avoid_: Like, preference, vote, saved item, read-later item, manual moderation 
 A constrained label explaining why Reader Feedback was submitted, such as correction, quality issue, duplicate, broken link, or rights concern.
 _Avoid_: Free-form status, ranking formula, moderation state
 
+**Quality Feedback Penalty**:
+A bounded public ordering penalty derived from item-scoped Feedback Types, used only after an issue explicitly scopes feedback consumption.
+_Avoid_: Vote count, personal preference, automatic moderation, hide rule
+
 **Digest**:
 A curated summary of notable published items for a board or homepage period.
 _Avoid_: Newsletter unless email delivery is specifically meant
@@ -211,6 +215,7 @@ _Avoid_: Ranking winner, recommendation, feedback target
 - A **Saved Item** or **Read Later Item** belongs to a **Reader**'s **Personal Space** and does not affect public ranking or admin curation by itself.
 - **Feedback** belongs to one **Reader** action and one **Content Item**, but MVP feedback capture does not imply reader accounts, backend personal-state sync, moderation workflow, or ranking mutation.
 - A **Feedback Type** constrains what a **Feedback** event means before any later moderation or ranking logic consumes it.
+- A **Quality Feedback Penalty** may be derived from stored **Feedback**, but it must remain bounded and must not hide, restore, delete, moderate, or personalize items by itself.
 - A **Digest** contains selected **Digest Items** from one **Digest Window**.
 - A **Digest Item** must still be a policy-visible **Published Item** and must not expose private extraction text, translation drafts, feedback events, or admin diagnostics.
 
