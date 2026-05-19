@@ -32,6 +32,10 @@ _Avoid_: Feed list, subscription list
 The source-type-specific path used to discover candidate items from a source.
 _Avoid_: Crawler when the source is structured
 
+**Ingest Attempt**:
+A recorded attempt to discover candidate items from a source, including success, skip, or failure outcome.
+_Avoid_: Crawl job when the source is structured RSS/Atom
+
 **Source Policy**:
 Rules that decide whether and how a source may be accessed, rate-limited, retried, and processed.
 _Avoid_: Crawl config, fetch settings
@@ -92,6 +96,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 
 - An **Admin** maintains the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
 - A **Source** uses one **Source Adapter** to discover **Candidate Items**.
+- An **Ingest Attempt** records one **Source Adapter** execution for one **Source**.
 - A **Candidate Item** may become a **Content Item** after normalization, deduplication, and policy checks.
 - A **Rights Policy** constrains whether a **Content Item** may be stored, translated, snapshotted, or publicly displayed.
 - A **Rubric** evaluates **Content Items** for one or more **Boards**.

@@ -3,11 +3,15 @@ name = "reno-news-worker"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
+    "dramatiq[redis]>=1.18.0",
+    "feedparser>=6.0.0",
+    "httpx>=0.28.0",
     "psycopg[binary]>=3.2.0",
 ]
 
 [project.scripts]
 reno-worker = "reno_worker.server:main"
+reno-scheduler = "reno_worker.scheduler:main"
 
 [tool.uv]
 package = true

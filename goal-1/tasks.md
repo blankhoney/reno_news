@@ -120,6 +120,38 @@ Completion notes:
 - Updated CONTEXT, ADR, API docs, DB docs, README, implementation log, and master plan.
 - Docker image rebuild was blocked by local Docker credential/network behavior; Source API was verified via a real local API process against PostgreSQL, and Compose health was verified with existing images.
 
+## Task 5: Milestone 1 / Issue 004 Minimal RSS Adapter Ingest Flow
+
+Status: Done
+
+Scope:
+- Add RSS/Atom adapter interface and feed fetch/parse path.
+- Normalize entry URL, compute canonical hash, and insert feed metadata into `raw_entries`.
+- Avoid duplicate raw entries.
+- Apply Source Policy before ingest and skip disabled sources.
+- Record basic fetch/parse/policy failures.
+- Add basic worker task and scheduler trigger.
+- Do not add full-text extraction, AI processing, search, reader UI, admin UI, RSSHub, GitHub, arXiv, GDELT, or other non-RSS adapters.
+
+Verification:
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:migrate`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:seed`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test uv run python -m unittest tests/test_rss_ingest.py tests/test_scheduler.py`
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `pnpm --filter @reno-news/db test:integration`
+- `uv run python -m unittest discover -s tests`
+
+Completion notes:
+- Completed Issue 004 on 2026-05-20.
+- Added RSS/Atom metadata ingest in the Python worker using HTTPX and feedparser.
+- Added `source_ingest_attempts` and basic success/skipped/failure recording.
+- Added URL normalization, canonical hashing, duplicate avoidance, Source Policy gating, Dramatiq actor, and scheduler trigger.
+- Verified deterministic feed ingest, duplicate prevention, disabled-source skip, fetch-failure recording, and scheduler enqueue filtering.
+- Did not add full-text extraction, AI, search, reader UI, admin UI, RSSHub, GitHub, arXiv, GDELT, or other non-RSS adapters.
+
 ## Future Tasks
 
 Tasks for Issues 003+ will be expanded only when earlier tasks are complete, so later implementation is not overdesigned from stale assumptions.

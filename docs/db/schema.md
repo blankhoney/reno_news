@@ -43,7 +43,17 @@ This document describes the SQL schema introduced by Issue 002. SQL files in `in
 
 - Minimal seedable raw entry records for development and later ingest tests.
 - `lifecycle_status`, `processing_stage`, `rights_status`, and `failure_type` are constrained text fields.
-- RSS fetching and duplicate ingest behavior are deferred to Issue 004.
+- RSS/Atom feed metadata lands here before full-text extraction.
+- Duplicate feed entries are ignored through existing unique constraints and `on conflict do nothing`.
+
+## Source Ingest Attempts
+
+`source_ingest_attempts`
+
+- Records one Source Adapter execution outcome for one source.
+- `status` is constrained to `success`, `failure`, or `skipped`.
+- `failure_type` is constrained to `network`, `parse`, `policy`, `duplicate`, or `unknown` when present.
+- Stores entry counts and failure messages for worker/debug visibility.
 
 ## Status Boundaries
 

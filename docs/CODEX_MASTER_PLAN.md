@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 1 |
-| Current Issue | Issue 004 |
+| Current Issue | Issue 005 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -60,7 +60,7 @@ MVP v0.1 is frozen.
 | Milestone | Name | Status | Notes |
 |---|---|---|---|
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
-| Milestone 1 | Source Registry + RSS Ingest | In Progress | Issue 003 done; Issue 004 next |
+| Milestone 1 | Source Registry + RSS Ingest | In Progress | Issues 003-004 done; Issue 005 next |
 | Milestone 2 | Fetch & Extraction | Not Started | trafilatura main path |
 | Milestone 3 | AI Pipeline | Not Started | adapter + schema first |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
@@ -289,11 +289,11 @@ RSS is the only adapter allowed in the next issue.
 
 | Field | Value |
 |---|---|
-| Status | Not Started |
+| Status | Done |
 | Owner | Codex |
-| Started At | |
-| Completed At | |
-| PR / Commit | |
+| Started At | 2026-05-20 |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -301,28 +301,50 @@ Implement the first real source adapter: RSS/Atom only.
 
 Required Tasks
 
-- [ ] Add RSS adapter interface.
-- [ ] Fetch RSS/Atom feed.
-- [ ] Parse feed metadata.
-- [ ] Normalize entry URL.
-- [ ] Compute canonical hash.
-- [ ] Insert into raw_entries.
-- [ ] Avoid duplicate entries.
-- [ ] Apply source policy before ingest.
-- [ ] Mark lifecycle status.
-- [ ] Mark processing stage.
-- [ ] Record basic failure details.
-- [ ] Add basic worker task for RSS ingest.
-- [ ] Add basic scheduler trigger for RSS sources.
+- [x] Add RSS adapter interface.
+- [x] Fetch RSS/Atom feed.
+- [x] Parse feed metadata.
+- [x] Normalize entry URL.
+- [x] Compute canonical hash.
+- [x] Insert into raw_entries.
+- [x] Avoid duplicate entries.
+- [x] Apply source policy before ingest.
+- [x] Mark lifecycle status.
+- [x] Mark processing stage.
+- [x] Record basic failure details.
+- [x] Add basic worker task for RSS ingest.
+- [x] Add basic scheduler trigger for RSS sources.
 
 Acceptance Criteria
 
-- [ ] One RSS source can be ingested end-to-end.
-- [ ] Duplicate feed entries are not inserted twice.
-- [ ] Disabled source is not fetched.
-- [ ] Failed fetch produces a recorded failure.
-- [ ] No full-text extraction is implemented yet.
-- [ ] No AI processing is implemented yet.
+- [x] One RSS source can be ingested end-to-end.
+- [x] Duplicate feed entries are not inserted twice.
+- [x] Disabled source is not fetched.
+- [x] Failed fetch produces a recorded failure.
+- [x] No full-text extraction is implemented yet.
+- [x] No AI processing is implemented yet.
+
+**Completion Note**
+
+Implemented:
+- Python RSS/Atom ingest path using HTTPX and feedparser.
+- URL normalization, canonical hash computation, and metadata-only `raw_entries` inserts.
+- `source_ingest_attempts` for success, skipped, and failure outcomes.
+- Source Policy gating before fetch.
+- Dramatiq worker actor and scheduler trigger for enabled RSS/Atom sources.
+
+Validated:
+- RSS ingest tests with deterministic local feed XML.
+- Duplicate feed entries are not inserted twice.
+- Disabled source is skipped without fetch.
+- Fetch failure records `failure_type = network`.
+- Scheduler trigger enqueues only RSS/Atom source types.
+- Fresh Issue 004 test database migrated through 3 migrations and seeded.
+- Full repo install, lint, tests, build, DB integration, and worker tests.
+
+Known limitations:
+- No article full-text extraction, trafilatura, AI processing, search, reader UI, admin UI, or non-RSS adapter was added.
+- Scheduler trigger is implemented as a callable/script and Dramatiq actor; Compose scheduler process was not changed in this issue.
 
 Notes
 
@@ -428,9 +450,9 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Start Issue 004.
-Do not implement Issue 005 until Issue 004 meets acceptance criteria.
-Implement RSS/Atom adapter only in Issue 004.
+Start Issue 005.
+Do not implement Milestone 2 until Issue 005 meets acceptance criteria.
+Keep Issue 005 to admin/debug views for existing Source Registry and raw entries.
 Do not implement any non-RSS adapter in Milestone 1.
 ---
 ## 9. Codex Operating Rules
@@ -584,10 +606,10 @@ Milestone 1 is complete only when:
 - [x] Source Policy tables exist.
 - [x] RSS source can be created.
 - [x] RSS source can be enabled/disabled.
-- [ ] RSS source can be fetched by worker.
-- [ ] RSS entries are inserted into `raw_entries`.
-- [ ] Duplicate RSS entries are not inserted twice.
-- [ ] Failed RSS fetches are recorded.
+- [x] RSS source can be fetched by worker.
+- [x] RSS entries are inserted into `raw_entries`.
+- [x] Duplicate RSS entries are not inserted twice.
+- [x] Failed RSS fetches are recorded.
 - [ ] Admin/debug UI can view sources.
 - [ ] Admin/debug UI can view raw entries.
 - [ ] Admin/debug UI can manually trigger RSS ingest.
@@ -681,8 +703,8 @@ Focus:
 Current required next action:
 
 ```text
-Start Issue 004.
-Do not start Issue 005 yet.
-Implement RSS/Atom ingest only.
-Do not implement AI, search, reader UI, or non-RSS adapters yet.
+Start Issue 005.
+Do not start Milestone 2 yet.
+Build admin/debug views only.
+Do not implement full-text extraction, AI, search, reader UI, or non-RSS adapters yet.
 ```
