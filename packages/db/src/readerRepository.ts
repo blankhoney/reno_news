@@ -39,9 +39,15 @@ export type ListReaderItemsInput = {
   boardSlug?: string;
 };
 
+export type SearchReaderItemsInput = {
+  query: string;
+  boardSlug?: string;
+};
+
 export type ReaderRepository = {
   listReaderBoards(): Promise<ReaderBoard[]>;
   listReaderItems(input?: ListReaderItemsInput): Promise<ReaderItemCard[]>;
+  searchReaderItems(input: SearchReaderItemsInput): Promise<ReaderItemCard[]>;
   getReaderItemDetail(id: number): Promise<ReaderItemDetail | null>;
   close(): Promise<void>;
 };
@@ -85,6 +91,7 @@ export function createReaderRepository(databaseUrl: string): ReaderRepository {
   return {
     listReaderBoards: async () => listReaderBoards(pool),
     listReaderItems: async (input) => listReaderItems(pool, input),
+    searchReaderItems: async (input) => searchReaderItems(pool, input),
     getReaderItemDetail: async (id) => getReaderItemDetail(pool, id),
     close: async () => {
       await pool.end();
@@ -139,6 +146,86 @@ async function listReaderItems(
     ) sb on true
     where ${filters.join(" and ")}
     order by coalesce(re.published_at, re.created_at) desc, re.id desc
+    limit 100
+    `,
+    values
+  );
+  return result.rows.map(mapReaderItemRow);
+}
+
+async function searchReaderItems(
+  queryable: Queryable,
+  input: SearchReaderItemsInput
+): Promise<ReaderItemCard[]> {
+  const query = input.query.trim();
+  if (query.length === 0) {
+    return [];
+  }
+
+  const values = [query];
+  const filters = [
+    "s.enabled = true",
+    "re.lifecycle_status != 'hidden'",
+    "re.rights_status != 'blocked'",
+    "(search_index.document @@ search_index.query or position(lower($1) in lower(search_document.text)) > 0)"
+  ];
+
+  if (input.boardSlug) {
+    values.push(input.boardSlug);
+    filters.push(`b.slug = $${values.length}`);
+  }
+
+  const result = await queryable.query<ReaderItemRow>(
+    `
+    select
+      re.id::int as "id",
+      b.slug as "boardSlug",
+      b.name as "boardName",
+      s.title as "sourceTitle",
+      re.title as "title",
+      re.url as "url",
+      coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
+      re.published_at as "publishedAt",
+      re.created_at as "createdAt"
+    from raw_entries re
+    join sources s on s.id = re.source_id
+    join boards b on b.id = s.board_id
+    left join lateral (
+      select
+        one_sentence,
+        detailed_summary,
+        why_it_matters,
+        source_note,
+        china_relevance
+      from summary_blocks
+      where raw_entry_id = re.id
+      order by id desc
+      limit 1
+    ) sb on true
+    cross join lateral (
+      select concat_ws(
+        ' ',
+        re.title,
+        re.url,
+        s.title,
+        b.name,
+        re.summary_raw,
+        sb.one_sentence,
+        sb.detailed_summary,
+        sb.why_it_matters,
+        sb.source_note,
+        sb.china_relevance
+      ) as text
+    ) search_document
+    cross join lateral (
+      select
+        to_tsvector('simple', search_document.text) as document,
+        websearch_to_tsquery('simple', $1) as query
+    ) search_index
+    where ${filters.join(" and ")}
+    order by ts_rank(search_index.document, search_index.query) desc,
+      coalesce(re.published_at, re.created_at) desc,
+      re.id desc
     limit 100
     `,
     values

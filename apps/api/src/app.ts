@@ -33,6 +33,11 @@ type ReaderItemsQuery = {
   board?: string;
 };
 
+type ReaderSearchQuery = {
+  q: string;
+  board?: string;
+};
+
 type FailureQueueQuery = {
   limit?: number;
 };
@@ -109,6 +114,16 @@ const failureQueueQuerySchema = {
   additionalProperties: false,
   properties: {
     limit: { type: "integer", minimum: 1, maximum: 200 }
+  }
+};
+
+const readerSearchQuerySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["q"],
+  properties: {
+    q: { type: "string", minLength: 1, pattern: "\\S" },
+    board: { type: "string", minLength: 1 }
   }
 };
 
@@ -305,6 +320,27 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   });
 
   app.get(
+    "/reader/search",
+    {
+      schema: {
+        querystring: readerSearchQuerySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const query = request.query as ReaderSearchQuery;
+        const items = await readerRepository.searchReaderItems({
+          query: query.q,
+          boardSlug: query.board
+        });
+        return { items };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.get(
     "/reader/items/:id",
     {
       schema: {
@@ -430,6 +466,9 @@ const unconfiguredReaderRepository: ReaderRepository = {
     throw new DatabaseNotConfiguredError();
   },
   listReaderItems: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  searchReaderItems: async () => {
     throw new DatabaseNotConfiguredError();
   },
   getReaderItemDetail: async () => {

@@ -4,6 +4,7 @@ import {
   getReaderBoards,
   getReaderItemDetail,
   getReaderItems,
+  getReaderSearchItems,
   joinServiceUrl,
   readerItemPath
 } from "./readerApi";
@@ -64,6 +65,42 @@ test("getReaderItems appends board query when provided", async () => {
   try {
     const items = await getReaderItems("ai");
     assert.equal(items[0].boardSlug, "ai");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("getReaderSearchItems appends query and optional board filter", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    assert.equal(
+      String(input),
+      "http://localhost:3001/reader/search?q=quantum+ai&board=ai"
+    );
+    assert.equal(init?.cache, "no-store");
+    return new Response(
+      JSON.stringify({
+        items: [
+          {
+            id: 1,
+            boardSlug: "ai",
+            boardName: "AI",
+            sourceTitle: "OpenAI News",
+            title: "Quantum AI item",
+            url: "https://example.invalid/ai/quantum-ai-001",
+            summary: "Summary",
+            publishedAt: "2026-05-20T00:00:00.000Z",
+            createdAt: "2026-05-20T00:00:00.000Z"
+          }
+        ]
+      }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
+  }) as typeof fetch;
+
+  try {
+    const items = await getReaderSearchItems("quantum ai", "ai");
+    assert.equal(items[0].title, "Quantum AI item");
   } finally {
     globalThis.fetch = originalFetch;
   }

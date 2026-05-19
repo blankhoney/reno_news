@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ReaderSearchForm } from "../../ReaderSearchForm";
 import { ReaderItemList } from "../../page";
 import { getReaderBoards, getReaderItems } from "../../readerApi";
 
@@ -27,6 +28,8 @@ export default async function BoardPage({ params }: { params: Promise<{ slug: st
           <Link href="/admin">Admin</Link>
         </nav>
       </header>
+
+      <ReaderSearchForm boardSlug={board.slug} lockBoard />
 
       <ReaderItemList items={items} />
     </main>

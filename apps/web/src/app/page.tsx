@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PersonalControls } from "./PersonalControls";
+import { ReaderSearchForm } from "./ReaderSearchForm";
 import {
   getReaderBoards,
   getReaderItems,
@@ -24,6 +25,8 @@ export default async function Home() {
         </nav>
       </header>
 
+      <ReaderSearchForm />
+
       <section className="board-nav" aria-label="Boards">
         {boards.map((board) => (
           <Link key={board.slug} href={`/boards/${board.slug}`} className="board-link">
@@ -41,9 +44,15 @@ export default async function Home() {
   );
 }
 
-export function ReaderItemList({ items }: { items: ReaderItemCard[] }) {
+export function ReaderItemList({
+  items,
+  emptyText = "No reader items are available yet."
+}: {
+  items: ReaderItemCard[];
+  emptyText?: string;
+}) {
   if (items.length === 0) {
-    return <p className="empty-state">No reader items are available yet.</p>;
+    return <p className="empty-state">{emptyText}</p>;
   }
 
   return (

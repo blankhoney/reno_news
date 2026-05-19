@@ -1,6 +1,6 @@
 # Reno News
 
-Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, admin/debug views with source policy editing, failure inspection, and raw-entry hide/restore, reader home/board listings, reader item detail pages, and local saved/read-later state.
+Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, admin/debug views with source policy editing, failure inspection, and raw-entry hide/restore, reader home/board listings, reader item detail pages, PostgreSQL reader search, and local saved/read-later state.
 
 ## Requirements
 
@@ -71,12 +71,14 @@ Reader endpoints:
 
 - Web reader home: `http://localhost:3000/`
 - Web reader board: `http://localhost:3000/boards/ai`
+- Web reader search: `http://localhost:3000/search?q=Sample`
 - Web reader item detail: `http://localhost:3000/items/1`
 - Web reader personal space: `http://localhost:3000/personal`
 - API reader boards: `http://localhost:3001/reader/boards`
 - API reader items: `http://localhost:3001/reader/items`
+- API reader search: `http://localhost:3001/reader/search?q=Sample`
 - API reader item detail: `http://localhost:3001/reader/items/1`
 
 ## Scope Boundary
 
-Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, auth/RBAC, or feedback handling yet. Saved/read-later state is local to the browser and is not synced to a server. The current reader surface does not implement auth, backend personal-state APIs, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
+Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, auth/RBAC, or feedback handling yet. Saved/read-later state is local to the browser and is not synced to a server. Reader search is PostgreSQL-only over reader-safe metadata and summary fields. The current reader surface does not implement auth, backend personal-state APIs, digest generation, public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.

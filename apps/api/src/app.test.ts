@@ -136,6 +136,7 @@ function fakeReaderRepository(overrides: Partial<ReaderRepository> = {}): Reader
   return {
     listReaderBoards: async () => [readerBoard],
     listReaderItems: async () => [readerItem],
+    searchReaderItems: async () => [readerItem],
     getReaderItemDetail: async () => readerItemDetail,
     close: async () => undefined,
     ...overrides
@@ -591,6 +592,61 @@ test("GET /reader/items passes optional board filter", async () => {
   assert.equal(response.statusCode, 200);
   assert.equal(receivedBoardSlug, "ai");
   assert.deepEqual(response.json(), { items: [readerItem] });
+});
+
+test("GET /reader/search passes query and optional board filter", async () => {
+  let receivedInput: unknown;
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        searchReaderItems: async (input) => {
+          receivedInput = input;
+          return [readerItem];
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/search?q=Sample&board=ai"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(receivedInput, { query: "Sample", boardSlug: "ai" });
+  assert.deepEqual(response.json(), { items: [readerItem] });
+});
+
+test("GET /reader/search rejects missing query", async () => {
+  const app = buildApp({ logger: false }, { readerRepository: fakeReaderRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/search?board=ai"
+  });
+
+  assert.equal(response.statusCode, 400);
+});
+
+test("GET /reader/search rejects empty query", async () => {
+  const app = buildApp({ logger: false }, { readerRepository: fakeReaderRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/search?q=%20"
+  });
+
+  assert.equal(response.statusCode, 400);
 });
 
 test("GET /reader/items/:id returns reader item detail", async () => {

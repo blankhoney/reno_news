@@ -63,6 +63,25 @@ export async function getReaderItems(boardSlug?: string): Promise<ReaderItemCard
   return payload.items;
 }
 
+export async function getReaderSearchItems(
+  query: string,
+  boardSlug?: string
+): Promise<ReaderItemCard[]> {
+  const params = new URLSearchParams({ q: query });
+  if (boardSlug) {
+    params.set("board", boardSlug);
+  }
+
+  const response = await fetch(apiUrl(`/reader/search?${params.toString()}`), {
+    cache: "no-store"
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to search reader items: ${response.status}`);
+  }
+  const payload = (await response.json()) as { items: ReaderItemCard[] };
+  return payload.items;
+}
+
 export async function getReaderItemDetail(id: number): Promise<ReaderItemDetail | null> {
   const response = await fetch(apiUrl(`/reader/items/${id}`), { cache: "no-store" });
   if (response.status === 404) {

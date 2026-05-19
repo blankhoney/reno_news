@@ -942,3 +942,36 @@ Completion notes:
 - Verified worker tests with `uv --project services/worker run python -m unittest discover -s services/worker/tests` and worker lock consistency with `uv lock --check` from `services/worker`.
 - Verified Compose service status and direct plus Caddy-proxied health endpoints for web, API, and worker.
 - Found no blocker to starting Issue 016 implementation.
+
+## Task 28: Milestone 6 / Issue 016 PostgreSQL Reader Search Foundation
+
+Status: Done
+
+Scope:
+- Add DB integration tests for title, source, summary, board filter, hidden, blocked, disabled-source, and no-result search behavior.
+- Implement reader search repository method over reader-safe fields.
+- Add API tests for `GET /reader/search`.
+- Implement `GET /reader/search` with Fastify v5 full JSON Schema query validation.
+- Add web API client tests for search query URL construction.
+- Add `/search` page and reader search form entrypoint.
+- Update README, Reader API docs, master plan, and log.
+- Do not add feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters.
+
+Verification:
+- `pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 016 on 2026-05-20.
+- Added DB integration tests for title, source title, summary text, board filter, hidden raw entries, blocked items, disabled-source items, and no-result search behavior.
+- Added `ReaderRepository.searchReaderItems` over reader-safe title, URL, source, board, raw summary, and summary block fields.
+- Added PostgreSQL built-in text search with `websearch_to_tsquery('simple', q)`, `to_tsvector('simple', ...)`, rank ordering, and substring fallback over the same reader-safe fields.
+- Added `GET /reader/search` with required non-empty `q` validation and optional `board` filter.
+- Added web search API helper tests, `/search` page, home search form, and board-scoped search form.
+- Updated README, Reader API docs, Issue 016 plan, implementation log, master plan, and goal plan.
+- Verified targeted DB integration, API, web tests, and web typecheck.
+- Verified full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local current-code search smoke on API `3101` and web `3100`.
+- Rebuilt web after local dev smoke so `apps/web/next-env.d.ts` points back to production route types.
+- Did not add feedback handling, digest generation, semantic/vector search, external search service, search extension deployment, auth/RBAC, backend personal-state API, browser automation, or non-RSS adapters.

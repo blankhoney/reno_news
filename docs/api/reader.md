@@ -46,6 +46,35 @@ Response:
 }
 ```
 
+## `GET /reader/search`
+
+Searches visible reader item cards with PostgreSQL over reader-safe metadata and summary fields. Hidden raw entries, blocked items, and disabled-source items are excluded. Required and optional query parameters:
+
+- `q`: required non-empty reader search query.
+- `board`: optional board slug filter.
+
+Searchable fields are limited to raw entry title, URL, source title, board name, raw summary, and summary block fields. The endpoint does not search extracted full text, translation draft full text, private model payloads, or admin-only diagnostics.
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "boardSlug": "ai",
+      "boardName": "AI",
+      "sourceTitle": "OpenAI News",
+      "title": "Sample AI item",
+      "url": "https://example.invalid/ai/sample-ai-001",
+      "summary": "Development seed item for the AI board.",
+      "publishedAt": "2026-05-20T00:00:00.000Z",
+      "createdAt": "2026-05-20T00:00:00.000Z"
+    }
+  ]
+}
+```
+
 ## `GET /reader/items/:id`
 
 Returns one reader item detail projection. The endpoint returns `404` if the item is missing, hidden, blocked, or belongs to a disabled source.

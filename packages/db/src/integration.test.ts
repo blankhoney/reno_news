@@ -459,10 +459,118 @@ test("raw entry repository hides and restores reader-visible entries", async () 
   }
 });
 
+test("reader repository searches reader-safe visible item fields", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+
+    const titleId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-title",
+      title: "Quantum Search Needle",
+      sourceUrl: "https://example.invalid/reader-detail-search-title.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const sourceId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-source",
+      title: "Ordinary source search item",
+      sourceTitle: "Distinct Search Source",
+      sourceUrl: "https://example.invalid/reader-detail-search-source.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const summaryId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-summary",
+      title: "Ordinary summary search item",
+      summaryOneSentence: "Summary marker alpha result",
+      sourceUrl: "https://example.invalid/reader-detail-search-summary.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const aiBoardId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-board-ai",
+      title: "Board Filter Needle",
+      sourceUrl: "https://example.invalid/reader-detail-search-board-ai.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const softwareBoardId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-board-software",
+      title: "Board Filter Needle",
+      boardSlug: "software-engineering",
+      sourceUrl: "https://example.invalid/reader-detail-search-board-software.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const visibleId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-visible",
+      title: "Visible Visibility Needle",
+      sourceUrl: "https://example.invalid/reader-detail-search-visible.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const hiddenId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-hidden",
+      title: "Hidden Visibility Needle",
+      sourceUrl: "https://example.invalid/reader-detail-search-hidden.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true,
+      lifecycleStatus: "hidden"
+    });
+    const blockedId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-blocked",
+      title: "Blocked Visibility Needle",
+      sourceUrl: "https://example.invalid/reader-detail-search-blocked.xml",
+      rightsStatus: "blocked",
+      sourceEnabled: true
+    });
+    const disabledId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-disabled",
+      title: "Disabled Visibility Needle",
+      sourceUrl: "https://example.invalid/reader-detail-search-disabled.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: false
+    });
+
+    const titleResults = await repository.searchReaderItems({ query: "Quantum Needle" });
+    const sourceResults = await repository.searchReaderItems({ query: "Distinct Source" });
+    const summaryResults = await repository.searchReaderItems({ query: "summary marker alpha" });
+    const softwareResults = await repository.searchReaderItems({
+      query: "Board Filter Needle",
+      boardSlug: "software-engineering"
+    });
+    const visibilityResults = await repository.searchReaderItems({ query: "Visibility Needle" });
+    const noResults = await repository.searchReaderItems({ query: "no such search result" });
+
+    assert.ok(titleResults.some((item) => item.id === titleId));
+    assert.ok(sourceResults.some((item) => item.id === sourceId));
+    assert.ok(summaryResults.some((item) => item.id === summaryId));
+    assert.equal(softwareResults.some((item) => item.id === softwareBoardId), true);
+    assert.equal(softwareResults.some((item) => item.id === aiBoardId), false);
+    assert.equal(visibilityResults.some((item) => item.id === visibleId), true);
+    assert.equal(visibilityResults.some((item) => item.id === hiddenId), false);
+    assert.equal(visibilityResults.some((item) => item.id === blockedId), false);
+    assert.equal(visibilityResults.some((item) => item.id === disabledId), false);
+    assert.deepEqual(noResults, []);
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
 type ReaderDetailFixtureInput = {
   externalId: string;
   title: string;
+  sourceTitle?: string;
+  boardSlug?: string;
   sourceUrl: string;
+  summaryOneSentence?: string;
   rightsStatus: string;
   sourceEnabled: boolean;
   lifecycleStatus?: string;
@@ -479,7 +587,7 @@ async function createReaderDetailFixture(
     `
     insert into sources (board_id, source_type, title, url, enabled)
     values (
-      (select id from boards where slug = 'ai'),
+      (select id from boards where slug = $4),
       'rss',
       $1,
       $2,
@@ -487,7 +595,12 @@ async function createReaderDetailFixture(
     )
     returning id::int
     `,
-    [`Source for ${input.title}`, input.sourceUrl, input.sourceEnabled]
+    [
+      input.sourceTitle ?? `Source for ${input.title}`,
+      input.sourceUrl,
+      input.sourceEnabled,
+      input.boardSlug ?? "ai"
+    ]
   );
   const rawEntry = await pool.query<{ id: number }>(
     `
@@ -628,14 +741,15 @@ async function createReaderDetailFixture(
       china_relevance,
       related_topics_json
     )
-    values ($1, $2, $3, $4, $5, 'v1', 'draft', 'One sentence reader detail summary.', 'Detailed reader detail summary.', 'Reader detail why it matters.', 'Reader detail source note.', 'Reader detail China relevance.', '["AI", "Policy"]'::jsonb)
+    values ($1, $2, $3, $4, $5, 'v1', 'draft', $6, 'Detailed reader detail summary.', 'Reader detail why it matters.', 'Reader detail source note.', 'Reader detail China relevance.', '["AI", "Policy"]'::jsonb)
     `,
     [
       rawEntryId,
       extractionId,
       evaluation.rows[0].id,
       translationId,
-      summaryModelCall.rows[0].id
+      summaryModelCall.rows[0].id,
+      input.summaryOneSentence ?? "One sentence reader detail summary."
     ]
   );
 

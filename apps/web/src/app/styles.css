@@ -76,6 +76,37 @@ td span {
   gap: 0.75rem;
 }
 
+.reader-search-form {
+  align-items: end;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, 14rem) auto;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.reader-search-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.reader-search-form label:first-child:last-of-type {
+  grid-column: 1 / span 2;
+}
+
+.reader-search-form span {
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.reader-search-form input,
+.reader-search-form select {
+  border: 1px solid #94a3b8;
+  font: inherit;
+  min-width: 0;
+  padding: 0.55rem;
+}
+
 .board-nav {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -329,8 +360,13 @@ dd {
   .admin-grid,
   .board-nav,
   .admin-policy-form,
-  .personal-grid {
+  .personal-grid,
+  .reader-search-form {
     grid-template-columns: 1fr;
+  }
+
+  .reader-search-form label:first-child:last-of-type {
+    grid-column: auto;
   }
 
   dl {
