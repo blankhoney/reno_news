@@ -1511,3 +1511,23 @@ Completion notes:
 - Verified `pnpm --filter @reno-news/db test`.
 - Verified `pnpm release:audit:local`; it ran `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, `pnpm build`, worker tests, `uv lock --check`, Compose service status, direct/Caddy health endpoints, and backup/restore readiness checks, then ended with `Release Health Audit OK`.
 - Did not add release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credential, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation.
+
+## Check-Debug Loop 14
+
+Status: Done
+
+Run after Tasks 40-42:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit Issue 022 implementation, Issue 023 planning and implementation, docs, tests, running services, cleanup state, and deferred-scope boundaries against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 40-42 on 2026-05-20.
+- Re-read goal input, plan, and full task history.
+- Confirmed Issue 022 and Issue 023 are complete and `docs/CODEX_MASTER_PLAN.md` points to planning the next Milestone 7 issue.
+- Confirmed recent commits include `2037071 Add backup restore drill`, `6373488 Plan release health audit`, and `ae78583 Add release health audit`.
+- Reused the just-run `pnpm release:audit:local` verification after final docs: install lock consistency, lint, tests, build, worker tests, worker lock consistency, Compose service status, direct/Caddy health endpoints, and backup/restore readiness all passed.
+- Confirmed `apps/web/next-env.d.ts` has no diff and `backups/` has no local dump file.
+- Ran deferred-scope scan across code directories. Found only the forbidden-operation regex in the release audit contract test; no release workflow, production deploy, image push, GitHub release, remote monitoring integration, alerting, production credential, auth/RBAC, Admin identity, audit log, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapter, or production backup automation implementation was added.
+- Worktree contains only unrelated untracked repo-local skill files plus `AGENTS.md` and `skills-lock.json`.
+- Found no blocker to planning the next Milestone 7 issue.
