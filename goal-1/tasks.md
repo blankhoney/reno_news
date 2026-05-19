@@ -338,3 +338,47 @@ Completion notes:
 - Added versioned AI evaluation schema, provider-neutral adapter contract, deterministic fake adapter, prefilter skip path, model-call logging, structured evaluation persistence, and injectable OpenAI Responses adapter boundary.
 - Covered fake-adapter success, missing extraction skip, blocked-rights skip, adapter failure logging, and OpenAI boundary request/parse behavior.
 - Did not add reader UI, search indexing, translation publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapters.
+
+## Task 11: Milestone 3 / Issue 008 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current OpenAI text generation, Structured Outputs, and latest-model guidance.
+- Re-read local research and current domain docs for translation boundaries.
+- Define the next Milestone 3 issue without implementing translation code.
+- Add Translation Draft and Translation Segment terminology to `CONTEXT.md`.
+- Add an ADR for translation draft/public publishing separation.
+- Add Issue 008 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 008 is the active issue.
+- Do not implement translation code in this planning task.
+
+Verification:
+- `docs/architecture/issue-008-plan.md` exists and maps Milestone 3 translation focus to concrete tasks and acceptance criteria.
+- ADR 0012 records the translation draft/public publishing boundary.
+- `CONTEXT.md` defines Translation Draft and Translation Segment.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 008 and does not start search, reader UI, digest generation, public publishing, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next vertical slice: fake-adapter Chinese translation draft for one extracted item.
+- Deferred reader UI, search, digest generation, public publishing, browser automation, multi-provider routing, and non-RSS adapters.
+
+## Task 12: Milestone 3 / Issue 008 Chinese Translation Draft Foundation
+
+Status: Pending
+
+Scope:
+- Add SQL migration for `translations`.
+- Add versioned translation output schema.
+- Add provider-neutral translation adapter interface and deterministic fake adapter.
+- Add translation policy and rights prefilter skip path.
+- Add model-call logging for success, failure, and skipped translation.
+- Store translated title/text, aligned segments, and quality flags.
+- Add OpenAI adapter boundary without requiring live API tests.
+
+Verification:
+- Pending until implementation starts.
+
+Completion notes:
+- Pending.

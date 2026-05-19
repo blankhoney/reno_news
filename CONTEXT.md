@@ -104,6 +104,14 @@ _Avoid_: Citation when a specific supporting fragment is required
 A Chinese rendering of original content governed by rights policy.
 _Avoid_: Rewritten article, public copy
 
+**Translation Draft**:
+A worker-generated translation stored for review or later publishing decisions, not automatically visible to readers.
+_Avoid_: Published translation, reader copy
+
+**Translation Segment**:
+A bounded original/translated text pair used to preserve alignment between source text and Chinese output.
+_Avoid_: Paragraph when the boundary may not match the source paragraph exactly
+
 **Personal Space**:
 A reader-owned area for saved items, read-later items, annotations, and personal reading status.
 _Avoid_: Public pool, recommendation signal
@@ -130,6 +138,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Prefilter** may skip expensive **AI Evaluation** when an extracted item is clearly ineligible.
 - An **AI Evaluation** belongs to one extracted **Candidate Item** at the current MVP stage, and may later be attached to a normalized **Content Item**.
 - A **Content Item** may have zero or more **Translations**.
+- A **Translation Draft** contains one or more **Translation Segments** and must pass publishing policy before it can become reader-facing.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.
 - **Feedback** belongs to one **Reader** and one **Content Item**.
 - A **Digest** contains selected **Published Items**.
