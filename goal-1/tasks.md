@@ -1276,3 +1276,26 @@ Completion notes:
 - Rebuilt web after local dev smoke and confirmed `apps/web/next-env.d.ts` has no diff.
 - Ran deferred-scope scan and found only documentation boundary references plus one existing worker test string for browser automation; no deferred implementation was added.
 - Did not add moderation workflow, feedback resolution state, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter.
+
+## Check-Debug Loop 12
+
+Status: Done
+
+Run after Tasks 34-36:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit Issue 019 implementation, Issue 020 planning and implementation, docs, tests, running services, smoke cleanup, and deferred-scope boundaries against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 34-36 on 2026-05-20.
+- Re-read goal input, plan, recent task history, recent commits, and current worktree state.
+- Confirmed Issue 019 and Issue 020 are complete and `docs/CODEX_MASTER_PLAN.md` points to planning the next Milestone 6 issue.
+- Verified `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, and `pnpm build`.
+- Verified DB integration with `pnpm --filter @reno-news/db test:integration`.
+- Verified worker tests with `uv --project services/worker run python -m unittest discover -s services/worker/tests` and worker lock consistency with `uv lock --check`.
+- Verified Compose service status plus direct and Caddy-proxied health endpoints for web, API, and worker.
+- Confirmed local current-code smoke ports `3100` and `3101` are not listening.
+- Confirmed no Issue 020 smoke raw entries remain.
+- Confirmed `apps/web/next-env.d.ts` has no diff after the final web build.
+- Ran deferred-scope scan across code, package manifests, worker config, README, master plan, Issue 020 plan/log, ADR 0024, and goal notes. Found only documentation boundary references plus one existing worker test string for browser automation; no moderation workflow, feedback resolution, reader identity, trust weighting, backend personal-state sync, semantic/vector search, external search service, search extension deployment, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter implementation was added.
+- Found no blocker to planning the next Milestone 6 issue.
