@@ -988,6 +988,53 @@ Known limitations:
 - Failure queue is read-only.
 - No retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapter was added.
 
+#### Issue 015: Add admin raw entry manual hide restore foundation
+
+| Field | Value |
+|---|---|
+| Status | Planned |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | |
+
+Goal
+
+Let an Admin hide one raw entry from reader-facing surfaces and restore a hidden raw entry from the existing admin raw-entry detail page.
+
+Required Tasks
+
+- [x] Research current Next.js Server Action form, `FormData`, `revalidatePath`, and `redirect` guidance.
+- [x] Research current Fastify v5 route and JSON Schema guidance.
+- [x] Add Manual Moderation Action terminology to `CONTEXT.md`.
+- [x] Add ADR for manual hide/restore using current raw-entry lifecycle state.
+- [x] Add Issue 015 technical plan and implementation log.
+- [ ] Add DB integration tests for hide, restore, missing raw entry, and reader hidden filtering.
+- [ ] Implement raw-entry lifecycle mutation in `RawEntryRepository`.
+- [ ] Add API tests for `PATCH /raw-entries/:id`.
+- [ ] Implement constrained raw-entry lifecycle API route.
+- [ ] Add web API client tests for raw-entry lifecycle actions.
+- [ ] Add Server Action for hide/restore form submission.
+- [ ] Add hide/restore controls on `/admin/raw-entries/[id]`.
+- [ ] Update README, Raw Entries API docs, master plan, and log.
+
+Acceptance Criteria
+
+- [ ] Admin can hide a raw entry from its admin detail page.
+- [ ] Admin can restore a hidden raw entry from its admin detail page.
+- [ ] Hidden raw entries do not appear in reader item lists.
+- [ ] Hidden raw entry detail requests through the reader API return not found.
+- [ ] Admin raw-entry list and detail still include hidden entries for inspection.
+- [ ] Restore sets the raw entry lifecycle to `candidate`.
+- [ ] The endpoint uses Fastify v5 full JSON Schema for params and body validation.
+- [ ] The web action revalidates the raw-entry list and detail page before redirecting.
+- [ ] No feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use existing `raw_entries.lifecycle_status`.
+Do not add feedback handling, moderation history, or generic status editing in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -1044,8 +1091,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 5 admin UI issue.
-Do not implement retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters yet.
+Implement Issue 015: admin raw entry manual hide restore foundation.
+Do not implement feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 

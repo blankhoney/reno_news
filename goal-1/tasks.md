@@ -836,3 +836,30 @@ Completion notes:
 - Verified worker tests with `uv --project services/worker run python -m unittest discover -s services/worker/tests` and worker lock consistency with `uv lock --check` from `services/worker`.
 - Verified Compose service status and direct plus Caddy-proxied health endpoints for web, API, and worker.
 - Found no blocker to planning the next Milestone 5 admin UI issue.
+
+## Task 25: Milestone 5 / Issue 015 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current Next.js Server Action form, `FormData`, `revalidatePath`, and `redirect` guidance.
+- Research current Fastify v5 route and JSON Schema guidance.
+- Re-read local admin, raw-entry lifecycle, moderation, feedback, and reader projection docs/code.
+- Define the next Milestone 5 issue without implementing hide/restore code.
+- Add Manual Moderation Action terminology to `CONTEXT.md`.
+- Add an ADR for manual hide/restore using current raw-entry lifecycle state.
+- Add Issue 015 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 015 implementation is next.
+- Do not implement feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters in this planning task.
+
+Verification:
+- `docs/architecture/issue-015-plan.md` exists and maps Milestone 5 manual hide/restore focus to concrete tasks and acceptance criteria.
+- ADR 0019 records the current raw-entry lifecycle boundary.
+- `CONTEXT.md` defines Manual Moderation Action.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 015 implementation and does not start feedback handling, moderation history, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next Milestone 5 admin UI slice: hide one raw entry from reader-facing surfaces and restore a hidden raw entry from the existing admin raw-entry detail page.
+- Chose to reuse `raw_entries.lifecycle_status = 'hidden'` and restore to `candidate` because the MVP does not store previous lifecycle history.
+- Deferred feedback handling, moderation reasons, audit history, review queues, bulk moderation, delete flow, retry/resolution workflow, source creation UI, policy history, auth/RBAC, search, digest generation, browser automation, and non-RSS adapters.

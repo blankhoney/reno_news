@@ -44,6 +44,10 @@ _Avoid_: Crawl job when the source is structured RSS/Atom
 An admin-facing collection of failed ingest, extraction, or model-processing attempts that need inspection.
 _Avoid_: Work queue, retry queue, reader error list
 
+**Manual Moderation Action**:
+An Admin decision to hide or restore one candidate or published item from reader-facing surfaces without deleting source evidence.
+_Avoid_: Feedback, vote, delete, retry
+
 **Source Policy**:
 Rules that decide whether and how a source may be accessed, rate-limited, retried, and processed.
 _Avoid_: Crawl config, fetch settings
@@ -163,6 +167,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Policy Change** applies to one **Source** and changes its **Source Policy** or **Rights Policy**.
 - An **Ingest Attempt** records one **Source Adapter** execution for one **Source**.
 - A **Failure Queue** can include failed **Ingest Attempts**, failed **Extraction Attempts**, and failed **Model Calls**.
+- A **Manual Moderation Action** is performed by an **Admin** and may hide or restore a **Candidate Item** or **Published Item** without deleting source evidence.
 - An **Extraction Attempt** fetches and extracts readable text for one **Candidate Item** when **Source Policy** and **Rights Policy** allow it.
 - An **Extraction Result** may feed later normalization into a **Content Item**.
 - A **Candidate Item** may become a **Content Item** after normalization, deduplication, and policy checks.
@@ -192,3 +197,4 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - "article" was too narrow for releases, papers, and feed entries; resolved: use **Candidate Item**, **Content Item**, or **Published Item** based on lifecycle stage.
 - "crawl policy", "source policy", and "rights policy" were easy to conflate; resolved: **Source Policy** controls access and processing behavior, while **Rights Policy** controls storage, translation, snapshots, and public display.
 - "RSS reader" misstates the product boundary; resolved: RSS/Atom is a **Source Adapter**, not the product category.
+- "hide" could mean delete, reject, block a source, or process reader feedback; resolved: use **Manual Moderation Action** for Admin hide/restore decisions.
