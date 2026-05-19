@@ -50,6 +50,22 @@ Allowed body fields:
 - `enabled`
 - `policy`
 
+Admin policy edit forms submit only a nested `policy` payload:
+
+```json
+{
+  "policy": {
+    "crawlEnabled": true,
+    "fetchIntervalMinutes": 60,
+    "maxRequestsPerHour": 12,
+    "saveLevel": "metadata_only",
+    "rightsPolicy": "metadata_only",
+    "translationPolicy": "none",
+    "riskLevel": "medium"
+  }
+}
+```
+
 ## Validation Boundary
 
 Fastify JSON Schema rejects invalid request shape before repository calls. PostgreSQL check constraints remain the durable policy vocabulary guard.

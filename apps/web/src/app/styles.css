@@ -258,6 +258,52 @@ dd {
   margin-top: 2rem;
 }
 
+.admin-policy-section {
+  border-top: 1px solid #d7dde5;
+  margin-top: 2rem;
+  padding-top: 2rem;
+}
+
+.admin-policy-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  max-width: 760px;
+}
+
+.admin-policy-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.admin-policy-form span {
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.admin-policy-form input,
+.admin-policy-form select {
+  border: 1px solid #94a3b8;
+  font: inherit;
+  min-width: 0;
+  padding: 0.5rem;
+}
+
+.admin-policy-form button {
+  justify-self: start;
+}
+
+.admin-checkbox-field {
+  align-items: center;
+  flex-direction: row;
+  grid-column: 1 / -1;
+}
+
+.admin-checkbox-field input {
+  width: auto;
+}
+
 @media (max-width: 760px) {
   .admin-header,
   .admin-actions,
@@ -269,6 +315,7 @@ dd {
 
   .admin-grid,
   .board-nav,
+  .admin-policy-form,
   .personal-grid {
     grid-template-columns: 1fr;
   }

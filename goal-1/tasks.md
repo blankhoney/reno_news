@@ -736,7 +736,7 @@ Completion notes:
 
 ## Task 22: Milestone 5 / Issue 013 Admin Source Policy Edit Foundation
 
-Status: Pending
+Status: Done
 
 Scope:
 - Add web tests for policy form payload parsing.
@@ -751,3 +751,13 @@ Verification:
 - `pnpm --filter @reno-news/web lint`
 - `pnpm --filter @reno-news/web build`
 - Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 013 on 2026-05-20.
+- Added red tests for policy form parsing and nested source policy update payloads.
+- Added constrained policy option exports, `sourcePolicyUpdateFromFormData`, and `updateSourcePolicy`.
+- Added `updateSourcePolicyAction` with source detail revalidation and redirect.
+- Added policy edit controls on `/admin/sources/[id]`.
+- Updated README, Sources API docs, Issue 013 plan, implementation log, and master plan.
+- Verified targeted web tests, web lint, web build, full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local admin policy form smoke through Next Server Action.
+- Did not add source creation UI, policy history, auth/RBAC, failure queue, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters.
