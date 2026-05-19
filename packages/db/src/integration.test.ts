@@ -31,6 +31,9 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     const aiTables = await pool.query<{ count: string }>(
       "select count(*) from information_schema.tables where table_schema = 'public' and table_name in ('model_calls', 'ai_evaluations')"
     );
+    const translationTables = await pool.query<{ count: string }>(
+      "select count(*) from information_schema.tables where table_schema = 'public' and table_name = 'translations'"
+    );
 
     assert.equal(Number(boards.rows[0].count), 5);
     assert.equal(Number(sources.rows[0].count), 5);
@@ -38,6 +41,7 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     assert.equal(Number(rawEntries.rows[0].count), 5);
     assert.equal(Number(extractionTables.rows[0].count), 2);
     assert.equal(Number(aiTables.rows[0].count), 2);
+    assert.equal(Number(translationTables.rows[0].count), 1);
 
     await assert.rejects(
       pool.query(
@@ -71,6 +75,16 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     await assert.rejects(
       pool.query(
         "insert into model_calls (provider, model, purpose, schema_version, status) values ('test', 'test', 'ai_evaluation', 'v1', 'invalid')"
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "with mc as (insert into model_calls (provider, model, purpose, schema_version, status) values ('test', 'test', 'translation', 'v1', 'success') returning id) insert into translations (raw_entry_id, model_call_id, target_language, schema_version, status, translated_text, segments_json, quality_flags_json) select re.id, mc.id, 'fr', 'v1', 'draft', 'text', '[]'::jsonb, '[]'::jsonb from raw_entries re cross join mc limit 1"
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "with mc as (insert into model_calls (provider, model, purpose, schema_version, status) values ('test', 'test', 'translation', 'v1', 'success') returning id) insert into translations (raw_entry_id, model_call_id, target_language, schema_version, status, translated_text, segments_json, quality_flags_json) select re.id, mc.id, 'zh-Hans', 'v1', 'published', 'text', '[]'::jsonb, '[]'::jsonb from raw_entries re cross join mc limit 1"
       )
     );
   } finally {

@@ -366,7 +366,7 @@ Completion notes:
 
 ## Task 12: Milestone 3 / Issue 008 Chinese Translation Draft Foundation
 
-Status: Pending
+Status: Done
 
 Scope:
 - Add SQL migration for `translations`.
@@ -378,7 +378,23 @@ Scope:
 - Add OpenAI adapter boundary without requiring live API tests.
 
 Verification:
-- Pending until implementation starts.
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:migrate`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm db:seed`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test pnpm --filter @reno-news/db test:integration`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test uv run python -m unittest tests/test_translation.py`
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `uv run python -m unittest discover -s tests`
+- `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news_issue004_test uv run python -m unittest tests/test_rss_ingest.py tests/test_scheduler.py tests/test_health.py tests/test_extraction.py tests/test_ai_evaluation.py tests/test_translation.py`
+- `uv lock --check`
+- `docker compose -f infra/compose/compose.yml ps`
+- Direct and Caddy-proxied health smoke for web, API, and worker.
 
 Completion notes:
-- Pending.
+- Completed Issue 008 on 2026-05-20.
+- Added `translations`.
+- Added versioned translation output schema, provider-neutral adapter contract, deterministic fake adapter, translation policy and rights prefilter skip path, model-call logging, structured translation draft persistence, and injectable OpenAI Responses adapter boundary.
+- Covered fake-adapter success, missing extraction skip, disabled translation policy skip, blocked-rights skip, adapter failure logging, and OpenAI boundary request/parse behavior.
+- Did not add reader UI, search indexing, digest generation, public translation publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapters.

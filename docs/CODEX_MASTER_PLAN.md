@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 3 |
-| Current Issue | Issue 008 |
+| Current Issue | Next Milestone 3 issue |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -62,7 +62,7 @@ MVP v0.1 is frozen.
 | Milestone 0 | Repo, Dev Environment, CI/CD | Done | Issues 001-002 done |
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
-| Milestone 3 | AI Pipeline | In Progress | Issue 008 planned; implementation next |
+| Milestone 3 | AI Pipeline | In Progress | Issue 008 done; next issue planning needed |
 | Milestone 4 | Reader UI | Not Started | home, board, article pages |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
@@ -550,11 +550,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | In Progress |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | |
-| PR / Commit | |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -566,28 +566,46 @@ Required Tasks
 - [x] Add Translation Draft and Translation Segment terminology to `CONTEXT.md`.
 - [x] Add ADR for translation draft/public publishing separation.
 - [x] Add Issue 008 technical plan.
-- [ ] Add SQL migration for `translations`.
-- [ ] Add versioned translation output schema.
-- [ ] Add provider-neutral translation adapter interface.
-- [ ] Add deterministic fake adapter for tests.
-- [ ] Add translation policy and rights prefilter skip path.
-- [ ] Add model-call logging for success, failure, and skipped translation.
-- [ ] Store translated title/text, aligned segments, and quality flags.
-- [ ] Add OpenAI adapter boundary without requiring live API tests.
+- [x] Add SQL migration for `translations`.
+- [x] Add versioned translation output schema.
+- [x] Add provider-neutral translation adapter interface.
+- [x] Add deterministic fake adapter for tests.
+- [x] Add translation policy and rights prefilter skip path.
+- [x] Add model-call logging for success, failure, and skipped translation.
+- [x] Store translated title/text, aligned segments, and quality flags.
+- [x] Add OpenAI adapter boundary without requiring live API tests.
 
 Acceptance Criteria
 
-- [ ] One eligible extracted item can be translated through a fake adapter and stored without network access.
-- [ ] Every attempted translation creates a model-call record.
-- [ ] Translation output includes target language, title/text, aligned segments, and quality flags.
-- [ ] Prefilter skips missing extraction text, `translation_policy = 'none'`, and blocked rights without calling the adapter.
-- [ ] No reader UI, search, digest generation, public publishing, browser automation, or non-RSS adapter is added.
+- [x] One eligible extracted item can be translated through a fake adapter and stored without network access.
+- [x] Every attempted translation creates a model-call record.
+- [x] Translation output includes target language, title/text, aligned segments, and quality flags.
+- [x] Prefilter skips missing extraction text, `translation_policy = 'none'`, and blocked rights without calling the adapter.
+- [x] No reader UI, search, digest generation, public publishing, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Use fake adapters for tests.
 Do not require `OPENAI_API_KEY` for local verification.
 Do not expose translations to readers or search in this issue.
+
+**Implementation Note**
+
+Implemented:
+- `translations` SQL migration.
+- Versioned translation output schema and provider-neutral adapter result contract.
+- Worker prefilter for missing extraction text, disabled translation policy, and blocked rights.
+- Model-call logging for success, skipped, and failure outcomes.
+- Structured persistence for translated title/text, aligned segments, and quality flags.
+- Injectable OpenAI Responses adapter boundary using Structured Outputs, without live API tests.
+
+Validated:
+- Migration and seed integration tests include translation table existence and target-language/status constraints.
+- Worker tests cover fake-adapter success, missing extraction skip, disabled translation policy skip, blocked-rights skip, adapter failure logging, and OpenAI boundary request/parse behavior.
+- Full repo install, lint, tests, build, DB migration/seed, DB integration, worker discovery, targeted worker integration tests, Compose service status, health smoke, and `uv lock --check`.
+
+Known limitations:
+- No reader UI, search indexing, digest generation, public translation publishing, live OpenAI credentials, multi-provider routing, browser automation, or non-RSS adapter was added.
 
 ---
 
@@ -645,8 +663,7 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Continue Issue 008 implementation.
-Keep Issue 008 to translation draft storage, policy prefiltering, model-call logging, and adapter boundary tests.
+Plan the next Milestone 3 issue.
 Do not implement search, reader UI, digest generation, public publishing, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
@@ -914,6 +931,6 @@ Focus:
 Current required next action:
 
 ```text
-Continue Issue 008 implementation.
+Plan the next Milestone 3 issue.
 Do not implement search, reader UI, digest generation, public publishing, browser automation, or non-RSS adapters yet.
 ```

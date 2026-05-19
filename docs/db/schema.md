@@ -91,6 +91,16 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 - Stores the versioned schema and separate JSON objects for scores, rationale, evidence, and summary.
 - Reader display, translation publishing, and search indexing are not represented by this table.
 
+## Translations
+
+`translations`
+
+- Stores worker-generated translation drafts for one raw entry and, when present, one extraction result.
+- Links each translation draft to the model call that produced it.
+- `target_language` is constrained to `zh-Hans` for the MVP Chinese-first path.
+- `status` is constrained to `draft`; public publishing is a later workflow.
+- Stores translated title, translated text, aligned segment JSON, and quality flag JSON.
+
 ## Status Boundaries
 
 The constrained status fields are deliberately broad MVP values. They are not AI, extraction, or publishing workflows by themselves.

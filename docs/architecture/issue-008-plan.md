@@ -51,12 +51,20 @@ Use the Responses API with Structured Outputs for the production adapter boundar
 
 ## TDD Plan
 
-1. Add migration tests for `translations` table existence and constrained status/target language.
-2. Add schema fixture tests for translation output shape.
-3. Add worker tests for fake-adapter success, missing extraction skip, disabled translation policy skip, blocked rights skip, and adapter failure logging.
-4. Implement SQL migration and persistence helpers.
-5. Implement provider-neutral translation adapter interface and fake adapter.
-6. Add OpenAI Responses adapter boundary without requiring live API tests.
+1. [x] Add migration tests for `translations` table existence and constrained status/target language.
+2. [x] Add schema fixture tests for translation output shape.
+3. [x] Add worker tests for fake-adapter success, missing extraction skip, disabled translation policy skip, blocked rights skip, and adapter failure logging.
+4. [x] Implement SQL migration and persistence helpers.
+5. [x] Implement provider-neutral translation adapter interface and fake adapter.
+6. [x] Add OpenAI Responses adapter boundary without requiring live API tests.
+
+## Implemented Boundary
+
+- `infra/db/migrations/0006_translations.sql` adds `translations`.
+- `services/worker/src/reno_worker/translation.py` owns translation prefiltering, adapter execution, model-call logging, and draft persistence.
+- The fake adapter keeps tests deterministic and network-free.
+- The OpenAI Responses boundary is an injectable client adapter that builds a `text.format` JSON Schema request and parses structured output text.
+- Local verification does not require `OPENAI_API_KEY`.
 
 ## Acceptance Criteria
 
