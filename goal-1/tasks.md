@@ -816,3 +816,23 @@ Completion notes:
 - Updated README, Admin Failures API docs, Issue 014 plan, implementation log, and master plan.
 - Verified targeted DB integration, API, and web tests, full repo install, lint, tests, build, worker discovery, `uv lock --check`, Compose service status, direct/Caddy health smoke, and local failure queue API/page smoke.
 - Did not add retry, acknowledgement, resolution workflow, new failure queue table, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, or non-RSS adapters.
+
+## Check-Debug Loop 8
+
+Status: Done
+
+Run after Tasks 22-24:
+- Re-read `goal-1/input.md`, `goal-1/plan.md`, and `goal-1/tasks.md`.
+- Audit docs, code, tests, running services, and deferred-scope boundaries against the master plan.
+- Repair gaps before continuing.
+
+Completion notes:
+- Completed after Tasks 22-24 on 2026-05-20.
+- Re-read goal input, plan, and tasks after context compaction.
+- Confirmed Issue 013 and Issue 014 are complete and the current next action is planning the next Milestone 5 admin UI issue.
+- Confirmed `docs/CODEX_MASTER_PLAN.md` keeps Feedback workflow in Milestone 6, so the next Milestone 5 slice should not start feedback handling.
+- Ran deferred-scope scan and found only documentation references for retry, acknowledgement, resolution workflow, source creation UI, policy history, auth/RBAC, feedback handling, raw-entry hide/restore, search, digest generation, browser automation, and non-RSS adapters.
+- Verified full repo `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, and `pnpm build`.
+- Verified worker tests with `uv --project services/worker run python -m unittest discover -s services/worker/tests` and worker lock consistency with `uv lock --check` from `services/worker`.
+- Verified Compose service status and direct plus Caddy-proxied health endpoints for web, API, and worker.
+- Found no blocker to planning the next Milestone 5 admin UI issue.
