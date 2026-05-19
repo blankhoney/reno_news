@@ -822,6 +822,104 @@ test("reader repository applies bounded feedback quality penalty to digest order
   }
 });
 
+test("feedback repository reviews feedback and digest ignores dismissed feedback penalty", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const feedbackRepository = createFeedbackRepository(databaseUrl);
+  const readerRepository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+
+    const dismissedItemId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-feedback-review-dismissed",
+      title: "Feedback Review Dismissed Item",
+      summaryOneSentence: "Feedback review dismissed summary",
+      sourceUrl: "https://example.invalid/reader-detail-feedback-review-dismissed.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const activePenaltyItemId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-feedback-review-active",
+      title: "Feedback Review Active Item",
+      summaryOneSentence: "Feedback review active summary",
+      sourceUrl: "https://example.invalid/reader-detail-feedback-review-active.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+
+    const dismissedFeedback = await feedbackRepository.createFeedback({
+      rawEntryId: dismissedItemId,
+      feedbackType: "quality_issue",
+      message: "Invalid feedback signal."
+    });
+    const activeFeedback = await feedbackRepository.createFeedback({
+      rawEntryId: activePenaltyItemId,
+      feedbackType: "quality_issue",
+      message: "Still eligible."
+    });
+
+    assert.ok(dismissedFeedback);
+    assert.equal(dismissedFeedback.reviewStatus, "open");
+    assert.equal(dismissedFeedback.reviewNote, null);
+    assert.equal(dismissedFeedback.reviewedAt, null);
+    assert.ok(activeFeedback);
+
+    for (const reviewStatus of ["reviewed", "resolved", "open"] as const) {
+      const updated = await feedbackRepository.updateFeedbackReview(dismissedFeedback.id, {
+        reviewStatus
+      });
+
+      assert.ok(updated);
+      assert.equal(updated.reviewStatus, reviewStatus);
+      assert.ok(updated.reviewedAt);
+    }
+
+    const dismissed = await feedbackRepository.updateFeedbackReview(dismissedFeedback.id, {
+      reviewStatus: "dismissed",
+      reviewNote: "Invalid duplicate report."
+    });
+
+    assert.ok(dismissed);
+    assert.equal(dismissed.reviewStatus, "dismissed");
+    assert.equal(dismissed.reviewNote, "Invalid duplicate report.");
+    assert.ok(dismissed.reviewedAt);
+    assert.equal(
+      await feedbackRepository.updateFeedbackReview(999_999_999, {
+        reviewStatus: "dismissed"
+      }),
+      null
+    );
+
+    await assert.rejects(
+      pool.query("update reader_feedback set review_status = 'invalid' where id = $1", [
+        dismissedFeedback.id
+      ])
+    );
+    await assert.rejects(
+      pool.query("update reader_feedback set review_note = $1 where id = $2", [
+        "x".repeat(2001),
+        dismissedFeedback.id
+      ])
+    );
+
+    const digestItems = await readerRepository.listReaderDigestItems({
+      boardSlug: "ai",
+      limit: 20
+    });
+    const digestIds = digestItems.map((item) => item.id);
+
+    assert.ok(digestIds.indexOf(dismissedItemId) < digestIds.indexOf(activePenaltyItemId));
+  } finally {
+    await feedbackRepository.close();
+    await readerRepository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
 test("feedback repository stores feedback only for visible reader items", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });

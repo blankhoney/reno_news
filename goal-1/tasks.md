@@ -1330,3 +1330,43 @@ Completion notes:
 - Added Feedback Review terminology, Feedback Review Status terminology, ADR 0025, `docs/architecture/issue-021-plan.md`, and `docs/logs/2026-05-20-issue-021.md`.
 - Updated Feedback API docs and `docs/CODEX_MASTER_PLAN.md` so Issue 021 implementation is next.
 - Deferred auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, and lifecycle mutation from Feedback Review.
+
+## Task 38: Milestone 6 / Issue 021 Admin Feedback Review Foundation
+
+Status: Done
+
+Scope:
+- Add migration tests for constrained Feedback Review Status, optional bounded review note, and review timestamp fields.
+- Add DB integration tests for default open feedback, constrained review updates, missing feedback, and dismissed feedback excluded from Quality Feedback Penalty.
+- Implement the feedback review repository update path.
+- Update Digest penalty computation so dismissed feedback does not count.
+- Add API tests and route for `PATCH /admin/feedback/:id`.
+- Add web API client, Server Action, tests, and controls on `/admin/feedback`.
+- Update README, Feedback API docs, master plan, goal plan, and implementation log.
+- Do not add auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or lifecycle mutation from Feedback Review.
+
+Verification:
+- `pnpm --filter @reno-news/db test:integration`
+- `pnpm --filter @reno-news/api test`
+- `pnpm --filter @reno-news/web test`
+- Full repo checks as needed for touched surfaces.
+
+Completion notes:
+- Completed Issue 021 on 2026-05-20.
+- Added migration `0009_reader_feedback_review.sql` with constrained Feedback Review Status, optional bounded review note, and review timestamp fields.
+- Added DB integration coverage for default `open`, constrained review updates to `open`, `reviewed`, `dismissed`, and `resolved`, missing feedback, direct database constraints, and dismissed feedback exclusion from Quality Feedback Penalty.
+- Added `FeedbackRepository.updateFeedbackReview`.
+- Updated `ReaderRepository.listReaderDigestItems` so dismissed feedback does not count toward Quality Feedback Penalty.
+- Added `PATCH /admin/feedback/:id` with Fastify v5 params/body JSON Schema validation.
+- Added web feedback review helper tests, API client PATCH helper, Server Action wiring, review form controls on `/admin/feedback`, and small form styling.
+- Updated README, Feedback API docs, Issue 021 plan, implementation log, master plan, and goal plan.
+- Verified targeted DB integration, API, and web tests.
+- Verified full repo install, lint, tests, and build.
+- Verified worker discovery tests and worker lock consistency.
+- Verified Compose service status, direct health checks, and Caddy-proxied health checks.
+- Verified local current-code smoke on API `3102` and web `3100`; `PATCH /admin/feedback/:id` dismissed a smoke feedback event, `/admin/feedback` rendered review controls, and API/web Digest ordering excluded dismissed feedback from penalty.
+- Deleted Issue 021 smoke rows and confirmed no smoke raw entries remain.
+- Stopped local smoke servers and confirmed no listeners remain on `3100` or `3102`.
+- Rebuilt web after local dev smoke and confirmed `apps/web/next-env.d.ts` has no diff.
+- Ran deferred-scope scan and found only documentation boundary references plus one existing worker test string for browser automation; no deferred implementation was added.
+- Did not add auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or lifecycle mutation from Feedback Review.

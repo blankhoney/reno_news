@@ -55,6 +55,11 @@ type ReaderFeedbackBody = {
   message?: string;
 };
 
+type FeedbackReviewBody = {
+  reviewStatus: "open" | "reviewed" | "dismissed" | "resolved";
+  reviewNote?: string;
+};
+
 type FailureQueueQuery = {
   limit?: number;
 };
@@ -82,6 +87,7 @@ const rightsPolicies = [
 const translationPolicies = ["none", "private_only", "public_excerpt", "public_fulltext"];
 const riskLevels = ["low", "medium", "high"];
 const rawEntryLifecycleActions = ["hide", "restore"];
+const feedbackReviewStatuses = ["open", "reviewed", "dismissed", "resolved"];
 const feedbackTypes = [
   "correction",
   "quality_issue",
@@ -177,6 +183,16 @@ const readerFeedbackBodySchema = {
   properties: {
     feedbackType: { type: "string", enum: feedbackTypes },
     message: { type: "string", minLength: 1, maxLength: 2000, pattern: "\\S" }
+  }
+};
+
+const feedbackReviewBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["reviewStatus"],
+  properties: {
+    reviewStatus: { type: "string", enum: feedbackReviewStatuses },
+    reviewNote: { type: "string", minLength: 1, maxLength: 2000, pattern: "\\S" }
   }
 };
 
@@ -366,6 +382,33 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
       try {
         const query = request.query as FailureQueueQuery;
         const feedback = await feedbackRepository.listFeedback({ limit: query.limit });
+        return { feedback };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.patch(
+    "/admin/feedback/:id",
+    {
+      schema: {
+        params: sourceParamsSchema,
+        body: feedbackReviewBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const feedback = await feedbackRepository.updateFeedbackReview(
+          Number(id),
+          request.body as FeedbackReviewBody
+        );
+
+        if (!feedback) {
+          return reply.code(404).send({ error: "Feedback not found" });
+        }
+
         return { feedback };
       } catch (error) {
         return sendSourceError(reply, error);
@@ -655,6 +698,9 @@ const unconfiguredFeedbackRepository: FeedbackRepository = {
     throw new DatabaseNotConfiguredError();
   },
   listFeedback: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  updateFeedbackReview: async () => {
     throw new DatabaseNotConfiguredError();
   },
   close: async () => undefined

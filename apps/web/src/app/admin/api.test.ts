@@ -1,13 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  feedbackReviewUpdateFromFormData,
   getFeedback,
   getFailures,
   joinServiceUrl,
   rawEntryLifecycleActionFromFormData,
   sourcePolicyUpdateFromFormData,
+  updateFeedbackReview,
   updateRawEntryLifecycle,
   updateSourcePolicy,
+  type FeedbackReviewUpdate,
   type RawEntryLifecycleUpdate,
   type SourcePolicyUpdate
 } from "./api";
@@ -130,6 +133,74 @@ test("updateRawEntryLifecycle sends constrained lifecycle action to the raw entr
   await updateRawEntryLifecycle("9", update);
 
   assert.equal(requestUrl, "http://localhost:3001/raw-entries/9");
+  assert.equal(requestInit?.method, "PATCH");
+  assert.deepEqual(requestInit?.headers, { "content-type": "application/json" });
+  assert.equal(requestInit?.body, JSON.stringify(update));
+});
+
+test("feedbackReviewUpdateFromFormData builds a constrained review payload", () => {
+  const formData = new FormData();
+  formData.set("reviewStatus", "dismissed");
+  formData.set("reviewNote", "Invalid duplicate report.");
+
+  assert.deepEqual(feedbackReviewUpdateFromFormData(formData), {
+    reviewStatus: "dismissed",
+    reviewNote: "Invalid duplicate report."
+  });
+});
+
+test("feedbackReviewUpdateFromFormData omits blank review notes", () => {
+  const formData = new FormData();
+  formData.set("reviewStatus", "open");
+  formData.set("reviewNote", "   ");
+
+  assert.deepEqual(feedbackReviewUpdateFromFormData(formData), {
+    reviewStatus: "open"
+  });
+});
+
+test("feedbackReviewUpdateFromFormData rejects unsupported review statuses", () => {
+  const formData = new FormData();
+  formData.set("reviewStatus", "moderated");
+
+  assert.throws(
+    () => feedbackReviewUpdateFromFormData(formData),
+    /reviewStatus has an unsupported value/
+  );
+});
+
+test("feedbackReviewUpdateFromFormData rejects oversized review notes", () => {
+  const formData = new FormData();
+  formData.set("reviewStatus", "reviewed");
+  formData.set("reviewNote", "x".repeat(2001));
+
+  assert.throws(
+    () => feedbackReviewUpdateFromFormData(formData),
+    /reviewNote must be at most 2000 characters/
+  );
+});
+
+test("updateFeedbackReview sends constrained review payload to the feedback API", async () => {
+  const previousFetch = globalThis.fetch;
+  const update: FeedbackReviewUpdate = {
+    reviewStatus: "dismissed",
+    reviewNote: "Invalid duplicate report."
+  };
+  let requestUrl = "";
+  let requestInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    requestUrl = String(url);
+    requestInit = init;
+    return new Response("{}", { status: 200 });
+  }) as typeof fetch;
+  test.after(() => {
+    globalThis.fetch = previousFetch;
+  });
+
+  await updateFeedbackReview("20", update);
+
+  assert.equal(requestUrl, "http://localhost:3001/admin/feedback/20");
   assert.equal(requestInit?.method, "PATCH");
   assert.deepEqual(requestInit?.headers, { "content-type": "application/json" });
   assert.equal(requestInit?.body, JSON.stringify(update));

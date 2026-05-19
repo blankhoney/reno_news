@@ -43,3 +43,20 @@ test("reader feedback migration defines constrained item-scoped feedback", async
     assert.match(migration, new RegExp(`'${feedbackType}'`));
   }
 });
+
+test("reader feedback review migration defines constrained review state", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0009_reader_feedback_review.sql"),
+    "utf8"
+  );
+
+  assert.match(migration, /alter table reader_feedback/);
+  assert.match(migration, /review_status text not null default 'open'/);
+  assert.match(migration, /reader_feedback_review_status_check/);
+  for (const reviewStatus of ["open", "reviewed", "dismissed", "resolved"]) {
+    assert.match(migration, new RegExp(`'${reviewStatus}'`));
+  }
+  assert.match(migration, /review_note text/);
+  assert.match(migration, /length\(review_note\) <= 2000/);
+  assert.match(migration, /reviewed_at timestamptz/);
+});

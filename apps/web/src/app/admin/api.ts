@@ -14,12 +14,19 @@ export const TRANSLATION_POLICY_OPTIONS = [
 ] as const;
 export const RISK_LEVEL_OPTIONS = ["low", "medium", "high"] as const;
 export const RAW_ENTRY_LIFECYCLE_ACTION_OPTIONS = ["hide", "restore"] as const;
+export const FEEDBACK_REVIEW_STATUS_OPTIONS = [
+  "open",
+  "reviewed",
+  "dismissed",
+  "resolved"
+] as const;
 
 export type SaveLevel = (typeof SAVE_LEVEL_OPTIONS)[number];
 export type RightsPolicy = (typeof RIGHTS_POLICY_OPTIONS)[number];
 export type TranslationPolicy = (typeof TRANSLATION_POLICY_OPTIONS)[number];
 export type RiskLevel = (typeof RISK_LEVEL_OPTIONS)[number];
 export type RawEntryLifecycleAction = (typeof RAW_ENTRY_LIFECYCLE_ACTION_OPTIONS)[number];
+export type FeedbackReviewStatus = (typeof FEEDBACK_REVIEW_STATUS_OPTIONS)[number];
 
 export type SourcePolicyRecord = {
   crawlEnabled: boolean;
@@ -35,6 +42,11 @@ export type SourcePolicyUpdate = SourcePolicyRecord;
 
 export type RawEntryLifecycleUpdate = {
   action: RawEntryLifecycleAction;
+};
+
+export type FeedbackReviewUpdate = {
+  reviewStatus: FeedbackReviewStatus;
+  reviewNote?: string;
 };
 
 export type SourceRecord = {
@@ -84,6 +96,9 @@ export type FeedbackRecord = {
   sourceTitle: string;
   feedbackType: string;
   message: string | null;
+  reviewStatus: FeedbackReviewStatus;
+  reviewNote: string | null;
+  reviewedAt: string | null;
   createdAt: string;
 };
 
@@ -152,6 +167,20 @@ export async function updateRawEntryLifecycle(
   }
 }
 
+export async function updateFeedbackReview(
+  id: string,
+  update: FeedbackReviewUpdate
+): Promise<void> {
+  const response = await fetch(apiUrl(`/admin/feedback/${id}`), {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(update)
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update feedback ${id}: ${response.status}`);
+  }
+}
+
 export function sourcePolicyUpdateFromFormData(formData: Pick<FormData, "get">): SourcePolicyUpdate {
   return {
     crawlEnabled: readBooleanField(formData, "crawlEnabled"),
@@ -170,6 +199,23 @@ export function rawEntryLifecycleActionFromFormData(
   return {
     action: readOptionField(formData, "action", RAW_ENTRY_LIFECYCLE_ACTION_OPTIONS)
   };
+}
+
+export function feedbackReviewUpdateFromFormData(
+  formData: Pick<FormData, "get">
+): FeedbackReviewUpdate {
+  const reviewStatus = readOptionField(
+    formData,
+    "reviewStatus",
+    FEEDBACK_REVIEW_STATUS_OPTIONS
+  );
+  const reviewNote = readOptionalStringField(formData, "reviewNote");
+
+  if (reviewNote && reviewNote.length > 2000) {
+    throw new Error("reviewNote must be at most 2000 characters");
+  }
+
+  return reviewNote ? { reviewStatus, reviewNote } : { reviewStatus };
 }
 
 export async function triggerSourceIngest(id: string): Promise<void> {
@@ -259,4 +305,15 @@ function readStringField(formData: Pick<FormData, "get">, name: string): string 
   }
 
   return value;
+}
+
+function readOptionalStringField(formData: Pick<FormData, "get">, name: string): string | null {
+  const value = formData.get(name);
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }

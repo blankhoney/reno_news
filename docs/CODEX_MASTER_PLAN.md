@@ -12,8 +12,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 
 | Field | Value |
 |---|---|
-| Current Milestone | Milestone 6 |
-| Current Issue | Issue 021 / admin feedback review implementation |
+| Current Milestone | Milestone 7 |
+| Current Issue | Milestone 7 / next issue planning |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -65,7 +65,7 @@ MVP v0.1 is frozen.
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
 | Milestone 4 | Reader UI | Done | Issues 010-012 done |
 | Milestone 5 | Admin UI | Done | Issues 013-015 done |
-| Milestone 6 | Search, Feedback, Digest | In Progress | Issue 021 planned; implementation next |
+| Milestone 6 | Search, Feedback, Digest | Done | Issues 016-021 done |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
 
 Status values:
@@ -1377,11 +1377,11 @@ Known limitations:
 
 | Field | Value |
 |---|---|
-| Status | Planned |
+| Status | Done |
 | Owner | Codex |
 | Started At | 2026-05-20 |
-| Completed At | TBD |
-| PR / Commit | pending |
+| Completed At | 2026-05-20 |
+| PR / Commit | this commit |
 
 Goal
 
@@ -1394,29 +1394,54 @@ Required Tasks
 - [x] Add ADR for event-local, non-moderating feedback review.
 - [x] Add Issue 021 technical plan and implementation log.
 - [x] Update Feedback API docs to reflect current Quality Feedback Penalty behavior.
-- [ ] Add migration tests for constrained review status, optional bounded review note, and review timestamp fields.
-- [ ] Add DB integration tests for default open feedback, constrained review updates, missing feedback, and dismissed feedback excluded from Digest penalty.
-- [ ] Implement feedback review repository update path.
-- [ ] Update `ReaderRepository.listReaderDigestItems` so dismissed feedback does not count toward Quality Feedback Penalty.
-- [ ] Add API tests for `PATCH /admin/feedback/:id`.
-- [ ] Implement Fastify route with full JSON Schema params/body validation.
-- [ ] Add web API client and Server Action tests for feedback review forms.
-- [ ] Add review controls to `/admin/feedback`.
-- [ ] Update Feedback API docs, README, master plan, goal plan, and implementation log.
+- [x] Add migration tests for constrained review status, optional bounded review note, and review timestamp fields.
+- [x] Add DB integration tests for default open feedback, constrained review updates, missing feedback, and dismissed feedback excluded from Digest penalty.
+- [x] Implement feedback review repository update path.
+- [x] Update `ReaderRepository.listReaderDigestItems` so dismissed feedback does not count toward Quality Feedback Penalty.
+- [x] Add API tests for `PATCH /admin/feedback/:id`.
+- [x] Implement Fastify route with full JSON Schema params/body validation.
+- [x] Add web API client and Server Action tests for feedback review forms.
+- [x] Add review controls to `/admin/feedback`.
+- [x] Update Feedback API docs, README, master plan, goal plan, and implementation log.
 
 Acceptance Criteria
 
-- [ ] New feedback defaults to `open`.
-- [ ] Admin can set feedback review status to `open`, `reviewed`, `dismissed`, or `resolved`.
-- [ ] Review note is optional and bounded.
-- [ ] Missing feedback review updates return `404`.
-- [ ] Dismissed feedback does not contribute to Quality Feedback Penalty.
-- [ ] Feedback Review does not hide, restore, delete, moderate, re-board, personalize, or change raw-entry lifecycle.
-- [ ] No auth/RBAC, Admin identity, audit log, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
+- [x] New feedback defaults to `open`.
+- [x] Admin can set feedback review status to `open`, `reviewed`, `dismissed`, or `resolved`.
+- [x] Review note is optional and bounded.
+- [x] Missing feedback review updates return `404`.
+- [x] Dismissed feedback does not contribute to Quality Feedback Penalty.
+- [x] Feedback Review does not hide, restore, delete, moderate, re-board, personalize, or change raw-entry lifecycle.
+- [x] No auth/RBAC, Admin identity, audit log, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
 
 Notes
 
 Keep Feedback Review event-local. Do not add Admin identity, audit logs, lifecycle actions, or a moderation queue in this issue.
+
+**Completion Note**
+
+Implemented:
+- `reader_feedback` review columns with constrained status, optional bounded note, and review timestamp.
+- `FeedbackRepository.updateFeedbackReview` for event-local review updates.
+- Digest penalty eligibility now excludes `dismissed` feedback.
+- `PATCH /admin/feedback/:id` with Fastify v5 params/body JSON Schema validation.
+- Web feedback review helper, Server Action wiring, and review controls on `/admin/feedback`.
+- README, Feedback API docs, Issue 021 plan, implementation log, master plan, and goal plan updates.
+
+Validated:
+- Migration tests cover review status, review note, and review timestamp fields.
+- DB integration tests cover default `open`, constrained review updates, missing feedback, database constraints, and dismissed feedback exclusion from Digest penalty.
+- API tests cover successful review update, missing feedback `404`, and invalid review payloads.
+- Web tests cover feedback review payload construction and API client PATCH behavior.
+- Full repo install, lint, tests, and build pass.
+- Worker discovery tests and worker lock consistency pass.
+- Compose service status, direct health checks, and Caddy-proxied health checks pass.
+- Current-code smoke on API `3102` and web `3100` confirms Admin Feedback Review, Admin page rendering, and Digest ordering with dismissed feedback excluded from penalty.
+- Issue 021 smoke rows were deleted, ports `3100` and `3102` are clear, and `apps/web/next-env.d.ts` has no diff after the final web build.
+- Deferred-scope scan found only documentation boundary references plus one existing worker test string for browser automation; no deferred implementation was added.
+
+Known limitations:
+- Feedback Review is event-local and intentionally does not add auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or raw-entry lifecycle mutation.
 
 ---
 
@@ -1474,8 +1499,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Implement Issue 021: admin Feedback Review foundation.
-Do not implement auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or lifecycle mutation from feedback review.
+Plan the first Milestone 7 issue: backup, monitoring, and release audit.
+Do not implement production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters until the next issue is explicitly scoped.
 ---
 ## 9. Codex Operating Rules
 
@@ -1741,6 +1766,6 @@ Focus:
 Current required next action:
 
 ```text
-Implement Issue 021: admin Feedback Review foundation.
-Do not implement auth/RBAC, Admin identity, audit logs, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, non-RSS adapters, or lifecycle mutation from feedback review.
+Plan the first Milestone 7 issue: backup, monitoring, and release audit.
+Do not implement production backup automation, monitoring integrations, alerting, release workflow, auth/RBAC, Admin identity, audit logs, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, or non-RSS adapters until the next issue is explicitly scoped.
 ```

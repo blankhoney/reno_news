@@ -7,10 +7,17 @@ export type FeedbackType =
   | "broken_link"
   | "rights_concern";
 
+export type FeedbackReviewStatus = "open" | "reviewed" | "dismissed" | "resolved";
+
 export type CreateFeedbackInput = {
   rawEntryId: number;
   feedbackType: FeedbackType;
   message?: string | null;
+};
+
+export type UpdateFeedbackReviewInput = {
+  reviewStatus: FeedbackReviewStatus;
+  reviewNote?: string | null;
 };
 
 export type FeedbackRecord = {
@@ -22,6 +29,9 @@ export type FeedbackRecord = {
   sourceTitle: string;
   feedbackType: FeedbackType;
   message: string | null;
+  reviewStatus: FeedbackReviewStatus;
+  reviewNote: string | null;
+  reviewedAt: string | null;
   createdAt: string;
 };
 
@@ -32,6 +42,10 @@ export type ListFeedbackOptions = {
 export type FeedbackRepository = {
   createFeedback(input: CreateFeedbackInput): Promise<FeedbackRecord | null>;
   listFeedback(options?: ListFeedbackOptions): Promise<FeedbackRecord[]>;
+  updateFeedbackReview(
+    id: number,
+    input: UpdateFeedbackReviewInput
+  ): Promise<FeedbackRecord | null>;
   close(): Promise<void>;
 };
 
@@ -42,8 +56,9 @@ type Queryable = {
   ): Promise<QueryResult<T>>;
 };
 
-type FeedbackRow = Omit<FeedbackRecord, "createdAt"> & {
+type FeedbackRow = Omit<FeedbackRecord, "createdAt" | "reviewedAt"> & {
   createdAt: Date | string;
+  reviewedAt: Date | string | null;
 };
 
 export function createFeedbackRepository(databaseUrl: string): FeedbackRepository {
@@ -52,6 +67,7 @@ export function createFeedbackRepository(databaseUrl: string): FeedbackRepositor
   return {
     createFeedback: async (input) => createFeedback(pool, input),
     listFeedback: async (options) => listFeedback(pool, options),
+    updateFeedbackReview: async (id, input) => updateFeedbackReview(pool, id, input),
     close: async () => {
       await pool.end();
     }
@@ -113,6 +129,35 @@ async function listFeedback(
   return result.rows.map(mapFeedbackRow);
 }
 
+async function updateFeedbackReview(
+  queryable: Queryable,
+  id: number,
+  input: UpdateFeedbackReviewInput
+): Promise<FeedbackRecord | null> {
+  const result = await queryable.query<FeedbackRow>(
+    `
+    with updated as (
+      update reader_feedback
+      set
+        review_status = $2,
+        review_note = nullif(trim($3::text), ''),
+        reviewed_at = now()
+      where id = $1
+      returning *
+    )
+    ${feedbackSelect}
+    from updated rf
+    join raw_entries re on re.id = rf.raw_entry_id
+    join sources s on s.id = re.source_id
+    join boards b on b.id = s.board_id
+    `,
+    [id, input.reviewStatus, input.reviewNote ?? null]
+  );
+
+  const row = result.rows[0];
+  return row ? mapFeedbackRow(row) : null;
+}
+
 const feedbackSelect = `
     select
       rf.id::int as "id",
@@ -123,12 +168,20 @@ const feedbackSelect = `
       s.title as "sourceTitle",
       rf.feedback_type as "feedbackType",
       rf.message as "message",
+      rf.review_status as "reviewStatus",
+      rf.review_note as "reviewNote",
+      rf.reviewed_at as "reviewedAt",
       rf.created_at as "createdAt"
 `;
 
 function mapFeedbackRow(row: FeedbackRow): FeedbackRecord {
   return {
     ...row,
+    reviewedAt: row.reviewedAt
+      ? row.reviewedAt instanceof Date
+        ? row.reviewedAt.toISOString()
+        : row.reviewedAt
+      : null,
     createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt
   };
 }

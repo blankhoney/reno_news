@@ -425,6 +425,7 @@ async function listReaderDigestItems(
       ) as quality_feedback_penalty
       from reader_feedback rf
       where rf.raw_entry_id = re.id
+        and rf.review_status != 'dismissed'
     ) fp on true
     where ${filters.join(" and ")}
     order by fp.quality_feedback_penalty asc, coalesce(re.published_at, re.created_at) desc, re.id desc

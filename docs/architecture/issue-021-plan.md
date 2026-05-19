@@ -26,25 +26,25 @@ Do not add Admin identity, audit tables, moderation notes that mutate content, o
 
 ## TDD Plan
 
-1. [ ] Add migration tests for constrained `reader_feedback.review_status`, optional bounded review note, and review timestamp fields.
-2. [ ] Add DB integration tests for default open feedback, constrained review updates, missing feedback, and dismissed feedback excluded from Digest penalty.
-3. [ ] Implement feedback review repository update path.
-4. [ ] Update `ReaderRepository.listReaderDigestItems` so dismissed feedback does not count toward Quality Feedback Penalty.
-5. [ ] Add API tests for `PATCH /admin/feedback/:id`.
-6. [ ] Implement Fastify route with full JSON Schema params/body validation.
-7. [ ] Add web API client and Server Action tests for feedback review forms.
-8. [ ] Add review controls to `/admin/feedback`.
-9. [ ] Update Feedback API docs, README, master plan, goal plan, and implementation log.
+1. [x] Add migration tests for constrained `reader_feedback.review_status`, optional bounded review note, and review timestamp fields.
+2. [x] Add DB integration tests for default open feedback, constrained review updates, missing feedback, and dismissed feedback excluded from Digest penalty.
+3. [x] Implement feedback review repository update path.
+4. [x] Update `ReaderRepository.listReaderDigestItems` so dismissed feedback does not count toward Quality Feedback Penalty.
+5. [x] Add API tests for `PATCH /admin/feedback/:id`.
+6. [x] Implement Fastify route with full JSON Schema params/body validation.
+7. [x] Add web API client and Server Action tests for feedback review forms.
+8. [x] Add review controls to `/admin/feedback`.
+9. [x] Update Feedback API docs, README, master plan, goal plan, and implementation log.
 
 ## Acceptance Criteria
 
-- [ ] New feedback defaults to `open`.
-- [ ] Admin can set feedback review status to `open`, `reviewed`, `dismissed`, or `resolved`.
-- [ ] Review note is optional and bounded.
-- [ ] Missing feedback review updates return `404`.
-- [ ] Dismissed feedback does not contribute to Quality Feedback Penalty.
-- [ ] Feedback Review does not hide, restore, delete, moderate, re-board, personalize, or change raw-entry lifecycle.
-- [ ] No auth/RBAC, Admin identity, audit log, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
+- [x] New feedback defaults to `open`.
+- [x] Admin can set feedback review status to `open`, `reviewed`, `dismissed`, or `resolved`.
+- [x] Review note is optional and bounded.
+- [x] Missing feedback review updates return `404`.
+- [x] Dismissed feedback does not contribute to Quality Feedback Penalty.
+- [x] Feedback Review does not hide, restore, delete, moderate, re-board, personalize, or change raw-entry lifecycle.
+- [x] No auth/RBAC, Admin identity, audit log, reader identity, trust weighting, reply workflow, moderation queue, semantic/vector search, external search service, digest delivery, persisted digest table, editorial workflow, browser automation, or non-RSS adapter is added.
 
 ## Research References
 

@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+  feedbackReviewUpdateFromFormData,
   rawEntryLifecycleActionFromFormData,
   setSourceEnabled,
   sourcePolicyUpdateFromFormData,
   triggerSourceIngest,
+  updateFeedbackReview,
   updateRawEntryLifecycle,
   updateSourcePolicy
 } from "./api";
@@ -47,4 +49,13 @@ export async function updateRawEntryLifecycleAction(formData: FormData) {
   revalidatePath("/admin/raw-entries");
   revalidatePath(`/admin/raw-entries/${rawEntryId}`);
   redirect(`/admin/raw-entries/${rawEntryId}`);
+}
+
+export async function updateFeedbackReviewAction(formData: FormData) {
+  const feedbackId = String(formData.get("feedbackId") ?? "");
+  const update = feedbackReviewUpdateFromFormData(formData);
+
+  await updateFeedbackReview(feedbackId, update);
+  revalidatePath("/admin/feedback");
+  redirect("/admin/feedback");
 }

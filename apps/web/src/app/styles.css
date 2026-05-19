@@ -393,6 +393,30 @@ dd {
   width: auto;
 }
 
+.admin-feedback-review-form {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 12rem;
+}
+
+.admin-feedback-review-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.admin-feedback-review-form select,
+.admin-feedback-review-form textarea {
+  border: 1px solid #94a3b8;
+  font: inherit;
+  min-width: 0;
+  padding: 0.45rem;
+}
+
+.admin-feedback-review-form button {
+  justify-self: start;
+}
+
 @media (max-width: 760px) {
   .admin-header,
   .admin-actions,

@@ -100,6 +100,9 @@ const feedbackRecord: FeedbackRecord = {
   sourceTitle: "OpenAI News",
   feedbackType: "quality_issue",
   message: "Summary is too vague.",
+  reviewStatus: "open",
+  reviewNote: null,
+  reviewedAt: null,
   createdAt: "2026-05-20T00:00:00.000Z"
 };
 
@@ -119,6 +122,7 @@ function fakeFeedbackRepository(
   return {
     createFeedback: async () => feedbackRecord,
     listFeedback: async () => [feedbackRecord],
+    updateFeedbackReview: async () => feedbackRecord,
     close: async () => undefined,
     ...overrides
   };
@@ -604,6 +608,99 @@ test("GET /admin/feedback lists recent feedback with optional limit", async () =
   assert.equal(response.statusCode, 200);
   assert.equal(receivedLimit, 5);
   assert.deepEqual(response.json(), { feedback: [feedbackRecord] });
+});
+
+test("PATCH /admin/feedback/:id updates feedback review state", async () => {
+  let receivedId: number | undefined;
+  let receivedInput: unknown;
+  const reviewedFeedback: FeedbackRecord = {
+    ...feedbackRecord,
+    reviewStatus: "dismissed",
+    reviewNote: "Invalid duplicate report.",
+    reviewedAt: "2026-05-20T01:00:00.000Z"
+  };
+  const app = buildApp(
+    { logger: false },
+    {
+      feedbackRepository: fakeFeedbackRepository({
+        updateFeedbackReview: async (id, input) => {
+          receivedId = id;
+          receivedInput = input;
+          return reviewedFeedback;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PATCH",
+    url: "/admin/feedback/20",
+    payload: {
+      reviewStatus: "dismissed",
+      reviewNote: "Invalid duplicate report."
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(receivedInput, {
+    reviewStatus: "dismissed",
+    reviewNote: "Invalid duplicate report."
+  });
+  assert.equal(receivedId, 20);
+  assert.deepEqual(response.json(), { feedback: reviewedFeedback });
+});
+
+test("PATCH /admin/feedback/:id returns 404 for missing feedback", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      feedbackRepository: fakeFeedbackRepository({
+        updateFeedbackReview: async () => null
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PATCH",
+    url: "/admin/feedback/999",
+    payload: {
+      reviewStatus: "dismissed"
+    }
+  });
+
+  assert.equal(response.statusCode, 404);
+});
+
+test("PATCH /admin/feedback/:id rejects invalid review payloads", async () => {
+  const app = buildApp({ logger: false }, { feedbackRepository: fakeFeedbackRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const unsupported = await app.inject({
+    method: "PATCH",
+    url: "/admin/feedback/20",
+    payload: {
+      reviewStatus: "moderated"
+    }
+  });
+  const oversized = await app.inject({
+    method: "PATCH",
+    url: "/admin/feedback/20",
+    payload: {
+      reviewStatus: "reviewed",
+      reviewNote: "x".repeat(2001)
+    }
+  });
+
+  assert.equal(unsupported.statusCode, 400);
+  assert.equal(oversized.statusCode, 400);
 });
 
 test("GET /reader/boards lists reader boards", async () => {

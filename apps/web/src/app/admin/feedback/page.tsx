@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { getFeedback, type FeedbackRecord } from "../api";
+import {
+  FEEDBACK_REVIEW_STATUS_OPTIONS,
+  getFeedback,
+  type FeedbackRecord
+} from "../api";
+import { updateFeedbackReviewAction } from "../actions";
 
 export default async function AdminFeedbackPage() {
   const feedback = await getFeedback();
@@ -27,6 +32,7 @@ export default async function AdminFeedbackPage() {
               <th>Feedback</th>
               <th>Item</th>
               <th>Context</th>
+              <th>Review</th>
               <th>Time</th>
             </tr>
           </thead>
@@ -43,6 +49,9 @@ export default async function AdminFeedbackPage() {
                   </Link>
                 </td>
                 <td>{feedbackContext(record)}</td>
+                <td>
+                  <FeedbackReviewForm record={record} />
+                </td>
                 <td>{new Date(record.createdAt).toISOString()}</td>
               </tr>
             ))}
@@ -50,6 +59,35 @@ export default async function AdminFeedbackPage() {
         </table>
       )}
     </main>
+  );
+}
+
+function FeedbackReviewForm({ record }: { record: FeedbackRecord }) {
+  return (
+    <form className="admin-feedback-review-form" action={updateFeedbackReviewAction}>
+      <input type="hidden" name="feedbackId" value={record.id} />
+      <label>
+        <span>Status</span>
+        <select name="reviewStatus" defaultValue={record.reviewStatus}>
+          {FEEDBACK_REVIEW_STATUS_OPTIONS.map((status) => (
+            <option key={status} value={status}>
+              {reviewStatusLabel(status)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>Note</span>
+        <textarea
+          name="reviewNote"
+          maxLength={2000}
+          rows={2}
+          defaultValue={record.reviewNote ?? ""}
+        />
+      </label>
+      {record.reviewedAt ? <span>Reviewed {new Date(record.reviewedAt).toISOString()}</span> : null}
+      <button type="submit">Save review</button>
+    </form>
   );
 }
 
@@ -64,6 +102,13 @@ function feedbackContext(record: FeedbackRecord) {
 
 function feedbackTypeLabel(feedbackType: string): string {
   return feedbackType
+    .split("_")
+    .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
+    .join(" ");
+}
+
+function reviewStatusLabel(reviewStatus: string): string {
+  return reviewStatus
     .split("_")
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(" ");

@@ -1,6 +1,6 @@
 # Reno News
 
-Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, admin/debug views with source policy editing, failure inspection, raw-entry hide/restore, reader feedback inspection, reader home/board listings, reader item detail pages with related items, reader digest preview, PostgreSQL reader search, item-scoped feedback capture, and local saved/read-later state.
+Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, admin/debug views with source policy editing, failure inspection, raw-entry hide/restore, feedback review, reader home/board listings, reader item detail pages with related items, reader digest preview, PostgreSQL reader search, item-scoped feedback capture, and local saved/read-later state.
 
 ## Requirements
 
@@ -67,6 +67,7 @@ Admin/debug endpoints:
 - API raw entry hide/restore: `PATCH http://localhost:3001/raw-entries/:id`
 - API failure queue: `http://localhost:3001/admin/failures`
 - API feedback queue: `http://localhost:3001/admin/feedback`
+- API feedback review: `PATCH http://localhost:3001/admin/feedback/:id`
 - Worker manual ingest: `POST http://localhost:3002/ingest/source/:id`
 
 Reader endpoints:
@@ -87,4 +88,4 @@ Reader endpoints:
 
 ## Scope Boundary
 
-Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, or auth/RBAC yet. Saved/read-later state is local to the browser and is not synced to a server. Reader feedback is stored as append-only item-scoped events; only Digest preview currently consumes it, as a bounded ordering penalty that does not hide, restore, delete, moderate, personalize, or change search order. Reader search, related items, and digest preview are PostgreSQL-only over reader-safe metadata and summary fields. The current reader surface does not implement auth, backend personal-state APIs, email delivery, scheduler-driven digest generation, persisted digest tables, editorial digest workflow, public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, moderation workflow, trust weighting, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
+Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, or auth/RBAC yet. Saved/read-later state is local to the browser and is not synced to a server. Reader feedback is stored as append-only item-scoped events; Digest preview currently consumes eligible feedback as a bounded ordering penalty. Admin feedback review can mark one feedback event as `open`, `reviewed`, `dismissed`, or `resolved`; only `dismissed` changes penalty eligibility, and review does not hide, restore, delete, moderate, personalize, change search order, or mutate raw-entry lifecycle. Reader search, related items, and digest preview are PostgreSQL-only over reader-safe metadata and summary fields. The current reader surface does not implement auth, backend personal-state APIs, email delivery, scheduler-driven digest generation, persisted digest tables, editorial digest workflow, public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, moderation workflow, trust weighting, Admin identity, audit logs, reply workflow, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
