@@ -13,7 +13,7 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 4 |
-| Current Issue | Next Milestone 4 issue planning |
+| Current Issue | Issue 012 |
 | Overall Status | In Progress |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
@@ -63,7 +63,7 @@ MVP v0.1 is frozen.
 | Milestone 1 | Source Registry + RSS Ingest | Done | Issues 003-005 done |
 | Milestone 2 | Fetch & Extraction | Done | Issue 006 done |
 | Milestone 3 | AI Pipeline | Done | Issues 007-009 done |
-| Milestone 4 | Reader UI | In Progress | Issues 010-011 done; next issue planning needed |
+| Milestone 4 | Reader UI | In Progress | Issues 010-011 done; Issue 012 planned, implementation next |
 | Milestone 5 | Admin UI | Not Started | source/policy/failure views |
 | Milestone 6 | Search, Feedback, Digest | Not Started | PostgreSQL-first |
 | Milestone 7 | Backup, Monitoring, Release Audit | Not Started | production readiness |
@@ -800,6 +800,48 @@ Known limitations:
 - No saved/read-later, search, digest generation, personalization, public publishing workflow, browser automation, or non-RSS adapter was added.
 - Translation draft full text remains non-public reader content.
 
+#### Issue 012: Add local saved and read-later foundation
+
+| Field | Value |
+|---|---|
+| Status | In Progress |
+| Owner | Codex |
+| Started At | 2026-05-20 |
+| Completed At | |
+| PR / Commit | pending |
+
+Goal
+
+Add local saved and read-later behavior for the reader personal space without introducing auth or backend personal-state APIs.
+
+Required Tasks
+
+- [x] Research current Next.js Client Component, `'use client'`, browser API, and serializable props guidance.
+- [x] Add Saved Item and Read Later Item terminology to `CONTEXT.md`.
+- [x] Add ADR for local browser personal state.
+- [x] Add Issue 012 technical plan.
+- [ ] Add pure local personal-state helper tests.
+- [ ] Implement local personal-state helpers.
+- [ ] Add Client Component controls for save/read-later.
+- [ ] Add controls to reader cards and detail pages.
+- [ ] Add `/personal` page for local saved/read-later lists.
+- [ ] Add local personal-state documentation.
+
+Acceptance Criteria
+
+- [ ] Reader can save and unsave an item from card and detail surfaces.
+- [ ] Reader can add/remove read-later from card and detail surfaces.
+- [ ] Saved/read-later state persists across reloads in the same browser.
+- [ ] `/personal` shows saved and read-later lists from local state.
+- [ ] Corrupted local state recovers to an empty state.
+- [ ] Server Components pass only serializable item snapshots to Client Components.
+- [ ] No auth, backend personal-state API, ranking change, search, digest generation, public publishing workflow, browser automation, or non-RSS adapter is added.
+
+Notes
+
+Use a small Client Component boundary for browser state.
+Do not add reader accounts or database-backed personal state in this issue.
+
 ---
 
 ## 4. Deferred Backlog
@@ -856,8 +898,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Plan the next Milestone 4 reader UI issue.
-Do not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
+Implement Issue 012 local saved and read-later foundation.
+Do not implement auth, backend personal-state APIs, ranking changes, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters yet.
 ---
 ## 9. Codex Operating Rules
 
@@ -1124,6 +1166,6 @@ Focus:
 Current required next action:
 
 ```text
-Plan the next Milestone 4 reader UI issue.
-Do not implement search, digest generation, saved/read-later, public publishing workflow, browser automation, or non-RSS adapters yet.
+Implement Issue 012 local saved and read-later foundation.
+Do not implement auth, backend personal-state APIs, ranking changes, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters yet.
 ```

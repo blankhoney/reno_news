@@ -132,6 +132,14 @@ _Avoid_: Digest, published article body, ranking score
 A reader-owned area for saved items, read-later items, annotations, and personal reading status.
 _Avoid_: Public pool, recommendation signal
 
+**Saved Item**:
+A reader-marked item kept for later reference in the reader's personal space.
+_Avoid_: Public bookmark, ranking signal, admin curation
+
+**Read Later Item**:
+A reader-marked item queued for future reading in the reader's personal space.
+_Avoid_: Published queue, digest item, recommendation
+
 **Feedback**:
 A reader-submitted correction or complaint that may affect moderation or public ranking only when type-eligible.
 _Avoid_: Like, preference, vote
@@ -159,6 +167,7 @@ _Avoid_: Newsletter unless email delivery is specifically meant
 - A **Reader Item Card** may present safe metadata and summary snippets without exposing full extracted or translated text.
 - A **Reader Detail Projection** may expose an item in one or more **Language Views**, but it must still obey **Rights Policy** and cannot publish **Translation Drafts** by implication.
 - A **Published Item** is a **Content Item** visible to **Readers** in one or more **Boards**.
+- A **Saved Item** or **Read Later Item** belongs to a **Reader**'s **Personal Space** and does not affect public ranking or admin curation by itself.
 - **Feedback** belongs to one **Reader** and one **Content Item**.
 - A **Digest** contains selected **Published Items**.
 

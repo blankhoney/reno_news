@@ -635,3 +635,53 @@ Completion notes:
 - Confirmed reader detail projection does not select translation draft full text or model payloads, and original extracted text remains rights-filtered.
 - Reused Task 18 verification evidence for full repo install, lint, tests, build, DB migration/seed, DB integration, worker tests, Compose status, health smoke, and local reader detail smoke.
 - Found no blocker to planning the next Milestone 4 issue.
+
+## Task 19: Milestone 4 / Issue 012 Planning And ADR
+
+Status: Done
+
+Scope:
+- Research current Next.js Client Component, `'use client'`, browser API, and serializable props guidance.
+- Re-read local reader and personal-space domain docs.
+- Define the next Milestone 4 issue without implementing saved/read-later code.
+- Add Saved Item and Read Later Item terminology to `CONTEXT.md`.
+- Add an ADR for local browser personal state.
+- Add Issue 012 technical plan and implementation log.
+- Update `docs/CODEX_MASTER_PLAN.md` so Issue 012 implementation is next.
+- Do not implement saved/read-later code in this planning task.
+
+Verification:
+- `docs/architecture/issue-012-plan.md` exists and maps Milestone 4 saved/read-later focus to concrete tasks and acceptance criteria.
+- ADR 0016 records the local browser-state boundary.
+- `CONTEXT.md` defines Saved Item and Read Later Item.
+- `docs/CODEX_MASTER_PLAN.md` points to Issue 012 implementation and does not start auth, backend personal-state APIs, ranking changes, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters.
+
+Completion notes:
+- Completed planning on 2026-05-20.
+- Selected the smallest next reader personal-space slice: local browser saved/read-later state with a small Client Component boundary.
+- Deferred auth, backend personal-state APIs, cross-device sync, ranking changes, search, digest generation, public publishing workflow, browser automation, and non-RSS adapters.
+
+## Task 20: Milestone 4 / Issue 012 Local Saved And Read Later Foundation
+
+Status: Pending
+
+Scope:
+- Add pure local personal-state helper tests.
+- Implement local personal-state helpers.
+- Add Client Component controls for save/read-later.
+- Add controls to reader cards and detail pages.
+- Add `/personal` page for local saved/read-later lists.
+- Add local personal-state documentation.
+- Do not add auth, backend personal-state APIs, ranking changes, search, digest generation, public publishing workflow, browser automation, or non-RSS adapters.
+
+Verification:
+- `pnpm --filter @reno-news/web test`
+- `pnpm install --frozen-lockfile`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `uv run python -m unittest discover -s tests`
+- Local browser/dev smoke for save/read-later persistence and `/personal`.
+
+Completion notes:
+- Pending.
