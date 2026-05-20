@@ -80,6 +80,12 @@ The production audit report gathers current readiness evidence and residual prod
 docker compose -f infra/compose/compose.yml up --build
 ```
 
+The local Compose stack mounts current `apps/`, `packages/`, and worker source files into the long-running development containers. After code changes, this lets a local operator refresh web/API/worker/scheduler without rebuilding images:
+
+```bash
+docker compose -f infra/compose/compose.yml up -d --no-build --force-recreate web api worker scheduler caddy
+```
+
 Health endpoints:
 
 - Web: `http://localhost:3000/healthz`

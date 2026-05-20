@@ -1704,3 +1704,36 @@ Completion notes:
 - Confirmed `apps/web/next-env.d.ts` has no final diff, `backups/` has no local dump files, and port `3100` was stopped after smoke.
 - Found one runtime limitation: existing Compose containers were healthy but stale for current reader/admin feature routes; a local Compose rebuild attempt hung at base image metadata resolution and was stopped. Current source-run services verified the application behavior.
 - Marked `docs/CODEX_MASTER_PLAN.md` complete.
+
+## Task 48: Resolve Compose Current-Code Runtime Limitation
+
+Status: Done
+
+Scope:
+- Add a contract test for Compose current-source development mounts and internal web service URLs.
+- Update local Compose config so web/API use current source without requiring image rebuild when Docker base-image metadata resolution is unavailable.
+- Verify Compose current-code reader/admin routes on `3000/3001`.
+- Update final review log and goal tracker.
+- Do not add production deployment, remote operations, new services, or product features.
+
+Verification:
+- `pnpm --filter @reno-news/db test`
+- `docker compose -f infra/compose/compose.yml config`
+- `docker compose -f infra/compose/compose.yml up -d --no-build --force-recreate web api worker scheduler caddy`
+- `pnpm release:audit:local`
+- `pnpm disk:check:local`
+- Compose HTTP smoke for reader/admin routes on `3000/3001`.
+
+Completion notes:
+- Completed on 2026-05-20.
+- Added a failing Compose contract test, then updated `infra/compose/compose.yml` so web/API mount current `apps/`, `packages/`, and workspace config files, and worker/scheduler mount current worker package source plus `pyproject.toml` and `uv.lock`.
+- Added web Compose environment `API_BASE_URL=http://api:3001` and `WORKER_BASE_URL=http://worker:3002`.
+- Verified `pnpm --filter @reno-news/db test`.
+- Verified `docker compose -f infra/compose/compose.yml config`.
+- Verified `docker compose -f infra/compose/compose.yml up -d --no-build --force-recreate web api worker scheduler caddy`; web, API, and worker became healthy without image rebuild.
+- Re-ran migrations and seed against Compose PostgreSQL.
+- Verified Compose direct and Caddy HTTP smoke for reader home, board, search, digest, item detail, personal space, admin home, failure queue, feedback review, and matching reader/admin API routes.
+- Verified `pnpm release:audit:local`, `pnpm disk:check:local`, and `pnpm --filter @reno-news/db test:integration`.
+- Updated README and final review log to record the current-source Compose refresh path.
+- Stopped the leftover local API process on port `3101`.
+- Confirmed no `apps/web/next-env.d.ts` or worker egg-info content diff remains after verification.

@@ -3,6 +3,16 @@ services:
     build:
       context: ../..
       dockerfile: apps/web/Dockerfile
+    environment:
+      API_BASE_URL: http://api:3001
+      WORKER_BASE_URL: http://worker:3002
+    volumes:
+      - ../../apps:/app/apps
+      - ../../packages:/app/packages
+      - ../../package.json:/app/package.json:ro
+      - ../../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
+      - ../../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
+      - ../../tsconfig.base.json:/app/tsconfig.base.json:ro
     ports:
       - "3000:3000"
     depends_on:
@@ -29,6 +39,13 @@ services:
       PORT: "3001"
       HOST: "0.0.0.0"
       DATABASE_URL: postgres://reno_news:reno_news@postgres:5432/reno_news
+    volumes:
+      - ../../apps:/app/apps
+      - ../../packages:/app/packages
+      - ../../package.json:/app/package.json:ro
+      - ../../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
+      - ../../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
+      - ../../tsconfig.base.json:/app/tsconfig.base.json:ro
     ports:
       - "3001:3001"
     depends_on:
@@ -55,6 +72,10 @@ services:
       PORT: "3002"
       HOST: "0.0.0.0"
       DATABASE_URL: postgres://reno_news:reno_news@postgres:5432/reno_news
+    volumes:
+      - ../../services/worker/pyproject.toml:/app/pyproject.toml:ro
+      - ../../services/worker/uv.lock:/app/uv.lock:ro
+      - ../../services/worker/src/reno_worker:/app/src/reno_worker:ro
     ports:
       - "3002:3002"
     depends_on:
@@ -82,6 +103,10 @@ services:
       PORT: "3003"
       HOST: "0.0.0.0"
       DATABASE_URL: postgres://reno_news:reno_news@postgres:5432/reno_news
+    volumes:
+      - ../../services/worker/pyproject.toml:/app/pyproject.toml:ro
+      - ../../services/worker/uv.lock:/app/uv.lock:ro
+      - ../../services/worker/src/reno_worker:/app/src/reno_worker:ro
     depends_on:
       postgres:
         condition: service_healthy

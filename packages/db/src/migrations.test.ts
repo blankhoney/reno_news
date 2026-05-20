@@ -241,3 +241,38 @@ test("production audit report stays evidence-only and non-approving", async () =
     assert.doesNotMatch(scriptName, /deploy|publish|push/i);
   }
 });
+
+test("compose dev services run current source without image rebuild", async () => {
+  const composeFile = await readFile(
+    join(process.cwd(), "../../infra/compose/compose.yml"),
+    "utf8"
+  );
+
+  const webBlock = composeFile.match(/\n  web:\n([\s\S]*?)(?=\n  [a-z]|$)/)?.[1];
+  const apiBlock = composeFile.match(/\n  api:\n([\s\S]*?)(?=\n  [a-z]|$)/)?.[1];
+  const workerBlock = composeFile.match(/\n  worker:\n([\s\S]*?)(?=\n  [a-z]|$)/)?.[1];
+  const schedulerBlock = composeFile.match(/\n  scheduler:\n([\s\S]*?)(?=\n  [a-z]|$)/)?.[1];
+
+  assert.ok(webBlock, "missing Compose web service");
+  assert.ok(apiBlock, "missing Compose API service");
+  assert.ok(workerBlock, "missing Compose worker service");
+  assert.ok(schedulerBlock, "missing Compose scheduler service");
+
+  for (const serviceBlock of [webBlock, apiBlock]) {
+    assert.match(serviceBlock, /..\/..\/apps:\/app\/apps/);
+    assert.match(serviceBlock, /..\/..\/packages:\/app\/packages/);
+    assert.match(serviceBlock, /..\/..\/package\.json:\/app\/package\.json:ro/);
+    assert.match(serviceBlock, /..\/..\/pnpm-lock\.yaml:\/app\/pnpm-lock\.yaml:ro/);
+    assert.match(serviceBlock, /..\/..\/pnpm-workspace\.yaml:\/app\/pnpm-workspace\.yaml:ro/);
+    assert.match(serviceBlock, /..\/..\/tsconfig\.base\.json:\/app\/tsconfig\.base\.json:ro/);
+  }
+
+  assert.match(webBlock, /API_BASE_URL: http:\/\/api:3001/);
+  assert.match(webBlock, /WORKER_BASE_URL: http:\/\/worker:3002/);
+
+  for (const serviceBlock of [workerBlock, schedulerBlock]) {
+    assert.match(serviceBlock, /..\/..\/services\/worker\/pyproject\.toml:\/app\/pyproject\.toml:ro/);
+    assert.match(serviceBlock, /..\/..\/services\/worker\/uv\.lock:\/app\/uv\.lock:ro/);
+    assert.match(serviceBlock, /..\/..\/services\/worker\/src\/reno_worker:\/app\/src\/reno_worker:ro/);
+  }
+});
