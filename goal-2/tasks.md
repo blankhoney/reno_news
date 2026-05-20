@@ -435,13 +435,19 @@
 
 ## Task 20: Digest Edition Planning And Schema
 
-- Status: Pending
+- Status: Completed
 - Objective: Convert digest from dynamic preview into persisted editions with edition id, date, items, status, and review metadata.
 - TDD/Verification:
   - Failing migration/API contract tests first.
   - Pass criteria: digest editions can be generated, listed, retrieved, and replayed.
 - Completion Record:
-  - Pending.
+  - Red/Green: added a DB migration contract test for persisted digest editions; it failed because `0013_digest_editions.sql` did not exist, then passed after adding the additive migration.
+  - Added `digest_editions` with stable `edition_key`, date/window, optional board, constrained `draft/reviewed/archived` status, generation metadata, and review metadata.
+  - Added `digest_edition_items` with ordered item positions, reader-safe item snapshot JSON, duplicate prevention per edition, and stable replay ordering.
+  - Red/Green: added shared contract tests for digest edition statuses, generation request, detail response, and list response; they failed before the exports existed and passed after adding the contracts.
+  - Updated `CONTEXT.md`, DB schema docs, and planned Digest Editions API docs while keeping route implementation in Task 21.
+  - Quality review: close-read the migration test, migration SQL, contracts, contract tests, glossary updates, DB docs, and API planning doc.
+  - Verified with `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/contracts test`, `pnpm --filter @reno-news/db test:integration`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
 
 ## Task 21: Digest Edition API And Web Playback
 

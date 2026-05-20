@@ -147,6 +147,23 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 - `read_status` is constrained to `unread` or `read`.
 - `read_at` is required only when `read_status = 'read'`; `updated_at` records the latest state transition.
 
+## Digest Editions
+
+`digest_editions`
+
+- Stores one persisted Digest Edition for an edition date, time window, and optional board.
+- `edition_key` is unique and stable for API lookup.
+- `status` is constrained to `draft`, `reviewed`, or `archived`.
+- `generation_metadata_json` stores safe generation inputs and counters.
+- `reviewed_by_user_id`, `reviewed_at`, and `review_note` store admin review metadata without creating delivery state.
+
+`digest_edition_items`
+
+- Stores the ordered Digest Items for one edition.
+- `(digest_edition_id, raw_entry_id)` prevents duplicate items in one edition.
+- `(digest_edition_id, item_position)` keeps replay order stable.
+- `item_snapshot_json` stores reader-safe card fields so replay does not silently change when source records or ranking signals later change.
+
 ## Auth Login Attempts
 
 `auth_login_attempts`

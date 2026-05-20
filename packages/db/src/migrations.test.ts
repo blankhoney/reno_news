@@ -136,6 +136,37 @@ test("account personal state migration defines saved, read-later, and read statu
   assert.match(migration, /user_read_status_raw_entry_idx/);
 });
 
+test("digest edition migration defines persisted editions and ordered item snapshots", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0013_digest_editions.sql"),
+    "utf8"
+  );
+
+  assert.match(migration, /create table if not exists digest_editions/);
+  assert.match(migration, /edition_key text not null/);
+  assert.match(migration, /edition_date date not null/);
+  assert.match(migration, /board_id bigint references boards\(id\) on delete restrict/);
+  assert.match(migration, /status text not null default 'draft'/);
+  assert.match(migration, /digest_editions_status_check/);
+  for (const status of ["draft", "reviewed", "archived"]) {
+    assert.match(migration, new RegExp(`'${status}'`));
+  }
+  assert.match(migration, /generation_metadata_json jsonb not null default '\{\}'::jsonb/);
+  assert.match(migration, /reviewed_by_user_id bigint references users\(id\) on delete set null/);
+  assert.match(migration, /review_note text/);
+  assert.match(migration, /length\(review_note\) <= 2000/);
+
+  assert.match(migration, /create table if not exists digest_edition_items/);
+  assert.match(migration, /digest_edition_id bigint not null references digest_editions\(id\) on delete cascade/);
+  assert.match(migration, /raw_entry_id bigint not null references raw_entries\(id\) on delete restrict/);
+  assert.match(migration, /item_position integer not null/);
+  assert.match(migration, /item_snapshot_json jsonb not null/);
+  assert.match(migration, /digest_edition_items_position_unique/);
+  assert.match(migration, /primary key \(digest_edition_id, raw_entry_id\)/);
+  assert.match(migration, /digest_editions_date_idx/);
+  assert.match(migration, /digest_edition_items_raw_entry_idx/);
+});
+
 test("backup and restore drill scripts stay local and disposable", async () => {
   const packageJson = JSON.parse(
     await readFile(join(process.cwd(), "../../package.json"), "utf8")

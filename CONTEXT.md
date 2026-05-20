@@ -208,6 +208,14 @@ _Avoid_: Cron schedule, email cadence, reader session
 A policy-visible item selected for inclusion in a Digest.
 _Avoid_: Ranking winner, recommendation, feedback target
 
+**Digest Edition**:
+A persisted, replayable Digest object for one date/window and optional board.
+_Avoid_: Live preview, email delivery, recommendation feed
+
+**Digest Edition Status**:
+The review lifecycle state of a Digest Edition, currently draft, reviewed, or archived.
+_Avoid_: Raw-entry lifecycle status, delivery state, moderation result
+
 **Backup Snapshot**:
 A point-in-time export of project state needed for recovery, starting with the PostgreSQL database.
 _Avoid_: Continuous replication, release artifact, cache copy
@@ -276,6 +284,7 @@ _Avoid_: Bug when it is an acknowledged scope gap, blocker when it does not stop
 - A **Feedback Review** can change whether one **Feedback** event remains eligible for a **Quality Feedback Penalty**, but it must not change item lifecycle by itself.
 - A **Digest** contains selected **Digest Items** from one **Digest Window**.
 - A **Digest Item** must still be a policy-visible **Published Item** and must not expose private extraction text, translation drafts, feedback events, or admin diagnostics.
+- A **Digest Edition** freezes selected **Digest Items** and reader-safe snapshots so replay does not silently change when source records or ranking signals later change.
 - A **Backup Snapshot** is useful only when a **Restore Drill** proves it can recreate the expected database state.
 - A **Restore Drill** must use a disposable target and must not mutate the primary project database.
 - An **Operational Runbook** records repeatable operator steps; implementation may automate local commands only after the runbook boundary is explicit.

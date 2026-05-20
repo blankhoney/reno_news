@@ -78,3 +78,63 @@ export type ReadStatusMutationRequest = {
   itemId: number;
   status: ReadStatusValue;
 };
+
+export const digestEditionStatuses = ["draft", "reviewed", "archived"] as const;
+
+export type DigestEditionStatus = (typeof digestEditionStatuses)[number];
+
+export type DigestEditionGenerateRequest = {
+  editionDate: string;
+  boardSlug?: string;
+  limit?: number;
+};
+
+export type DigestEditionItemSnapshot = {
+  id: number;
+  boardSlug: string;
+  boardName: string;
+  sourceTitle: string;
+  title: string;
+  summary: string;
+  publishedAt: string | null;
+  createdAt: string;
+};
+
+export type DigestEditionItem = {
+  itemId: number;
+  position: number;
+  snapshot: DigestEditionItemSnapshot;
+};
+
+export type DigestEdition = {
+  id: number;
+  editionKey: string;
+  editionDate: string;
+  boardSlug: string | null;
+  status: DigestEditionStatus;
+  windowStartAt: string;
+  windowEndAt: string;
+  generatedAt: string;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+  items: DigestEditionItem[];
+};
+
+export type DigestEditionSummary = {
+  id: number;
+  editionKey: string;
+  editionDate: string;
+  boardSlug: string | null;
+  status: DigestEditionStatus;
+  itemCount: number;
+  generatedAt: string;
+  reviewedAt: string | null;
+};
+
+export type DigestEditionResponse = {
+  edition: DigestEdition;
+};
+
+export type DigestEditionListResponse = {
+  editions: DigestEditionSummary[];
+};
