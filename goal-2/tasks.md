@@ -154,13 +154,18 @@
 
 ## Task 7: Production Compose Boundary
 
-- Status: Pending
+- Status: Completed
 - Objective: Add or update production Compose profile so only Caddy is publicly exposed and internal services stay on private networks.
 - TDD/Verification:
   - Failing config check first for forbidden public ports on web/api/worker/scheduler.
   - Pass criteria: `docker compose config` proves only Caddy binds host ports.
 - Completion Record:
-  - Pending.
+  - Red: added `pnpm compose:production:check`; it failed because `infra/compose/compose.production.yml` did not exist.
+  - Green: added `infra/compose/compose.production.yml` as a production override that clears dev build/source mounts and host ports for web, API, worker, scheduler, PostgreSQL, and Redis.
+  - Added `infra/compose/Caddyfile.production` and configured the production override so only Caddy publishes host ports `80` and `443`.
+  - Added the production boundary check to the GitHub Actions Docker Compose config job and documented the check in `docs/ops/github-cicd.md`.
+  - Quality review: close-read the production Compose check script, production Compose override, production Caddyfile, CI workflow, root package script, and GitHub CI/CD runbook.
+  - Verified with `pnpm compose:production:check`, `docker compose -f infra/compose/compose.yml config`, rendered production port inspection, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check` for touched Task 7 files.
 
 ## Task 8: Production Deploy Script And GitHub Secret Contract
 

@@ -28,7 +28,8 @@ Checks:
 - JavaScript install, lint, tests, and build
 - Python worker lock verification and tests
 - PostgreSQL migration, seed, and integration tests
-- Docker Compose config rendering
+- Docker Compose config rendering for local development
+- Production Compose public-boundary check proving only Caddy publishes host ports
 
 Configured branch protection for `main`:
 
@@ -130,6 +131,7 @@ gh run watch --repo blankhoney/reno_news
 Expected behavior:
 
 - CI runs for pushes and pull requests.
+- CI verifies both the development Compose render and the production Caddy-only public boundary.
 - Image publishing runs after pushes to `main` and publishes all three GHCR images.
 - Deploy is available manually but fails early until all required deployment secrets are configured.
 
@@ -137,5 +139,5 @@ Expected behavior:
 
 - This flow does not create a production server.
 - This flow does not configure production secrets automatically.
-- This flow does not create remote monitoring, alerting, production backups, auth/RBAC, Admin identity, or audit logs.
+- This flow does not create remote monitoring, alerting, production backups, or production credentials.
 - A real deployment remains blocked until a server layout, domain, TLS entrypoint, environment variables, backup target, rollback command, and incident owner are explicitly configured.

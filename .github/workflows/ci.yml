@@ -118,5 +118,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Render Compose config
+      - name: Render development Compose config
         run: docker compose -f infra/compose/compose.yml config
+
+      - name: Verify production Compose public boundary
+        run: node scripts/check-production-compose.mjs

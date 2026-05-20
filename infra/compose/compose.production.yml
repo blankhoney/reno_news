@@ -1,0 +1,67 @@
+services:
+  web:
+    image: ghcr.io/blankhoney/reno-news-web:${RENO_NEWS_IMAGE_TAG:-latest}
+    build: !reset null
+    environment:
+      NODE_ENV: production
+      API_BASE_URL: http://api:3001
+      WORKER_BASE_URL: http://worker:3002
+    volumes: !reset []
+    ports: !reset []
+
+  api:
+    image: ghcr.io/blankhoney/reno-news-api:${RENO_NEWS_IMAGE_TAG:-latest}
+    build: !reset null
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      HOST: "0.0.0.0"
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+    volumes: !reset []
+    ports: !reset []
+
+  worker:
+    image: ghcr.io/blankhoney/reno-news-worker:${RENO_NEWS_IMAGE_TAG:-latest}
+    build: !reset null
+    environment:
+      PORT: "3002"
+      HOST: "0.0.0.0"
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+    volumes: !reset []
+    ports: !reset []
+
+  scheduler:
+    image: ghcr.io/blankhoney/reno-news-worker:${RENO_NEWS_IMAGE_TAG:-latest}
+    build: !reset null
+    environment:
+      PORT: "3003"
+      HOST: "0.0.0.0"
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+    volumes: !reset []
+    ports: !reset []
+
+  postgres:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-reno_news}
+      POSTGRES_USER: ${POSTGRES_USER:-reno_news}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    ports: !reset []
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    ports: !reset []
+
+  caddy:
+    ports: !override
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+    volumes: !override
+      - ./Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
