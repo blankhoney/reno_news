@@ -27,6 +27,28 @@ class SourceIngestTest(unittest.TestCase):
         self.assertEqual(result.status, "success")
         self.assertEqual(calls, [("github", "postgres://example", 42)])
 
+    def test_ingest_configured_source_dispatches_arxiv_sources(self) -> None:
+        calls: list[tuple[str, str, int]] = []
+
+        def ingest_rss(database_url: str, source_id: int) -> IngestResult:
+            calls.append(("rss", database_url, source_id))
+            raise AssertionError("arxiv source should not use RSS ingest")
+
+        def ingest_arxiv(database_url: str, source_id: int) -> IngestResult:
+            calls.append(("arxiv", database_url, source_id))
+            return IngestResult(source_id=source_id, status="success", entries_seen=2, entries_inserted=2)
+
+        result = ingest_configured_source(
+            "postgres://example",
+            43,
+            read_source_type=lambda _database_url, _source_id: "arxiv",
+            ingest_rss=ingest_rss,
+            ingest_arxiv=ingest_arxiv,
+        )
+
+        self.assertEqual(result.status, "success")
+        self.assertEqual(calls, [("arxiv", "postgres://example", 43)])
+
     def test_ingest_configured_source_keeps_rss_and_atom_on_rss_ingest(self) -> None:
         calls: list[tuple[str, str, int]] = []
 

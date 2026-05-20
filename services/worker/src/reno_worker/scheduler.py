@@ -9,7 +9,7 @@ SendTask = Callable[[str, int], object]
 ReadPolicies = Callable[[str], list[SourcePolicy]]
 
 
-SUPPORTED_INGEST_SOURCE_TYPES = {"rss", "atom", "github"}
+SUPPORTED_INGEST_SOURCE_TYPES = {"rss", "atom", "github", "arxiv"}
 
 
 def schedule_enabled_sources(

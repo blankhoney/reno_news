@@ -517,13 +517,24 @@
 
 ## Task 24: arXiv Adapter Planning And Foundation
 
-- Status: Pending
+- Status: Completed
 - Objective: Add arXiv Atom adapter with query allowlist, attribution, pagination, and 3-second request spacing policy.
 - TDD/Verification:
   - Failing adapter tests first with Atom fixtures and throttle contract.
   - Pass criteria: arXiv items enter the existing pipeline with stable ids, attribution, and safe throttling.
 - Completion Record:
-  - Pending.
+  - Checked current arXiv official API docs and Terms of Use before implementation: Atom query interface, `start`/`max_results` pagination, one request every three seconds, single-connection limit, metadata/redistribution boundary, and attribution statement.
+  - Red/Green: added a migration contract test for `source_type = 'arxiv'`; it failed before `0015_arxiv_source_adapter.sql`, then passed after extending the source type check constraint.
+  - Red/Green: added an API route test proving admin source creation accepts `sourceType: "arxiv"` and records audit metadata; it failed at Fastify schema validation until the API enum and DB source type were updated.
+  - Red/Green: added fixture-Atom worker tests for `collect_arxiv_source_entries`; they failed before `reno_worker.arxiv_ingest` existed, then passed with metadata-only normalization, stable `arxiv:{arxiv_id}` ids, version-suffix stripping, abstract-page URLs, attribution storage, PDF-link exclusion, deterministic pagination URLs, and 3-second follow-up page spacing.
+  - Added arXiv policy rejection for non-allowlisted broad queries before any fetch, plus 429/503 classification as `failure_type = rate_limit`.
+  - Added DB-backed arXiv ingest tests proving arXiv entries insert once, repeat runs deduplicate through existing constraints, and rate-limit failures are visible through `source_ingest_attempts`.
+  - Added `arxiv` dispatch through the existing source ingest dispatcher and scheduler while preserving RSS/Atom and GitHub paths.
+  - Added `config/source-adapters/arxiv.json`, `docs/ops/arxiv-source-adapter.md`, `pnpm arxiv:source-policy:check`, and CI wiring for the arXiv source policy contract.
+  - Updated `CONTEXT.md`, source API docs, DB schema docs, and GitHub CI/CD runbook for the arXiv metadata-only boundary.
+  - Quality review: close-read the arXiv adapter, arXiv tests, dispatcher, scheduler, migration, policy checker, policy config, runbook, API schema/test snippets, and docs.
+  - Verified with `pnpm arxiv:source-policy:check`, `pnpm github:source-policy:check`, `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/api test`, `uv --project services/worker run python -m unittest services.worker.tests.test_arxiv_ingest services.worker.tests.test_source_ingest services.worker.tests.test_scheduler`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `pnpm --filter @reno-news/db test:integration`, `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news uv --project services/worker run python -m unittest services.worker.tests.test_arxiv_ingest`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: no live arXiv API call is made in CI or local verification; committed policy stays default-disabled for production operator enablement; runtime allowlist constants intentionally mirror the policy file rather than loading operator config dynamically.
 
 ## Check-Debug Loop 8
 

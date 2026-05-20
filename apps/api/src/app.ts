@@ -132,7 +132,7 @@ class DatabaseNotConfiguredError extends Error {
   }
 }
 
-const sourceTypes = ["rss", "atom", "github"];
+const sourceTypes = ["rss", "atom", "github", "arxiv"];
 const saveLevels = ["metadata_only", "excerpt", "snapshot", "full_text"];
 const rightsPolicies = [
   "blocked",

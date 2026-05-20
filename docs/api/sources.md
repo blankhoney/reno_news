@@ -38,6 +38,7 @@ Allowed `sourceType` values:
 - `rss`
 - `atom`
 - `github`
+- `arxiv`
 
 Optional body fields:
 - `enabled`

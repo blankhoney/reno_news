@@ -141,3 +141,6 @@ jobs:
 
       - name: Verify GitHub source policy contract
         run: node scripts/check-github-source-policy.mjs
+
+      - name: Verify arXiv source policy contract
+        run: node scripts/check-arxiv-source-policy.mjs

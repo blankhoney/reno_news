@@ -3,6 +3,7 @@ from collections.abc import Callable
 import psycopg
 from psycopg.rows import dict_row
 
+from reno_worker.arxiv_ingest import ingest_arxiv_source
 from reno_worker.github_ingest import ingest_github_source
 from reno_worker.rss_ingest import IngestResult, ingest_source as ingest_rss_source
 
@@ -18,12 +19,16 @@ def ingest_configured_source(
     read_source_type: ReadSourceType | None = None,
     ingest_rss: IngestHandler = ingest_rss_source,
     ingest_github: IngestHandler = ingest_github_source,
+    ingest_arxiv: IngestHandler = ingest_arxiv_source,
 ) -> IngestResult:
     source_type_reader = read_source_type or read_configured_source_type
     source_type = source_type_reader(database_url, source_id)
 
     if source_type == "github":
         return ingest_github(database_url, source_id)
+
+    if source_type == "arxiv":
+        return ingest_arxiv(database_url, source_id)
 
     if source_type in {"rss", "atom"}:
         return ingest_rss(database_url, source_id)

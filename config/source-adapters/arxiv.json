@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "adapter": "arxiv",
+  "enabled": false,
+  "scope": {
+    "allowlistOnly": true,
+    "allowedEndpointHost": "export.arxiv.org",
+    "allowedEndpoints": [
+      "GET /api/query"
+    ],
+    "allowedQueries": [
+      "cat:cs.AI",
+      "cat:cs.CL",
+      "cat:cs.CY",
+      "cat:cs.LG",
+      "cat:cs.SE",
+      "cat:stat.ML"
+    ],
+    "allowedSortBy": [
+      "submittedDate",
+      "lastUpdatedDate"
+    ],
+    "allowedSortOrder": [
+      "ascending",
+      "descending"
+    ],
+    "forbiddenPatterns": [
+      "free-text broad search",
+      "PDF mirroring",
+      "source file mirroring",
+      "multi-connection crawling",
+      "full corpus harvesting"
+    ]
+  },
+  "rateLimit": {
+    "concurrency": 1,
+    "requestSpacingSeconds": 3,
+    "maxResultsPerRequest": 100,
+    "maxPagesPerRun": 1,
+    "paginationParameters": [
+      "start",
+      "max_results"
+    ],
+    "rateLimitFailureStatuses": [
+      429,
+      503
+    ]
+  },
+  "mapping": {
+    "article": {
+      "externalId": "arxiv:{arxiv_id}",
+      "url": "https://arxiv.org/abs/{arxiv_id}",
+      "titleField": "entry.title",
+      "summaryField": "entry.summary",
+      "publishedAtField": "entry.published",
+      "rawPayload": [
+        "provider",
+        "arxiv_id",
+        "entry_id",
+        "normalized_url",
+        "source_url",
+        "authors",
+        "categories",
+        "primary_category",
+        "published",
+        "updated",
+        "comment",
+        "doi",
+        "journal_ref",
+        "attribution"
+      ]
+    }
+  },
+  "attribution": "Thank you to arXiv for use of its open access interoperability.",
+  "failureIsolation": {
+    "recordAttempts": true,
+    "failureQueueStage": "arxiv_source_ingest",
+    "rssAtomGithubBaselineMustContinue": true
+  },
+  "references": [
+    "https://info.arxiv.org/help/api/user-manual.html",
+    "https://info.arxiv.org/help/api/tou.html",
+    "https://info.arxiv.org/help/api/index.html"
+  ]
+}

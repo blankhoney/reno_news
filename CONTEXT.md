@@ -36,6 +36,10 @@ _Avoid_: Feed list, subscription list
 The source-type-specific path used to discover candidate items from a source.
 _Avoid_: Crawler when the source is structured
 
+**arXiv Source Adapter**:
+A metadata-only Source Adapter for allowlisted arXiv Atom API category queries. It stores descriptive article metadata and links to the arXiv abstract page; it does not mirror PDFs or source files.
+_Avoid_: arXiv crawler, PDF mirror, full corpus harvester
+
 **Ingest Attempt**:
 A recorded attempt to discover candidate items from a source, including success, skip, or failure outcome.
 _Avoid_: Crawl job when the source is structured RSS/Atom

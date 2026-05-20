@@ -23,7 +23,7 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 `sources`
 
 - Source Registry records.
-- `source_type` is constrained to `rss`, `atom`, or `github`; the GitHub adapter is still limited to allowlisted repository metadata and releases.
+- `source_type` is constrained to `rss`, `atom`, `github`, or `arxiv`; the GitHub adapter is limited to allowlisted repository metadata/releases, and the arXiv adapter is limited to allowlisted Atom metadata queries.
 - Each source belongs to one board.
 - Source-specific access and rights controls live in `source_policies`.
 
@@ -43,7 +43,7 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 
 - Minimal seedable raw entry records for development and later ingest tests.
 - `lifecycle_status`, `processing_stage`, `rights_status`, and `failure_type` are constrained text fields.
-- RSS/Atom feed metadata and allowlisted GitHub repository/release metadata land here before full-text extraction.
+- RSS/Atom feed metadata, allowlisted GitHub repository/release metadata, and allowlisted arXiv article metadata land here before full-text extraction.
 - Duplicate feed entries are ignored through existing unique constraints and `on conflict do nothing`.
 
 ## Source Ingest Attempts

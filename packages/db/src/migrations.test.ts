@@ -179,6 +179,17 @@ test("GitHub source adapter migration allows GitHub sources and rate-limit attem
   assert.match(migration, /failure_type in \('network', 'parse', 'policy', 'duplicate', 'rate_limit', 'unknown'\)/);
 });
 
+test("arXiv source adapter migration allows arXiv sources without changing failure vocabulary", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0015_arxiv_source_adapter.sql"),
+    "utf8"
+  );
+
+  assert.match(migration, /sources_source_type_check/);
+  assert.match(migration, /source_type in \('rss', 'atom', 'github', 'arxiv'\)/);
+  assert.doesNotMatch(migration, /download|pdf|source files/i);
+});
+
 test("backup and restore drill scripts stay local and disposable", async () => {
   const packageJson = JSON.parse(
     await readFile(join(process.cwd(), "../../package.json"), "utf8")

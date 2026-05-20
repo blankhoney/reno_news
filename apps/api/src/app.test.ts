@@ -51,6 +51,14 @@ const githubSourceRecord: SourceRecord = {
   url: "https://github.com/example/project"
 };
 
+const arxivSourceRecord: SourceRecord = {
+  ...sourceRecord,
+  boardSlug: "ai",
+  sourceType: "arxiv",
+  title: "arXiv cs.AI",
+  url: "https://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50"
+};
+
 const adminSessionHeaders = {
   cookie: "reno_news_session=admin-session-token"
 };
@@ -976,6 +984,65 @@ test("POST /sources accepts GitHub source type for allowlisted repositories", as
       metadata: {
         boardSlug: "open-source",
         sourceType: "github"
+      }
+    }
+  ]);
+});
+
+test("POST /sources accepts arXiv source type for allowlisted Atom queries", async () => {
+  let receivedBody: unknown;
+  const recordedEvents: unknown[] = [];
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      sourceRepository: fakeRepository({
+        createSource: async (input) => {
+          receivedBody = input;
+          return arxivSourceRecord;
+        }
+      }),
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/sources",
+    headers: adminSessionHeaders,
+    payload: {
+      boardSlug: "ai",
+      sourceType: "arxiv",
+      title: "arXiv cs.AI",
+      url: "https://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50"
+    }
+  });
+
+  assert.equal(response.statusCode, 201);
+  assert.deepEqual(response.json(), arxivSourceRecord);
+  assert.deepEqual(receivedBody, {
+    boardSlug: "ai",
+    sourceType: "arxiv",
+    title: "arXiv cs.AI",
+    url: "https://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50"
+  });
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 1,
+      actorRole: "admin",
+      action: "source.create",
+      objectType: "source",
+      objectId: "1",
+      requestId: recordedRequestId(recordedEvents),
+      metadata: {
+        boardSlug: "ai",
+        sourceType: "arxiv"
       }
     }
   ]);
