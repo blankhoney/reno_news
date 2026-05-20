@@ -9,7 +9,7 @@ from reno_worker.server import create_server
 
 class WorkerHealthTest(unittest.TestCase):
     def test_health_endpoint_reports_worker_service_as_healthy(self) -> None:
-        server = create_server("127.0.0.1", 0)
+        server = create_server("127.0.0.1", 0, log_event=lambda _event: None)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
 
@@ -37,7 +37,13 @@ class WorkerHealthTest(unittest.TestCase):
                 failure_type="network",
             )
 
-        server = create_server("127.0.0.1", 0, ingest=ingest, database_url="postgres://example")
+        server = create_server(
+            "127.0.0.1",
+            0,
+            ingest=ingest,
+            database_url="postgres://example",
+            log_event=lambda _event: None,
+        )
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
 
@@ -63,6 +69,58 @@ class WorkerHealthTest(unittest.TestCase):
         self.assertIn("reno_news_worker_manual_ingest_failures_total 1", body)
         self.assertIn('reno_news_worker_last_manual_ingest_status{status="failure"} 1', body)
 
+    def test_manual_ingest_response_and_logs_carry_request_id(self) -> None:
+        log_events: list[dict[str, object]] = []
+
+        def ingest(database_url: str, source_id: int) -> IngestResult:
+            return IngestResult(
+                source_id=source_id,
+                status="success",
+                entries_seen=2,
+                entries_inserted=1,
+            )
+
+        server = create_server(
+            "127.0.0.1",
+            0,
+            ingest=ingest,
+            database_url="postgres://example",
+            log_event=log_events.append,
+        )
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+
+        try:
+            host, port = server.server_address
+            connection = HTTPConnection(host, port, timeout=2)
+            connection.request(
+                "POST",
+                "/ingest/source/42",
+                headers={"X-Request-Id": "worker-trace-1", "Authorization": "Bearer secret-token"},
+            )
+            response = connection.getresponse()
+            response.read()
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+        self.assertEqual(response.status, 202)
+        self.assertEqual(response.getheader("X-Request-Id"), "worker-trace-1")
+        self.assertEqual(
+            log_events[-1],
+            {
+                "event": "worker.request",
+                "requestId": "worker-trace-1",
+                "method": "POST",
+                "path": "/ingest/source/42",
+                "statusCode": 202,
+                "sourceId": 42,
+                "ingestStatus": "success",
+            },
+        )
+        self.assertNotIn("secret-token", json.dumps(log_events))
+
     def test_manual_ingest_trigger_calls_ingest_source(self) -> None:
         calls: list[tuple[str, int]] = []
 
@@ -75,7 +133,13 @@ class WorkerHealthTest(unittest.TestCase):
                 entries_inserted=1,
             )
 
-        server = create_server("127.0.0.1", 0, ingest=ingest, database_url="postgres://example")
+        server = create_server(
+            "127.0.0.1",
+            0,
+            ingest=ingest,
+            database_url="postgres://example",
+            log_event=lambda _event: None,
+        )
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
 

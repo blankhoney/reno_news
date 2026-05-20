@@ -282,6 +282,40 @@ test("GET /healthz reports the API service as healthy", async () => {
   });
 });
 
+test("GET /healthz returns request id and writes safe structured request logs", async () => {
+  const logLines: string[] = [];
+  const app = buildApp({
+    logger: {
+      level: "info",
+      stream: {
+        write: (line: string) => {
+          logLines.push(line);
+        }
+      }
+    }
+  });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/healthz",
+    headers: {
+      "x-request-id": "api-trace-1",
+      authorization: "Bearer secret-token"
+    }
+  });
+  const logs = logLines.join("");
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.headers["x-request-id"], "api-trace-1");
+  assert.match(logs, /"event":"request.start"/);
+  assert.match(logs, /"requestId":"api-trace-1"/);
+  assert.match(logs, /"path":"\/healthz"/);
+  assert.doesNotMatch(logs, /secret-token|authorization|password|DATABASE_URL/i);
+});
+
 test("GET /metrics exposes Prometheus service and failure queue metrics", async () => {
   const app = buildApp(
     { logger: false },
@@ -354,6 +388,9 @@ test("POST /auth/login rejects invalid credentials without setting a session coo
   const response = await app.inject({
     method: "POST",
     url: "/auth/login",
+    headers: {
+      "x-request-id": "auth-trace-1"
+    },
     payload: {
       email: "reader@example.com",
       password: "wrong-password"
@@ -361,6 +398,7 @@ test("POST /auth/login rejects invalid credentials without setting a session coo
   });
 
   assert.equal(response.statusCode, 401);
+  assert.equal(response.headers["x-request-id"], "auth-trace-1");
   assert.deepEqual(response.json(), { error: "invalid_credentials" });
   assert.equal(response.headers["set-cookie"], undefined);
   assert.deepEqual(recordedEvents, [
@@ -370,13 +408,10 @@ test("POST /auth/login rejects invalid credentials without setting a session coo
       action: "auth.login_failed",
       objectType: "auth",
       objectId: null,
-      requestId: recordedEvents[0]
-        ? (recordedEvents[0] as { requestId: string }).requestId
-        : "",
+      requestId: "auth-trace-1",
       metadata: { failureReason: "invalid_credentials" }
     }
   ]);
-  assert.match((recordedEvents[0] as { requestId: string }).requestId, /\S/);
 });
 
 test("POST /auth/login records successful login audit metadata", async () => {

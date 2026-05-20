@@ -7,7 +7,7 @@ This report records the MVP's current production-readiness evidence and Residual
 | Area | Current Evidence | Result |
 |---|---|---|
 | Repository checks | `pnpm release:audit:local` runs frozen install, lint, tests, build, worker tests, and worker lock verification. | Evidence exists locally |
-| Runtime health | The Release Health Audit checks direct web/API/worker health and Caddy health probes including `http://localhost:8080/api/healthz`. `docs/ops/metrics.md` defines the API and worker `/metrics` surface. | Evidence exists locally |
+| Runtime health | The Release Health Audit checks direct web/API/worker health and Caddy health probes including `http://localhost:8080/api/healthz`. `docs/ops/metrics.md` defines the API and worker `/metrics` surface, and `docs/ops/logging-trace.md` defines the request id/logging contract. | Evidence exists locally |
 | Data safety | `docs/ops/backup-restore.md` defines local Backup Snapshot and Restore Drill steps using a disposable restore target. `docs/ops/offhost-backup.md` and `pnpm backup:offhost:check` define the S3-compatible off-host backup contract. | Evidence exists locally |
 | Disk guardrails | `pnpm disk:check:local` reports Docker disk usage and local backup artifact size without deleting data. | Evidence exists locally |
 | Log retention | `infra/compose/compose.yml` defines bounded `json-file` log retention for all Compose services. | Evidence exists locally |
@@ -39,6 +39,7 @@ This report records the MVP's current production-readiness evidence and Residual
 - `docs/ops/release-health-audit.md`: local Release Health Audit command, expected evidence, failure handling, rollback references, and limitations.
 - `docs/ops/production-deploy.md`: deployment secret contract, server env contract, health check, and rollback boundary.
 - `docs/ops/metrics.md`: Prometheus-compatible API and worker metrics, metric names, and limitations.
+- `docs/ops/logging-trace.md`: `x-request-id` propagation, safe structured log fields, and logging limitations.
 - `docs/ops/backup-restore.md`: local Backup Snapshot and Restore Drill steps, cleanup, and production backup limitations.
 - `docs/ops/offhost-backup.md`: S3-compatible backup dry-run, required environment, retention policy file, and restore drill flow.
 - `docs/ops/disk-usage.md`: local Disk Usage Guard command, evidence, failure handling, manual cleanup guidance, and limitations.

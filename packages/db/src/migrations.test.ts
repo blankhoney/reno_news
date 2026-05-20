@@ -264,6 +264,7 @@ test("production audit report stays evidence-only and non-approving", async () =
     "pnpm disk:check:local",
     "docs/ops/release-health-audit.md",
     "docs/ops/metrics.md",
+    "docs/ops/logging-trace.md",
     "docs/ops/backup-restore.md",
     "docs/ops/offhost-backup.md",
     "docs/ops/disk-usage.md",

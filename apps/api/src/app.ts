@@ -91,6 +91,10 @@ type AdminRequest = FastifyRequest & {
   adminUser?: AuthUser;
 };
 
+type TraceRequest = FastifyRequest & {
+  traceRequestId?: string;
+};
+
 class DatabaseNotConfiguredError extends Error {
   constructor() {
     super("DATABASE_URL is required");
@@ -120,6 +124,8 @@ const feedbackTypes = [
   "rights_concern"
 ];
 const authSessionCookieName = "reno_news_session";
+const requestIdHeaderName = "x-request-id";
+const requestIdPattern = /^[A-Za-z0-9._:-]{1,128}$/;
 const authLoginFailureStatuses: Record<AuthLoginFailureReason, number> = {
   invalid_credentials: 401,
   invite_required: 403,
@@ -263,6 +269,21 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   const failureQueueRepository =
     dependencies.failureQueueRepository ?? failureQueueRepositoryFromEnvironment(app);
   const requireAdmin = createRequireAdmin(authService);
+
+  app.addHook("onRequest", async (request, reply) => {
+    const requestId = traceIdFromHeader(request.headers[requestIdHeaderName]) ?? String(request.id);
+    (request as TraceRequest).traceRequestId = requestId;
+    reply.header(requestIdHeaderName, requestId);
+    request.log.info(
+      {
+        event: "request.start",
+        requestId,
+        method: request.method,
+        path: request.url
+      },
+      "request.start"
+    );
+  });
 
   app.get("/healthz", async () => ({
     status: "ok",
@@ -766,6 +787,14 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   return app;
 }
 
+function traceIdFromHeader(value: string | string[] | undefined): string | undefined {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  if (!candidate || !requestIdPattern.test(candidate)) {
+    return undefined;
+  }
+  return candidate;
+}
+
 function renderApiMetrics(failures: FailureQueueRecord[]): string {
   const countsByStage = new Map<(typeof failureStages)[number], number>(
     failureStages.map((stage) => [stage, 0])
@@ -836,6 +865,10 @@ function adminUserFromRequest(request: FastifyRequest): AuthUser | null {
   return (request as AdminRequest).adminUser ?? null;
 }
 
+function traceIdFromRequest(request: FastifyRequest): string {
+  return (request as TraceRequest).traceRequestId ?? String(request.id);
+}
+
 async function recordAuditEvent(
   auditRepository: AuditRepository,
   request: FastifyRequest,
@@ -853,7 +886,7 @@ async function recordAuditEvent(
     action: input.action,
     objectType: input.objectType,
     objectId: input.objectId ?? null,
-    requestId: String(request.id),
+    requestId: traceIdFromRequest(request),
     metadata: input.metadata ?? {}
   });
 }

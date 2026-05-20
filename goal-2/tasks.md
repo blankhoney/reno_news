@@ -235,13 +235,20 @@
 
 ## Task 11: Structured Logging And Request Trace Id
 
-- Status: Pending
+- Status: Completed
 - Objective: Ensure API and worker logs carry request/job ids and safe structured metadata.
 - TDD/Verification:
   - Failing tests first for response trace header and log-context propagation in representative paths.
   - Pass criteria: trace id connects web/API/worker-visible work without logging secrets.
 - Completion Record:
-  - Pending.
+  - Red: added API tests requiring `x-request-id` response propagation, safe structured request logs, and audit request id propagation; tests failed because responses did not include the header and audit used Fastify's generated id.
+  - Red: added worker HTTP test requiring manual ingest responses and structured logs to carry `X-Request-Id`; it failed because the worker server had no `log_event` injection point or response trace header.
+  - Green: added API `onRequest` trace handling that accepts safe `x-request-id`, writes it to the response, logs only safe structured fields, and stores the same id for audit events.
+  - Green: added worker request-id parsing, `X-Request-Id` response headers, JSON-line stdout logging, and injectable `log_event` for tests.
+  - Added `docs/ops/logging-trace.md` and updated production audit evidence for the logging/trace contract.
+  - Quality review: close-read API trace constants, request hook, trace helper, audit integration, API tests, worker server, worker tests, logging/trace runbook, and production audit updates.
+  - Verified with `pnpm --filter @reno-news/api test`, `pnpm --filter @reno-news/api lint`, `uv --project services/worker run python -m unittest services.worker.tests.test_health`, `pnpm --filter @reno-news/db test`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: this is request-id propagation plus safe structured logs, not OpenTelemetry export, log shipping, retention, or distributed tracing.
 
 ## Task 12: Prometheus Alert Rules And Ops Runbooks
 
