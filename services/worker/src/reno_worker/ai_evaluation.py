@@ -72,6 +72,13 @@ class EvaluationResult:
     message: str | None = None
 
 
+@dataclass(frozen=True)
+class SchemaGateResult:
+    output: dict[str, object]
+    repaired: bool
+    repair_notes: list[str] = field(default_factory=list)
+
+
 class ProviderAdapterError(RuntimeError):
     def __init__(
         self,
@@ -125,7 +132,6 @@ class OpenAIResponsesAdapter:
         response = self.client.responses.create(**request)
         latency_ms = int((perf_counter() - started) * 1000)
         output = parse_response_output(response)
-        validate_output(output)
         return AdapterResult(
             provider="openai",
             model=self.model,
@@ -171,7 +177,6 @@ class MiniMaxEvaluationAdapter:
             )
         response_payload = response.json()
         output = parse_minimax_tool_output(response_payload, tool_name="ai_evaluation")
-        validate_output(output)
         return AdapterResult(
             provider="minimax",
             model=self.config.model,
@@ -399,6 +404,29 @@ def parse_response_output(response: object) -> dict[str, object]:
     raise ValueError("OpenAI response did not include structured output text")
 
 
+def validate_or_repair_output(output: dict[str, object]) -> SchemaGateResult:
+    try:
+        validate_output(output)
+        return SchemaGateResult(output=output, repaired=False)
+    except ValueError:
+        repaired = dict(output)
+        repair_notes: list[str] = []
+
+        if isinstance(repaired.get("scores"), dict) and isinstance(repaired.get("rationale"), dict):
+            if "evidence" not in repaired:
+                repaired["evidence"] = []
+                repair_notes.append("evidence")
+            if "summary" not in repaired:
+                repaired["summary"] = {}
+                repair_notes.append("summary")
+
+        if not repair_notes:
+            raise
+
+        validate_output(repaired)
+        return SchemaGateResult(output=repaired, repaired=True, repair_notes=repair_notes)
+
+
 def evaluate_raw_entry(
     database_url: str,
     raw_entry_id: int,
@@ -438,7 +466,7 @@ def evaluate_raw_entry(
 
         try:
             adapter_result = adapter(evaluation_input)
-            validate_output(adapter_result.output)
+            schema_gate_result = validate_or_repair_output(adapter_result.output)
         except ProviderAdapterError as error:
             model_call_id = record_model_call(
                 connection,
@@ -502,14 +530,14 @@ def evaluate_raw_entry(
             status="success",
             latency_ms=adapter_result.latency_ms,
             request_redacted=adapter_result.request_redacted,
-            response_redacted=adapter_result.response_redacted,
+            response_redacted=response_metadata_with_schema_gate(adapter_result.response_redacted, schema_gate_result),
         )
         evaluation_id = record_evaluation(
             connection,
             raw_entry_id=raw_entry_id,
             extraction_id=evaluation_input.extraction_id,
             model_call_id=model_call_id,
-            output=adapter_result.output,
+            output=schema_gate_result.output,
         )
         connection.commit()
         return EvaluationResult(
@@ -563,6 +591,19 @@ def validate_output(output: dict[str, object]) -> None:
         raise ValueError("AI evaluation evidence must be a list")
     if not isinstance(output["summary"], dict):
         raise ValueError("AI evaluation summary must be an object")
+
+
+def response_metadata_with_schema_gate(
+    response_redacted: dict[str, object],
+    schema_gate_result: SchemaGateResult,
+) -> dict[str, object]:
+    if not schema_gate_result.repaired:
+        return response_redacted
+
+    updated = dict(response_redacted)
+    updated["schemaRepaired"] = True
+    updated["repairNotes"] = schema_gate_result.repair_notes
+    return updated
 
 
 def record_model_call(

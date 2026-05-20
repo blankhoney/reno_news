@@ -16,6 +16,7 @@ from reno_worker.ai_evaluation import (
     ProviderAdapterError,
     build_responses_request,
     evaluate_raw_entry,
+    validate_or_repair_output,
 )
 
 
@@ -302,6 +303,31 @@ class AiEvaluationTest(unittest.TestCase):
         self.assertTrue(error_context.exception.retryable)
         self.assertEqual(error_context.exception.response_redacted["statusCode"], 500)
         self.assertEqual(error_context.exception.response_redacted["retryCount"], 1)
+
+    def test_schema_gate_repairs_missing_optional_structured_blocks(self) -> None:
+        gate_result = validate_or_repair_output(
+            {
+                "scores": {"relevance": 0.8, "credibility": 0.7, "novelty": 0.6},
+                "rationale": {"summary": "ok"},
+            }
+        )
+
+        self.assertTrue(gate_result.repaired)
+        self.assertEqual(gate_result.output["evidence"], [])
+        self.assertEqual(gate_result.output["summary"], {})
+        self.assertIn("evidence", gate_result.repair_notes)
+        self.assertIn("summary", gate_result.repair_notes)
+
+    def test_schema_gate_rejects_unrecoverable_output(self) -> None:
+        with self.assertRaisesRegex(ValueError, "AI evaluation scores must be an object"):
+            validate_or_repair_output(
+                {
+                    "scores": "bad",
+                    "rationale": {"summary": "ok"},
+                    "evidence": [],
+                    "summary": {},
+                }
+            )
 
     @unittest.skipUnless(os.environ.get("DATABASE_URL"), "DATABASE_URL integration target not set")
     def test_evaluate_raw_entry_persists_model_call_and_evaluation(self) -> None:

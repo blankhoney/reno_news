@@ -318,13 +318,21 @@
 
 ## Task 15: Schema Validation Repair And Failure Gate
 
-- Status: Pending
+- Status: Completed
 - Objective: Add schema validation, repair pass, and failure isolation before structured AI results enter formal tables.
 - TDD/Verification:
   - Failing tests first for malformed model output, repairable output, and unrecoverable output.
   - Pass criteria: invalid structured output is either repaired and validated or quarantined with a clear failure reason.
 - Completion Record:
-  - Pending.
+  - Red/Green: added a schema gate test for repairable AI evaluation output missing `evidence` and `summary`; it first failed because no `validate_or_repair_output` gate existed, then passed after adding the repair gate.
+  - Added `SchemaGateResult` and `validate_or_repair_output`; the repair pass only fills default `evidence: []` and `summary: {}` when `scores` and `rationale` are already valid objects, then re-runs validation.
+  - Added an unrecoverable-output test proving invalid score shape is rejected instead of repaired.
+  - Moved adapter-local evaluation validation into the orchestration gate so provider adapters parse provider output, while `evaluate_raw_entry` owns validation, repair metadata, failure isolation, and formal-table write gating.
+  - Successful repaired outputs write `schemaRepaired` and `repairNotes` into redacted model-call response metadata before writing `ai_evaluations`.
+  - Unrecoverable schema failures still record a `schema_error` `model_calls` failure and return before `record_evaluation`, keeping invalid output out of formal tables.
+  - Quality review: close-read the schema gate and evaluation orchestration code plus the new schema gate tests.
+  - Verified with `uv --project services/worker run python -m unittest services.worker.tests.test_ai_evaluation`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `pnpm ai:provider:check`, `pnpm lint`, and `git diff --check`.
+  - DB-backed formal-table assertions remain skipped locally because `DATABASE_URL` is not configured in this session.
 
 ## Check-Debug Loop 5
 
