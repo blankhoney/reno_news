@@ -132,3 +132,6 @@ jobs:
 
       - name: Verify alert rules contract
         run: node scripts/check-alert-rules.mjs
+
+      - name: Verify AI provider contract
+        run: node scripts/check-ai-provider-contract.mjs

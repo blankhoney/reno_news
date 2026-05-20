@@ -29,12 +29,12 @@ function requireSnippets(path, snippets) {
 requireSnippets("docs/CODEX_MASTER_PLAN.md", [
   "## 17. Second-Version Execution Plan",
   "| V2 Milestone | Name | Status | Exit Gate |",
-  "| V2.1 | Identity, RBAC, and Audit | Not Started |",
-  "| V2.2 | Production Deploy, Secrets, and Off-Host Backup | Not Started |",
-  "| V2.3 | Observability and Alerting | Not Started |",
-  "| V2.4 | MiniMax Model Integration and Evaluation Gate | Not Started |",
-  "| V2.5 | Account-Backed Personal State and Digest Editions | Not Started |",
-  "| V2.6 | Structured Source Expansion and Similarity Signals | Not Started |",
+  "| V2.1 | Identity, RBAC, and Audit |",
+  "| V2.2 | Production Deploy, Secrets, and Off-Host Backup |",
+  "| V2.3 | Observability and Alerting |",
+  "| V2.4 | MiniMax Model Integration and Evaluation Gate |",
+  "| V2.5 | Account-Backed Personal State and Digest Editions |",
+  "| V2.6 | Structured Source Expansion and Similarity Signals |",
   "Second-version work must proceed through `goal-2/tasks.md` one task at a time."
 ]);
 

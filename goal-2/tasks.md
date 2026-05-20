@@ -283,13 +283,20 @@
 
 ## Task 13: MiniMax Adapter Planning And ADR
 
-- Status: Pending
+- Status: Completed
 - Objective: Document MiniMax M2.7 usage boundary, schema validation strategy, fallback policy, budgets, timeout, and retry behavior.
 - TDD/Verification:
   - Failing doc/contract check first for provider capability sections and env contract.
   - Pass criteria: ADR and docs make clear that MiniMax is primary but schema correctness is locally verified.
 - Completion Record:
-  - Pending.
+  - Red: added `scripts/check-ai-provider-contract.mjs`; `node scripts/check-ai-provider-contract.mjs` failed because `docs/ops/ai-provider.md` did not exist.
+  - Green: added `docs/ops/ai-provider.md`, `pnpm ai:provider:check`, and a CI contract step for the MiniMax provider boundary.
+  - Updated ADR 0035 to prefer the Anthropic-compatible MiniMax endpoint, document `MiniMax-M2.7`/highspeed usage, and clarify that `response_format` JSON schema is not the strict M2.7 contract.
+  - Documented required env names, timeout, retry, budget, local schema validation, bounded repair pass, fallback, quarantine, `model_calls`, and golden-set expectations without committing secrets or making live provider calls.
+  - Fixed `scripts/check-v2-plan.mjs` so V2 milestone checks tolerate status progression after tasks complete.
+  - Updated the master plan, CI/CD runbook, and production audit evidence while preserving the boundary that live MiniMax key, provider smoke, schema repair implementation, fallback implementation, and golden-set quality report remain future tasks.
+  - Quality review: close-read the AI provider contract checker, provider runbook, ADR, CI workflow, package script, master plan section, CI/CD runbook, production audit, and V2 plan checker.
+  - Verified with `pnpm ai:provider:check`, `pnpm v2:plan:check`, `pnpm --filter @reno-news/db test`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `pnpm lint`, and `git diff --check`.
 
 ## Task 14: MiniMax Real Adapter Foundation
 
