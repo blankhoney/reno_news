@@ -45,6 +45,28 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 - `lifecycle_status`, `processing_stage`, `rights_status`, and `failure_type` are constrained text fields.
 - RSS/Atom feed metadata, allowlisted GitHub repository/release metadata, and allowlisted arXiv article metadata land here before full-text extraction.
 - Duplicate feed entries are ignored through existing unique constraints and `on conflict do nothing`.
+- `canonical_hash` remains the exact duplicate guard.
+- `duplicate_group_id` may point to a secondary Duplicate Group used for later duplicate folding.
+- `pg_trgm` GIN indexes on `title` and `url` support secondary title/URL similarity candidates; PostgreSQL FTS remains the primary reader search path.
+
+## Raw Entry Duplicate Groups
+
+`raw_entry_duplicate_groups`
+
+- Stores secondary duplicate-folding groups for raw entries after exact hash, trigram, embedding, or operator-review evidence exists.
+- `group_kind` is constrained to `canonical_hash`, `title_url_trgm`, `embedding`, or `operator_review`.
+- `group_key` is unique and stable for the grouping signal.
+- `representative_raw_entry_id` may point to a preferred representative item and is set to null if that raw entry is deleted.
+
+## Raw Entry Similarity Signals
+
+`raw_entry_similarity_signals`
+
+- Stores bounded pairwise Similarity Signal evidence between two raw entries.
+- `signal_type` is constrained to `canonical_hash`, `title_trgm`, `url_trgm`, `embedding`, or `operator_review`.
+- `score` is constrained to the inclusive range `0..1`.
+- Self-pairs are rejected and `(raw_entry_id, similar_raw_entry_id, signal_type)` is unique.
+- These signals do not change reader visibility, lifecycle status, ranking, or publication state by themselves.
 
 ## Source Ingest Attempts
 

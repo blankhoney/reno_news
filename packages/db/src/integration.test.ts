@@ -109,6 +109,148 @@ test("migrations and dev seed can be applied repeatedly", async () => {
   }
 });
 
+test("similarity and dedup schema adds pg_trgm indexes without relaxing canonical hash uniqueness", async () => {
+  await runMigrations({ databaseUrl });
+
+  const unique = Date.now().toString(36);
+  const sourceUrl = `https://example.invalid/similarity-dedup-${unique}.xml`;
+  const firstHash = `similarity-dedup-canonical-${unique}`;
+  const secondHash = `similarity-dedup-secondary-${unique}`;
+  const groupKey = `title-url-trgm:${unique}`;
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+
+  try {
+    await cleanupSimilarityDedupFixture(pool, sourceUrl, groupKey);
+
+    const extension = await pool.query<{ count: string }>(
+      "select count(*) from pg_extension where extname = 'pg_trgm'"
+    );
+    assert.equal(Number(extension.rows[0].count), 1);
+
+    const indexes = await pool.query<{ indexname: string; indexdef: string }>(
+      `
+        select indexname, indexdef
+        from pg_indexes
+        where schemaname = 'public'
+          and indexname in ('raw_entries_title_trgm_idx', 'raw_entries_url_trgm_idx')
+        order by indexname
+      `
+    );
+    assert.deepEqual(
+      indexes.rows.map((row) => row.indexname),
+      ["raw_entries_title_trgm_idx", "raw_entries_url_trgm_idx"]
+    );
+    for (const index of indexes.rows) {
+      assert.match(index.indexdef, /USING gin/);
+      assert.match(index.indexdef, /gin_trgm_ops/);
+    }
+
+    const source = await pool.query<{ id: number }>(
+      `
+        insert into sources (board_id, source_type, title, url)
+        values ((select id from boards where slug = 'ai'), 'rss', $1, $2)
+        returning id::int
+      `,
+      [`Similarity Dedup ${unique}`, sourceUrl]
+    );
+
+    const first = await pool.query<{ id: number }>(
+      `
+        insert into raw_entries (source_id, external_id, url, title, canonical_hash)
+        values ($1, $2, $3, 'Similarity Duplicate Primary', $4)
+        returning id::int
+      `,
+      [source.rows[0].id, `similarity-dedup-first-${unique}`, `${sourceUrl}#first`, firstHash]
+    );
+
+    await assert.rejects(
+      pool.query(
+        `
+          insert into raw_entries (source_id, external_id, url, title, canonical_hash)
+          values ($1, $2, $3, 'Similarity Duplicate Exact', $4)
+        `,
+        [
+          source.rows[0].id,
+          `similarity-dedup-exact-${unique}`,
+          `${sourceUrl}#exact`,
+          firstHash
+        ]
+      )
+    );
+
+    const second = await pool.query<{ id: number }>(
+      `
+        insert into raw_entries (source_id, external_id, url, title, canonical_hash)
+        values ($1, $2, $3, 'Similarity Duplicate Secondary', $4)
+        returning id::int
+      `,
+      [source.rows[0].id, `similarity-dedup-second-${unique}`, `${sourceUrl}#second`, secondHash]
+    );
+    const group = await pool.query<{ id: number }>(
+      `
+        insert into raw_entry_duplicate_groups (group_kind, group_key, representative_raw_entry_id)
+        values ('title_url_trgm', $1, $2)
+        returning id::int
+      `,
+      [groupKey, first.rows[0].id]
+    );
+    await pool.query("update raw_entries set duplicate_group_id = $1 where id = any($2::bigint[])", [
+      group.rows[0].id,
+      [first.rows[0].id, second.rows[0].id]
+    ]);
+    await pool.query(
+      `
+        insert into raw_entry_similarity_signals (
+          raw_entry_id,
+          similar_raw_entry_id,
+          signal_type,
+          score
+        )
+        values ($1, $2, 'title_trgm', 0.8123)
+      `,
+      [first.rows[0].id, second.rows[0].id]
+    );
+
+    await assert.rejects(
+      pool.query(
+        `
+          insert into raw_entry_similarity_signals (
+            raw_entry_id,
+            similar_raw_entry_id,
+            signal_type,
+            score
+          )
+          values ($1, $1, 'title_trgm', 0.5000)
+        `,
+        [first.rows[0].id]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into raw_entry_similarity_signals (
+            raw_entry_id,
+            similar_raw_entry_id,
+            signal_type,
+            score
+          )
+          values ($1, $2, 'url_trgm', 1.5000)
+        `,
+        [first.rows[0].id, second.rows[0].id]
+      )
+    );
+
+    const grouped = await pool.query<{ count: string }>(
+      "select count(*) from raw_entries where duplicate_group_id = $1",
+      [group.rows[0].id]
+    );
+    assert.equal(Number(grouped.rows[0].count), 2);
+  } finally {
+    await cleanupSimilarityDedupFixture(pool, sourceUrl, groupKey);
+    await pool.end();
+  }
+});
+
 test("auth identity schema enforces roles, invites, sessions, and login attempts", async () => {
   await runMigrations({ databaseUrl });
 
@@ -1692,6 +1834,18 @@ async function cleanupReaderDetailFixtures(pool: Pool): Promise<void> {
   await pool.query(
     "delete from sources where url like 'https://example.invalid/reader-detail-%'"
   );
+}
+
+async function cleanupSimilarityDedupFixture(
+  pool: Pool,
+  sourceUrl: string,
+  groupKey: string
+): Promise<void> {
+  await pool.query("delete from raw_entries where source_id in (select id from sources where url = $1)", [
+    sourceUrl
+  ]);
+  await pool.query("delete from raw_entry_duplicate_groups where group_key = $1", [groupKey]);
+  await pool.query("delete from sources where url = $1", [sourceUrl]);
 }
 
 async function addFeedbackFixture(

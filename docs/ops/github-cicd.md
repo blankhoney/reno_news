@@ -37,6 +37,7 @@ Checks:
 - GitHub source policy contract check for allowlist-only Releases/repository metadata scope and low-concurrency rate-limit handling
 - arXiv source policy contract check for category-query allowlist, Atom pagination, attribution, and 3-second request spacing
 - GDELT/RSSHub source expansion constraints check proving GDELT stays candidate-radar only and RSSHub stays explicit-whitelist only
+- PostgreSQL similarity/dedup contract check proving FTS remains primary while `pg_trgm` and duplicate signal schema stay secondary
 
 Configured branch protection for `main`:
 
@@ -144,6 +145,7 @@ Expected behavior:
 - CI verifies the AI provider documentation contract without requiring a MiniMax key.
 - CI runs the fake AI golden-set harness without requiring provider credentials.
 - CI verifies the GitHub source policy contract without requiring a GitHub token or live API call.
+- CI verifies the PostgreSQL similarity/dedup contract without requiring pgvector or an external search service.
 - Image publishing runs after pushes to `main` and publishes all three GHCR images.
 - Deploy is available manually but fails early until all required deployment secrets are configured.
 

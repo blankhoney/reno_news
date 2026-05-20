@@ -132,6 +132,14 @@ _Avoid_: Admin raw entry, private full-text match, recommendation
 A policy-visible item shown near a current Reader Detail Projection because it shares board, source, or reader-safe text signals with that item.
 _Avoid_: Personalized recommendation, ranking signal, digest item
 
+**Similarity Signal**:
+A bounded, explainable signal that two candidate or content items may be related or duplicative, such as title trigram, URL trigram, exact canonical hash, embedding, or operator review evidence.
+_Avoid_: Reader Search Query, global ranking score, hidden moderation state
+
+**Duplicate Group**:
+A secondary grouping of raw entries that appear to represent the same underlying item or closely duplicative item, without deleting entries or replacing canonical hash uniqueness.
+_Avoid_: Deletion, moderation action, source-level deduplication
+
 **Rubric**:
 The scoring standard used to evaluate a content item for a board.
 _Avoid_: Prompt, ranking formula

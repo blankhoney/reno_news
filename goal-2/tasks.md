@@ -578,13 +578,21 @@
 
 ## Task 26: PostgreSQL Similarity/Dedup Planning
 
-- Status: Pending
+- Status: Completed
 - Objective: Define the minimal pg_trgm/pgvector usage for related items and duplicate folding.
 - TDD/Verification:
   - Failing migration/query contract tests first for similarity indexes and canonical duplicate behavior.
   - Pass criteria: design remains compatible with PostgreSQL FTS as the main search path.
 - Completion Record:
-  - Pending.
+  - Checked current PostgreSQL and pgvector documentation before implementation: PostgreSQL `pg_trgm` supports trigram similarity functions and GIN/GiST operator classes, while pgvector requires the `vector` extension and explicit vector schema/index choices.
+  - Red/Green: added a migration contract test for `0016_postgresql_similarity_dedup.sql`; it failed while the migration was missing, then passed after adding the additive schema.
+  - Added `0016_postgresql_similarity_dedup.sql` to enable `pg_trgm`, add GIN trigram indexes on `raw_entries.title` and `raw_entries.url`, add nullable `raw_entries.duplicate_group_id`, and add `raw_entry_duplicate_groups` plus `raw_entry_similarity_signals`.
+  - Added a DB-backed integration test proving `pg_trgm` and trigram indexes exist, canonical hash uniqueness still rejects exact duplicates, duplicate groups can hold related-but-distinct raw entries, and similarity signals reject self-pairs and out-of-range scores.
+  - Added ADR 0039 and `docs/ops/postgres-similarity-dedup.md` documenting that PostgreSQL FTS remains the primary reader search path, `pg_trgm` is secondary, pgvector is optional/later, and external search services remain deferred.
+  - Added `pnpm postgres:similarity:check`, wired it into CI, and updated CI, schema, and glossary docs.
+  - Quality review: close-read the migration, migration test, integration test, cleanup helper, contract checker, ADR, runbook, glossary, schema docs, package script, CI workflow, and CI/CD runbook.
+  - Verified with `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/db test:integration`, `pnpm postgres:similarity:check`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: Task 26 intentionally does not change related-item ordering, implement duplicate folding, enable pgvector, create embeddings, or add any external search service; Task 27 owns runtime related/duplicate behavior.
 
 ## Task 27: Related/Duplicate Fold Enhancement
 

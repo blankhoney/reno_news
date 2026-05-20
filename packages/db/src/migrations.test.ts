@@ -190,6 +190,31 @@ test("arXiv source adapter migration allows arXiv sources without changing failu
   assert.doesNotMatch(migration, /download|pdf|source files/i);
 });
 
+test("PostgreSQL similarity migration keeps FTS primary and adds secondary dedup signals", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0016_postgresql_similarity_dedup.sql"),
+    "utf8"
+  );
+
+  assert.match(migration, /create extension if not exists pg_trgm/);
+  assert.match(migration, /raw_entries_title_trgm_idx/);
+  assert.match(migration, /using gin \(title gin_trgm_ops\)/);
+  assert.match(migration, /raw_entries_url_trgm_idx/);
+  assert.match(migration, /using gin \(url gin_trgm_ops\)/);
+  assert.match(migration, /create table if not exists raw_entry_duplicate_groups/);
+  assert.match(migration, /group_kind text not null/);
+  assert.match(migration, /group_key text not null unique/);
+  assert.match(migration, /representative_raw_entry_id bigint references raw_entries\(id\) on delete set null/);
+  assert.match(migration, /alter table raw_entries/);
+  assert.match(migration, /duplicate_group_id bigint references raw_entry_duplicate_groups\(id\) on delete set null/);
+  assert.match(migration, /create table if not exists raw_entry_similarity_signals/);
+  assert.match(migration, /score numeric\(5,4\) not null/);
+  assert.match(migration, /check \(score >= 0 and score <= 1\)/);
+  assert.match(migration, /unique \(raw_entry_id, similar_raw_entry_id, signal_type\)/);
+  assert.doesNotMatch(migration, /create extension if not exists vector/i);
+  assert.doesNotMatch(migration, /meilisearch|opensearch|elasticsearch/i);
+});
+
 test("backup and restore drill scripts stay local and disposable", async () => {
   const packageJson = JSON.parse(
     await readFile(join(process.cwd(), "../../package.json"), "utf8")
