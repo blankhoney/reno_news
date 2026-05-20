@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import type {
   AuditEventRecord,
   AuditRepository,
+  DigestEdition,
+  DigestEditionRepository,
   FailureQueueRecord,
   FailureQueueRepository,
   FeedbackRecord,
@@ -113,7 +115,14 @@ const adminRouteCases = [
   { method: "GET", url: "/admin/failures" },
   { method: "GET", url: "/admin/audit-events" },
   { method: "GET", url: "/admin/feedback" },
-  { method: "PATCH", url: "/admin/feedback/20", payload: { reviewStatus: "reviewed" } }
+  { method: "PATCH", url: "/admin/feedback/20", payload: { reviewStatus: "reviewed" } },
+  { method: "GET", url: "/admin/digest-editions" },
+  { method: "GET", url: "/admin/digest-editions/7" },
+  {
+    method: "POST",
+    url: "/admin/digest-editions",
+    payload: { editionDate: "2026-05-21", boardSlug: "ai", limit: 5 }
+  }
 ] as const;
 
 const rawEntryRecord: RawEntryRecord = {
@@ -283,6 +292,50 @@ function fakePersonalStateRepository(
     setSavedItem: async () => personalStateResponse,
     setReadLaterItem: async () => personalStateResponse,
     setReadStatus: async () => personalStateResponse,
+    close: async () => undefined,
+    ...overrides
+  };
+}
+
+const digestEdition: DigestEdition = {
+  id: 7,
+  editionKey: "board:ai:2026-05-21",
+  editionDate: "2026-05-21",
+  boardSlug: "ai",
+  status: "draft",
+  windowStartAt: "2026-05-20T00:00:00.000Z",
+  windowEndAt: "2026-05-21T00:00:00.000Z",
+  generatedAt: "2026-05-21T00:01:00.000Z",
+  reviewedAt: null,
+  reviewNote: null,
+  items: [
+    {
+      itemId: 1,
+      position: 1,
+      snapshot: readerItem
+    }
+  ]
+};
+
+function fakeDigestEditionRepository(
+  overrides: Partial<DigestEditionRepository> = {}
+): DigestEditionRepository {
+  return {
+    createDigestEdition: async () => digestEdition,
+    listDigestEditions: async () => [
+      {
+        id: digestEdition.id,
+        editionKey: digestEdition.editionKey,
+        editionDate: digestEdition.editionDate,
+        boardSlug: digestEdition.boardSlug,
+        status: digestEdition.status,
+        itemCount: digestEdition.items.length,
+        generatedAt: digestEdition.generatedAt,
+        reviewedAt: digestEdition.reviewedAt
+      }
+    ],
+    getDigestEditionById: async () => digestEdition,
+    getDigestEditionByKey: async () => digestEdition,
     close: async () => undefined,
     ...overrides
   };
@@ -1923,6 +1976,210 @@ test("GET /reader/digest rejects invalid limits", async () => {
   });
 
   assert.equal(response.statusCode, 400);
+});
+
+test("POST /admin/digest-editions generates a persisted digest edition", async () => {
+  let receivedDigestInput: unknown;
+  let receivedCreateInput: unknown;
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      readerRepository: fakeReaderRepository({
+        listReaderDigestItems: async (input) => {
+          receivedDigestInput = input;
+          return [readerItem];
+        }
+      }),
+      digestEditionRepository: fakeDigestEditionRepository({
+        createDigestEdition: async (input) => {
+          receivedCreateInput = input;
+          return digestEdition;
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/admin/digest-editions",
+    headers: adminSessionHeaders,
+    payload: {
+      editionDate: "2026-05-21",
+      boardSlug: "ai",
+      limit: 5
+    }
+  });
+
+  assert.equal(response.statusCode, 201);
+  assert.deepEqual(receivedDigestInput, { boardSlug: "ai", limit: 5 });
+  assert.deepEqual(receivedCreateInput, {
+    editionDate: "2026-05-21",
+    boardSlug: "ai",
+    windowStartAt: "2026-05-20T00:00:00.000Z",
+    windowEndAt: "2026-05-21T00:00:00.000Z",
+    generatedByUserId: 1,
+    items: [readerItem]
+  });
+  assert.deepEqual(response.json(), { edition: digestEdition });
+});
+
+test("GET /admin/digest-editions lists persisted digest editions", async () => {
+  let repositoryCalled = false;
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      digestEditionRepository: fakeDigestEditionRepository({
+        listDigestEditions: async () => {
+          repositoryCalled = true;
+          return [
+            {
+              id: digestEdition.id,
+              editionKey: digestEdition.editionKey,
+              editionDate: digestEdition.editionDate,
+              boardSlug: digestEdition.boardSlug,
+              status: digestEdition.status,
+              itemCount: digestEdition.items.length,
+              generatedAt: digestEdition.generatedAt,
+              reviewedAt: digestEdition.reviewedAt
+            }
+          ];
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/admin/digest-editions",
+    headers: adminSessionHeaders
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(repositoryCalled, true);
+  assert.deepEqual(response.json(), {
+    editions: [
+      {
+        id: digestEdition.id,
+        editionKey: digestEdition.editionKey,
+        editionDate: digestEdition.editionDate,
+        boardSlug: digestEdition.boardSlug,
+        status: digestEdition.status,
+        itemCount: digestEdition.items.length,
+        generatedAt: digestEdition.generatedAt,
+        reviewedAt: digestEdition.reviewedAt
+      }
+    ]
+  });
+});
+
+test("GET /admin/digest-editions/:id returns edition detail or 404", async () => {
+  const seenIds: number[] = [];
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      digestEditionRepository: fakeDigestEditionRepository({
+        getDigestEditionById: async (id) => {
+          seenIds.push(id);
+          return id === digestEdition.id ? digestEdition : null;
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const foundResponse = await app.inject({
+    method: "GET",
+    url: "/admin/digest-editions/7",
+    headers: adminSessionHeaders
+  });
+
+  assert.equal(foundResponse.statusCode, 200);
+  assert.deepEqual(foundResponse.json(), { edition: digestEdition });
+
+  const missingResponse = await app.inject({
+    method: "GET",
+    url: "/admin/digest-editions/999",
+    headers: adminSessionHeaders
+  });
+
+  assert.equal(missingResponse.statusCode, 404);
+  assert.deepEqual(missingResponse.json(), { error: "Digest edition not found" });
+  assert.deepEqual(seenIds, [7, 999]);
+});
+
+test("GET /reader/digest-editions/:editionKey replays a persisted digest edition", async () => {
+  let seenEditionKey = "";
+  let dynamicDigestCalled = false;
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        listReaderDigestItems: async () => {
+          dynamicDigestCalled = true;
+          return [readerItem];
+        }
+      }),
+      digestEditionRepository: fakeDigestEditionRepository({
+        getDigestEditionByKey: async (editionKey) => {
+          seenEditionKey = editionKey;
+          return digestEdition;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/digest-editions/board:ai:2026-05-21"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(seenEditionKey, "board:ai:2026-05-21");
+  assert.equal(dynamicDigestCalled, false);
+  assert.deepEqual(response.json(), { edition: digestEdition });
+});
+
+test("POST /admin/digest-editions rejects impossible edition dates before repository work", async () => {
+  let repositoryCalled = false;
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      digestEditionRepository: fakeDigestEditionRepository({
+        createDigestEdition: async () => {
+          repositoryCalled = true;
+          return digestEdition;
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/admin/digest-editions",
+    headers: adminSessionHeaders,
+    payload: {
+      editionDate: "2026-99-99",
+      boardSlug: "ai"
+    }
+  });
+
+  assert.equal(response.statusCode, 400);
+  assert.deepEqual(response.json(), { error: "Invalid edition date" });
+  assert.equal(repositoryCalled, false);
 });
 
 test("GET /reader/items/:id/related returns related item cards with optional limit", async () => {

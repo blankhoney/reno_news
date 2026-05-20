@@ -16,6 +16,28 @@ export type ReaderItemCard = {
   createdAt: string;
 };
 
+export type DigestEditionItemSnapshot = Omit<ReaderItemCard, "url">;
+
+export type DigestEditionItem = {
+  itemId: number;
+  position: number;
+  snapshot: DigestEditionItemSnapshot;
+};
+
+export type DigestEdition = {
+  id: number;
+  editionKey: string;
+  editionDate: string;
+  boardSlug: string | null;
+  status: "draft" | "reviewed" | "archived";
+  windowStartAt: string;
+  windowEndAt: string;
+  generatedAt: string;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+  items: DigestEditionItem[];
+};
+
 export type ReaderOriginalTextMode = "none" | "excerpt" | "full";
 export type ReaderChineseTextMode = "summary_only";
 export type ReaderLanguageView = "zh" | "original";
@@ -96,6 +118,25 @@ export async function getReaderDigestItems(input: {
   }
   const payload = (await response.json()) as { items: ReaderItemCard[] };
   return payload.items;
+}
+
+export async function getReaderDigestEdition(
+  editionKey: string
+): Promise<DigestEdition | null> {
+  const response = await fetch(
+    apiUrl(`/reader/digest-editions/${encodeURIComponent(editionKey)}`),
+    {
+      cache: "no-store"
+    }
+  );
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(`Failed to load reader digest edition: ${response.status}`);
+  }
+  const payload = (await response.json()) as { edition: DigestEdition };
+  return payload.edition;
 }
 
 export async function getReaderSearchItems(

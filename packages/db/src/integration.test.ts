@@ -4,6 +4,7 @@ import { Pool } from "pg";
 import { runMigrations, runSeed } from "./runner";
 import { createAuditRepository } from "./auditRepository";
 import { createAuthRepository } from "./authRepository";
+import { createDigestEditionRepository } from "./digestEditionRepository";
 import { createFeedbackRepository } from "./feedbackRepository";
 import { createFailureQueueRepository } from "./failureQueueRepository";
 import { createPersonalStateRepository } from "./personalStateRepository";
@@ -1146,6 +1147,73 @@ test("reader repository lists digest items from the reader-safe visible pool", a
     await repository.close();
     await cleanupReaderDetailFixtures(pool);
     await pool.query("delete from boards where slug = 'digest-empty'");
+    await pool.end();
+  }
+});
+
+test("digest edition repository replays stored snapshots after source items change", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const readerRepository = createReaderRepository(databaseUrl);
+  const digestEditionRepository = createDigestEditionRepository(databaseUrl);
+  const editionDate = "2026-05-22";
+  const editionKey = `board:ai:${editionDate}`;
+
+  try {
+    await pool.query("delete from digest_editions where edition_key = $1", [editionKey]);
+    await cleanupReaderDetailFixtures(pool);
+
+    const stableItemId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-digest-edition-stable",
+      title: "Digest Edition Stable Original",
+      summaryOneSentence: "Digest edition stable summary",
+      sourceUrl: "https://example.invalid/reader-detail-digest-edition-stable.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const digestItems = await readerRepository.listReaderDigestItems({
+      boardSlug: "ai",
+      limit: 20
+    });
+    const stableItem = digestItems.find((item) => item.id === stableItemId);
+
+    assert.ok(stableItem);
+
+    const created = await digestEditionRepository.createDigestEdition({
+      editionDate,
+      boardSlug: "ai",
+      windowStartAt: "2026-05-21T00:00:00.000Z",
+      windowEndAt: "2026-05-22T00:00:00.000Z",
+      generatedByUserId: 1,
+      items: [stableItem]
+    });
+
+    await pool.query(
+      "update raw_entries set title = 'Digest Edition Changed Title', summary_raw = 'Changed summary' where id = $1",
+      [stableItemId]
+    );
+
+    const replayed = await digestEditionRepository.getDigestEditionByKey(editionKey);
+    const listed = await digestEditionRepository.listDigestEditions();
+
+    assert.equal(created.editionKey, editionKey);
+    assert.equal(created.editionDate, editionDate);
+    assert.ok(replayed);
+    assert.equal(replayed.editionDate, editionDate);
+    assert.equal(replayed.items[0].snapshot.title, "Digest Edition Stable Original");
+    assert.equal(replayed.items[0].snapshot.summary, "Digest edition stable summary");
+    assert.equal("url" in replayed.items[0].snapshot, false);
+    assert.equal(
+      listed.some((edition) => edition.editionKey === editionKey && edition.itemCount === 1),
+      true
+    );
+  } finally {
+    await pool.query("delete from digest_editions where edition_key = $1", [editionKey]);
+    await digestEditionRepository.close();
+    await readerRepository.close();
+    await cleanupReaderDetailFixtures(pool);
     await pool.end();
   }
 });

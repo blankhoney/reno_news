@@ -451,13 +451,20 @@
 
 ## Task 21: Digest Edition API And Web Playback
 
-- Status: Pending
+- Status: Completed
 - Objective: Implement digest edition generation/playback APIs and web views for stable replay.
 - TDD/Verification:
   - Failing API/web tests first for generated edition retrieval and replay stability.
   - Pass criteria: a daily digest remains stable after source items change.
 - Completion Record:
-  - Pending.
+  - Red/Green: added API route tests for `POST /admin/digest-editions`, `GET /admin/digest-editions`, `GET /admin/digest-editions/:id`, `GET /reader/digest-editions/:editionKey`, invalid edition dates, and admin route RBAC; generation/list/detail/replay failed before routes existed and passed after implementation.
+  - Added `DigestEditionRepository` with stable `editionKey`, UTC day windows, reader-safe item snapshots, conflict-safe regeneration, list/detail/replay methods, and environment wiring in the API.
+  - Added a DB-backed integration test proving stored digest snapshots remain stable after the source `raw_entries` row changes, and fixed a date-only timezone regression by selecting `edition_date::text`.
+  - Added web reader API support and `/digest/editions/[editionKey]` playback page; fixed route-param double encoding found by browser smoke.
+  - Updated digest edition API docs and marked V2.5 complete in the master plan.
+  - Quality review: close-read the digest edition repository, API route/helper/env wiring, API tests, DB integration test, web reader API helper, playback page, and docs.
+  - Verified with `pnpm --filter @reno-news/api test`, `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/db test:integration`, `pnpm --filter @reno-news/web test`, `pnpm --filter @reno-news/web lint`, `pnpm --filter @reno-news/web build`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, and `pnpm build`.
+  - Browser smoke: Playwright opened `http://127.0.0.1:3100/digest/editions/board%3Aai%3A2026-05-21` against local API/web dev servers and confirmed the page rendered `Digest 2026-05-21`, `Stored items`, and `Sample AI item`. Next dev reported local HMR/fav icon noise and a Turbopack dev-server write warning on shutdown, but the production build and route render passed.
 
 ## Check-Debug Loop 7
 

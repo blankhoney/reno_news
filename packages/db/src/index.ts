@@ -1,5 +1,6 @@
 export * from "./auditRepository";
 export * from "./authRepository";
+export * from "./digestEditionRepository";
 export * from "./failureQueueRepository";
 export * from "./feedbackRepository";
 export * from "./personalStateRepository";

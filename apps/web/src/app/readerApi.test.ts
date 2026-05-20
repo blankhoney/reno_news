@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   getReaderBoards,
+  getReaderDigestEdition,
   getReaderDigestItems,
   getReaderItemDetail,
   getReaderItems,
@@ -172,6 +173,69 @@ test("getReaderDigestItems fetches digest items with optional filters", async ()
   try {
     const items = await getReaderDigestItems({ boardSlug: "ai", limit: 5 });
     assert.equal(items[0].id, 3);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("getReaderDigestEdition fetches a replay edition by encoded key", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    assert.equal(
+      String(input),
+      "http://localhost:3001/reader/digest-editions/board%3Aai%3A2026-05-21"
+    );
+    assert.equal(init?.cache, "no-store");
+    return new Response(
+      JSON.stringify({
+        edition: {
+          id: 7,
+          editionKey: "board:ai:2026-05-21",
+          editionDate: "2026-05-21",
+          boardSlug: "ai",
+          status: "draft",
+          windowStartAt: "2026-05-20T00:00:00.000Z",
+          windowEndAt: "2026-05-21T00:00:00.000Z",
+          generatedAt: "2026-05-21T00:01:00.000Z",
+          reviewedAt: null,
+          reviewNote: null,
+          items: [
+            {
+              itemId: 3,
+              position: 1,
+              snapshot: {
+                id: 3,
+                boardSlug: "ai",
+                boardName: "AI",
+                sourceTitle: "OpenAI News",
+                title: "Digest AI item",
+                summary: "Stored digest summary",
+                publishedAt: "2026-05-20T00:00:00.000Z",
+                createdAt: "2026-05-20T00:00:00.000Z"
+              }
+            }
+          ]
+        }
+      }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
+  }) as typeof fetch;
+
+  try {
+    const edition = await getReaderDigestEdition("board:ai:2026-05-21");
+    assert.ok(edition);
+    assert.equal(edition.items[0].snapshot.title, "Digest AI item");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("getReaderDigestEdition returns null for missing editions", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => new Response("{}", { status: 404 })) as typeof fetch;
+
+  try {
+    assert.equal(await getReaderDigestEdition("missing:edition"), null);
   } finally {
     globalThis.fetch = originalFetch;
   }

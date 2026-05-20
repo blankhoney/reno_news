@@ -10,6 +10,7 @@ import {
   BoardNotFoundError,
   createAuditRepository,
   createAuthRepository,
+  createDigestEditionRepository,
   createFeedbackRepository,
   createFailureQueueRepository,
   createPersonalStateRepository,
@@ -19,6 +20,7 @@ import {
   isUniqueViolation,
   type AuditRepository,
   type CreateSourceInput,
+  type DigestEditionRepository,
   type FailureQueueRecord,
   type FeedbackRepository,
   type FailureQueueRepository,
@@ -37,12 +39,17 @@ type AppDependencies = {
   rawEntryRepository?: RawEntryRepository;
   readerRepository?: ReaderRepository;
   personalStateRepository?: PersonalStateRepository;
+  digestEditionRepository?: DigestEditionRepository;
   feedbackRepository?: FeedbackRepository;
   failureQueueRepository?: FailureQueueRepository;
 };
 
 type SourceParams = {
   id: string;
+};
+
+type DigestEditionKeyParams = {
+  editionKey: string;
 };
 
 type ReaderItemsQuery = {
@@ -60,6 +67,12 @@ type ReaderRelatedItemsQuery = {
 
 type ReaderDigestQuery = {
   board?: string;
+  limit?: number;
+};
+
+type DigestEditionGenerateBody = {
+  editionDate: string;
+  boardSlug?: string;
   limit?: number;
 };
 
@@ -222,6 +235,25 @@ const readerDigestQuerySchema = {
   }
 };
 
+const digestEditionKeyParamsSchema = {
+  type: "object",
+  required: ["editionKey"],
+  properties: {
+    editionKey: { type: "string", minLength: 1 }
+  }
+};
+
+const digestEditionGenerateBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["editionDate"],
+  properties: {
+    editionDate: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
+    boardSlug: { type: "string", minLength: 1 },
+    limit: { type: "integer", minimum: 1, maximum: 24 }
+  }
+};
+
 const readerSearchQuerySchema = {
   type: "object",
   additionalProperties: false,
@@ -311,6 +343,8 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   const readerRepository = dependencies.readerRepository ?? readerRepositoryFromEnvironment(app);
   const personalStateRepository =
     dependencies.personalStateRepository ?? personalStateRepositoryFromEnvironment(app);
+  const digestEditionRepository =
+    dependencies.digestEditionRepository ?? digestEditionRepositoryFromEnvironment(app);
   const feedbackRepository =
     dependencies.feedbackRepository ?? feedbackRepositoryFromEnvironment(app);
   const failureQueueRepository =
@@ -691,6 +725,88 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   );
 
+  app.get(
+    "/admin/digest-editions",
+    {
+      preValidation: requireAdmin
+    },
+    async (_request, reply) => {
+      try {
+        const editions = await digestEditionRepository.listDigestEditions();
+        return { editions };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.get(
+    "/admin/digest-editions/:id",
+    {
+      preValidation: requireAdmin,
+      schema: {
+        params: sourceParamsSchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as SourceParams;
+        const edition = await digestEditionRepository.getDigestEditionById(Number(id));
+
+        if (!edition) {
+          return reply.code(404).send({ error: "Digest edition not found" });
+        }
+
+        return { edition };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.post(
+    "/admin/digest-editions",
+    {
+      preValidation: requireAdmin,
+      schema: {
+        body: digestEditionGenerateBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const body = request.body as DigestEditionGenerateBody;
+        const window = digestEditionWindowForDate(body.editionDate);
+
+        if (!window) {
+          return reply.code(400).send({ error: "Invalid edition date" });
+        }
+
+        const items = await readerRepository.listReaderDigestItems({
+          boardSlug: body.boardSlug,
+          limit: body.limit
+        });
+        const adminUser = adminUserFromRequest(request);
+
+        if (!adminUser) {
+          throw new Error("Admin user is required");
+        }
+
+        const edition = await digestEditionRepository.createDigestEdition({
+          editionDate: body.editionDate,
+          boardSlug: body.boardSlug,
+          windowStartAt: window.windowStartAt,
+          windowEndAt: window.windowEndAt,
+          generatedByUserId: adminUser.id,
+          items
+        });
+
+        return reply.code(201).send({ edition });
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
   app.get("/reader/boards", async (_request, reply) => {
     try {
       const boards = await readerRepository.listReaderBoards();
@@ -731,6 +847,29 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
           limit: query.limit
         });
         return { items };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.get(
+    "/reader/digest-editions/:editionKey",
+    {
+      schema: {
+        params: digestEditionKeyParamsSchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { editionKey } = request.params as DigestEditionKeyParams;
+        const edition = await digestEditionRepository.getDigestEditionByKey(editionKey);
+
+        if (!edition) {
+          return reply.code(404).send({ error: "Digest edition not found" });
+        }
+
+        return { edition };
       } catch (error) {
         return sendSourceError(reply, error);
       }
@@ -1027,6 +1166,26 @@ function traceIdFromRequest(request: FastifyRequest): string {
   return (request as TraceRequest).traceRequestId ?? String(request.id);
 }
 
+function digestEditionWindowForDate(editionDate: string): {
+  windowStartAt: string;
+  windowEndAt: string;
+} | null {
+  const windowEnd = new Date(`${editionDate}T00:00:00.000Z`);
+  if (
+    Number.isNaN(windowEnd.getTime()) ||
+    windowEnd.toISOString().slice(0, 10) !== editionDate
+  ) {
+    return null;
+  }
+
+  const windowStart = new Date(windowEnd.getTime() - 24 * 60 * 60 * 1000);
+
+  return {
+    windowStartAt: windowStart.toISOString(),
+    windowEndAt: windowEnd.toISOString()
+  };
+}
+
 async function recordAuditEvent(
   auditRepository: AuditRepository,
   request: FastifyRequest,
@@ -1138,6 +1297,22 @@ function personalStateRepositoryFromEnvironment(app: FastifyInstance): PersonalS
   }
 
   const repository = createPersonalStateRepository(databaseUrl);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return repository;
+}
+
+function digestEditionRepositoryFromEnvironment(app: FastifyInstance): DigestEditionRepository {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredDigestEditionRepository;
+  }
+
+  const repository = createDigestEditionRepository(databaseUrl);
 
   app.addHook("onClose", async () => {
     await repository.close();
@@ -1258,6 +1433,22 @@ const unconfiguredPersonalStateRepository: PersonalStateRepository = {
     throw new DatabaseNotConfiguredError();
   },
   setReadStatus: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  close: async () => undefined
+};
+
+const unconfiguredDigestEditionRepository: DigestEditionRepository = {
+  createDigestEdition: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  listDigestEditions: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  getDigestEditionById: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  getDigestEditionByKey: async () => {
     throw new DatabaseNotConfiguredError();
   },
   close: async () => undefined
