@@ -54,7 +54,7 @@ if (policy.adapter !== "github") {
 }
 
 if (policy.enabled !== false) {
-  fail("GitHub adapter policy must default to enabled=false until Task 23 implementation exists");
+  fail("GitHub adapter policy must default to enabled=false until an operator explicitly enables GitHub sources");
 }
 
 if (policy.scope?.allowlistOnly !== true) {

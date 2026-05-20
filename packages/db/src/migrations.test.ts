@@ -167,6 +167,18 @@ test("digest edition migration defines persisted editions and ordered item snaps
   assert.match(migration, /digest_edition_items_raw_entry_idx/);
 });
 
+test("GitHub source adapter migration allows GitHub sources and rate-limit attempts", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0014_github_source_adapter.sql"),
+    "utf8"
+  );
+
+  assert.match(migration, /sources_source_type_check/);
+  assert.match(migration, /source_type in \('rss', 'atom', 'github'\)/);
+  assert.match(migration, /source_ingest_attempts_failure_type_check/);
+  assert.match(migration, /failure_type in \('network', 'parse', 'policy', 'duplicate', 'rate_limit', 'unknown'\)/);
+});
+
 test("backup and restore drill scripts stay local and disposable", async () => {
   const packageJson = JSON.parse(
     await readFile(join(process.cwd(), "../../package.json"), "utf8")

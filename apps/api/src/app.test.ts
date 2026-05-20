@@ -43,6 +43,14 @@ const sourceRecord: SourceRecord = {
   }
 };
 
+const githubSourceRecord: SourceRecord = {
+  ...sourceRecord,
+  boardSlug: "open-source",
+  sourceType: "github",
+  title: "Example Project",
+  url: "https://github.com/example/project"
+};
+
 const adminSessionHeaders = {
   cookie: "reno_news_session=admin-session-token"
 };
@@ -912,6 +920,65 @@ test("POST /sources creates a source with policy", async () => {
     }
   ]);
   assert.match(recordedRequestId(recordedEvents), /\S/);
+});
+
+test("POST /sources accepts GitHub source type for allowlisted repositories", async () => {
+  let receivedBody: unknown;
+  const recordedEvents: unknown[] = [];
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      sourceRepository: fakeRepository({
+        createSource: async (input) => {
+          receivedBody = input;
+          return githubSourceRecord;
+        }
+      }),
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/sources",
+    headers: adminSessionHeaders,
+    payload: {
+      boardSlug: "open-source",
+      sourceType: "github",
+      title: "Example Project",
+      url: "https://github.com/example/project"
+    }
+  });
+
+  assert.equal(response.statusCode, 201);
+  assert.deepEqual(response.json(), githubSourceRecord);
+  assert.deepEqual(receivedBody, {
+    boardSlug: "open-source",
+    sourceType: "github",
+    title: "Example Project",
+    url: "https://github.com/example/project"
+  });
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 1,
+      actorRole: "admin",
+      action: "source.create",
+      objectType: "source",
+      objectId: "1",
+      requestId: recordedRequestId(recordedEvents),
+      metadata: {
+        boardSlug: "open-source",
+        sourceType: "github"
+      }
+    }
+  ]);
 });
 
 test("POST /sources rejects invalid source policy values", async () => {

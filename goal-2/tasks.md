@@ -498,13 +498,22 @@
 
 ## Task 23: GitHub Releases Adapter Foundation
 
-- Status: Pending
+- Status: Completed
 - Objective: Implement GitHub Releases/Repository metadata ingestion into the existing source pipeline.
 - TDD/Verification:
   - Failing adapter tests first using public adapter interface and fixture HTTP responses.
   - Pass criteria: releases are normalized, deduplicated, rate-limit aware, and failures go to the existing failure queue.
 - Completion Record:
-  - Pending.
+  - Red/Green: added a migration contract test for GitHub source support; it failed before `0014_github_source_adapter.sql`, then passed after allowing `source_type = 'github'` and `failure_type = 'rate_limit'` for source ingest attempts.
+  - Red/Green: added an API route test proving admin source creation accepts `sourceType: "github"` and writes audit metadata; it failed at Fastify schema validation until the API enum and DB source type were updated.
+  - Red/Green: added fixture-HTTP worker tests for `collect_github_source_entries`; they failed before `reno_worker.github_ingest` existed, then passed with repository metadata and published-release normalization, draft-release skipping, canonical hashes, safe raw payloads, and GitHub headers.
+  - Red/Green: added rate-limit tests proving GitHub `403/429` responses with `retry-after`, `x-ratelimit-remaining`, or rate-limit messages stop the adapter and classify the failure as `rate_limit`.
+  - Added DB-backed GitHub ingest tests proving repository/release entries insert once, repeat runs deduplicate through existing constraints, and rate-limit failures are visible through `source_ingest_attempts`.
+  - Added `source_ingest` dispatch so RSS/Atom keep the existing RSS path while GitHub sources use the new adapter; scheduler, Dramatiq actor, and worker manual-ingest default now use the dispatcher.
+  - Updated source API docs, DB schema docs, and the GitHub source adapter runbook to reflect the implemented runtime boundary while preserving no Search/Issues/contents/assets and no live-token behavior.
+  - Quality review: close-read the migration, GitHub adapter, dispatcher, scheduler, actor/server entrypoints, worker tests, API schema/test, DB source type, and docs.
+  - Verified with `pnpm github:source-policy:check`, `pnpm v2:plan:check`, `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/api test`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news uv --project services/worker run python -m unittest services.worker.tests.test_github_ingest`, `pnpm --filter @reno-news/db test:integration`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: no live GitHub API call or token was configured; committed policy stays default-disabled for production operator enablement; ETag/Last-Modified persistence remains a later enhancement; only repository metadata and published releases are implemented.
 
 ## Task 24: arXiv Adapter Planning And Foundation
 

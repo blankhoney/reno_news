@@ -9,7 +9,10 @@ SendTask = Callable[[str, int], object]
 ReadPolicies = Callable[[str], list[SourcePolicy]]
 
 
-def schedule_enabled_rss_sources(
+SUPPORTED_INGEST_SOURCE_TYPES = {"rss", "atom", "github"}
+
+
+def schedule_enabled_sources(
     database_url: str,
     *,
     read_policies: ReadPolicies = read_enabled_source_policies,
@@ -18,7 +21,7 @@ def schedule_enabled_rss_sources(
     scheduled = 0
 
     for policy in read_policies(database_url):
-        if policy.source_type not in {"rss", "atom"}:
+        if policy.source_type not in SUPPORTED_INGEST_SOURCE_TYPES:
             continue
 
         send_task(database_url, policy.source_id)
@@ -27,9 +30,18 @@ def schedule_enabled_rss_sources(
     return scheduled
 
 
+def schedule_enabled_rss_sources(
+    database_url: str,
+    *,
+    read_policies: ReadPolicies = read_enabled_source_policies,
+    send_task: SendTask = ingest_source_actor.send,
+) -> int:
+    return schedule_enabled_sources(database_url, read_policies=read_policies, send_task=send_task)
+
+
 def main() -> None:
     database_url = os.environ["DATABASE_URL"]
-    schedule_enabled_rss_sources(database_url)
+    schedule_enabled_sources(database_url)
 
 
 if __name__ == "__main__":

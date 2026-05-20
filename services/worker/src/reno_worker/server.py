@@ -6,7 +6,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Callable
 from urllib.parse import urlparse
 
-from reno_worker.rss_ingest import IngestResult, ingest_source
+from reno_worker.rss_ingest import IngestResult
+from reno_worker.source_ingest import ingest_configured_source
 
 
 IngestSource = Callable[[str, int], IngestResult]
@@ -248,7 +249,7 @@ def create_server(
     host: str,
     port: int,
     *,
-    ingest: IngestSource = ingest_source,
+    ingest: IngestSource = ingest_configured_source,
     database_url: str | None = None,
     log_event: LogEvent = default_log_event,
 ) -> ThreadingHTTPServer:

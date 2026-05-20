@@ -34,6 +34,11 @@ Required body fields:
 - `title`
 - `url`
 
+Allowed `sourceType` values:
+- `rss`
+- `atom`
+- `github`
+
 Optional body fields:
 - `enabled`
 - `policy`

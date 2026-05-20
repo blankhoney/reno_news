@@ -1,6 +1,6 @@
 import { Pool, type QueryResult } from "pg";
 
-export type SourceType = "rss" | "atom";
+export type SourceType = "rss" | "atom" | "github";
 export type SaveLevel = "metadata_only" | "excerpt" | "snapshot" | "full_text";
 export type RightsPolicy =
   | "blocked"

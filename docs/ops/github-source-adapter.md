@@ -1,6 +1,6 @@
 # GitHub Source Adapter
 
-This runbook defines the Task 22 policy for GitHub source expansion. It is a planning contract only: it does not implement a GitHub client, create a token, fetch repositories, download assets, or change the existing RSS/Atom ingestion path.
+This runbook defines the policy and Task 23 implementation boundary for GitHub source expansion. The implementation can ingest allowlisted public repository metadata and published releases into the existing pipeline. It does not create a token, call GitHub in CI, download assets, crawl repository contents, or change the existing RSS/Atom ingestion behavior.
 
 ## Scope
 
@@ -9,7 +9,7 @@ The first GitHub adapter slice is limited to public repository metadata and publ
 - `GET /repos/{owner}/{repo}`
 - `GET /repos/{owner}/{repo}/releases`
 
-These endpoints are enough for repository-level signals and release-change signals. GitHub Search, Issues, Pull Requests, repository contents, commits, organization crawls, user crawls, and release asset mirroring are out of scope. Webhooks may replace polling later, but they are not part of Task 22 or Task 23.
+These endpoints are enough for repository-level signals and release-change signals. GitHub Search, Issues, Pull Requests, repository contents, commits, organization crawls, user crawls, and release asset mirroring are out of scope. Webhooks may replace polling later, but they are not part of this implementation slice.
 
 ## Allowlist Policy
 
@@ -56,13 +56,13 @@ summary_raw = body
 published_at = published_at
 ```
 
-Both records must enter the existing source/raw-entry/failure pipeline. `raw_payload_json` should keep safe provider metadata such as provider, owner, repo, endpoint, id, node id, tag, dates, and license fields where present. It must not store tokens or clone credentials.
+Both records enter the existing source/raw-entry/failure pipeline. `raw_payload_json` keeps safe provider metadata such as provider, owner, repo, endpoint, id, node id, tag, dates, and license fields where present. It must not store tokens or clone credentials.
 
 ## Failure Isolation
 
-GitHub adapter failure must not block the RSS/Atom baseline. Network failures, parse failures, permission failures, rate-limit pauses, and policy skips should be recorded through the same attempt/failure surfaces used by the existing ingestion path or through a typed `github_source_ingest` stage introduced in Task 23.
+GitHub adapter failure must not block the RSS/Atom baseline. Network failures, parse failures, permission failures, rate-limit pauses, and policy skips are recorded through the same source ingest attempt surface used by the existing ingestion path. Rate-limit failures use `failure_type = rate_limit`.
 
-The default committed policy has `"enabled": false` until Task 23 implements and tests the runtime adapter. Production enablement requires an explicit allowlist and secret injection if authenticated requests are used.
+The default committed policy keeps `"enabled": false` so production enablement remains an explicit operator decision. Runtime ingestion is still possible for explicitly created `source_type = github` Source Registry entries, and authenticated requests require secret injection outside the repository.
 
 ## Verification
 
@@ -72,6 +72,13 @@ Local contract check:
 pnpm github:source-policy:check
 ```
 
+Worker checks:
+
+```bash
+uv --project services/worker run python -m unittest services.worker.tests.test_github_ingest
+uv --project services/worker run python -m unittest services.worker.tests.test_source_ingest
+```
+
 Expected behavior:
 
 - `config/source-adapters/github.json` defines only repository metadata and release endpoints;
@@ -79,6 +86,8 @@ Expected behavior:
 - no broad search polling or content crawling is permitted;
 - rate-limit handling is serial, low-concurrency, and header-aware;
 - mappings target the existing source/raw-entry/failure pipeline;
+- repeated runs deduplicate by the existing raw-entry uniqueness constraints;
+- rate-limit failures are recorded as source ingest attempts;
 - RSS/Atom baseline ingestion remains independent.
 
 ## References
