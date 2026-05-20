@@ -1,10 +1,11 @@
 import Fastify, {
   type FastifyInstance,
   type FastifyReply,
+  type FastifyRequest,
   type FastifyServerOptions
 } from "fastify";
 import fastifyCookie from "@fastify/cookie";
-import type { AuthLoginFailureReason, AuthUser } from "@reno-news/contracts";
+import type { AuthLoginFailureReason } from "@reno-news/contracts";
 import {
   BoardNotFoundError,
   createAuthRepository,
@@ -246,6 +247,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     dependencies.feedbackRepository ?? feedbackRepositoryFromEnvironment(app);
   const failureQueueRepository =
     dependencies.failureQueueRepository ?? failureQueueRepositoryFromEnvironment(app);
+  const requireAdmin = createRequireAdmin(authService);
 
   app.get("/healthz", async () => ({
     status: "ok",
@@ -311,7 +313,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   });
 
-  app.get("/sources", async (_request, reply) => {
+  app.get("/sources", { preValidation: requireAdmin }, async (_request, reply) => {
     try {
       const sources = await sourceRepository.listSources();
       return { sources };
@@ -323,6 +325,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.get(
     "/sources/:id",
     {
+      preValidation: requireAdmin,
       schema: {
         params: sourceParamsSchema
       }
@@ -346,6 +349,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.post(
     "/sources",
     {
+      preValidation: requireAdmin,
       schema: {
         body: createSourceBodySchema
       }
@@ -363,6 +367,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.patch(
     "/sources/:id",
     {
+      preValidation: requireAdmin,
       schema: {
         params: sourceParamsSchema,
         body: updateSourceBodySchema
@@ -384,7 +389,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   );
 
-  app.get("/raw-entries", async (_request, reply) => {
+  app.get("/raw-entries", { preValidation: requireAdmin }, async (_request, reply) => {
     try {
       const rawEntries = await rawEntryRepository.listRawEntries();
       return { rawEntries };
@@ -396,6 +401,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.get(
     "/raw-entries/:id",
     {
+      preValidation: requireAdmin,
       schema: {
         params: sourceParamsSchema
       }
@@ -419,6 +425,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.patch(
     "/raw-entries/:id",
     {
+      preValidation: requireAdmin,
       schema: {
         params: sourceParamsSchema,
         body: rawEntryLifecycleBodySchema
@@ -446,6 +453,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.get(
     "/admin/failures",
     {
+      preValidation: requireAdmin,
       schema: {
         querystring: failureQueueQuerySchema
       }
@@ -464,6 +472,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.get(
     "/admin/feedback",
     {
+      preValidation: requireAdmin,
       schema: {
         querystring: feedbackQuerySchema
       }
@@ -482,6 +491,7 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.patch(
     "/admin/feedback/:id",
     {
+      preValidation: requireAdmin,
       schema: {
         params: sourceParamsSchema,
         body: feedbackReviewBodySchema
@@ -648,6 +658,28 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   );
 
   return app;
+}
+
+function createRequireAdmin(authService: AuthService) {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const sessionToken = request.cookies[authSessionCookieName];
+      const user = await authService.currentUser(sessionToken);
+
+      if (!user) {
+        if (sessionToken) {
+          reply.clearCookie(authSessionCookieName, { path: "/" });
+        }
+        return reply.code(401).send({ error: "authentication_required" });
+      }
+
+      if (user.role !== "admin") {
+        return reply.code(403).send({ error: "admin_required" });
+      }
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  };
 }
 
 function sourceRepositoryFromEnvironment(app: FastifyInstance): SourceRepository {

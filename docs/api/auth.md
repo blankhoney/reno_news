@@ -85,6 +85,43 @@ Anonymous response:
 }
 ```
 
+## Authorization Matrix
+
+Admin/source/failure/feedback review workflows require an authenticated `admin`
+session at the API layer. Anonymous requests receive:
+
+```json
+{
+  "error": "authentication_required"
+}
+```
+
+Authenticated non-admin users receive:
+
+```json
+{
+  "error": "admin_required"
+}
+```
+
+The protected surfaces are:
+
+- `GET /sources`
+- `GET /sources/:id`
+- `POST /sources`
+- `PATCH /sources/:id`
+- `GET /raw-entries`
+- `GET /raw-entries/:id`
+- `PATCH /raw-entries/:id`
+- `GET /admin/failures`
+- `GET /admin/feedback`
+- `PATCH /admin/feedback/:id`
+
+Reader-safe routes, including reader item views, digest, search, related items,
+and reader feedback submission, remain public at this stage. Account-bound
+personal-state routes are introduced later and must be scoped to the
+authenticated user.
+
 ## Non-Goals
 
 - No OAuth provider is part of the initial auth contract.

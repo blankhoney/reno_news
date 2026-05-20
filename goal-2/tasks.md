@@ -83,13 +83,20 @@
 
 ## Task 4: API Authorization Matrix
 
-- Status: Pending
+- Status: Completed
 - Objective: Protect admin/source/failure/feedback routes with role guards while preserving allowed reader/public routes.
 - TDD/Verification:
   - Failing tests first for unauthorized, reader-forbidden, and admin-allowed cases.
   - Pass criteria: all admin APIs reject anonymous/reader users and allow admin users only.
 - Completion Record:
-  - Pending.
+  - Red: added an API test proving anonymous `GET /admin/failures` still reached the handler and returned 200.
+  - Green: added the first API-owned admin guard and made `GET /admin/failures` return `401 authentication_required` before repository work.
+  - Red: added an authorization matrix for source, raw-entry, admin failure, and admin feedback review routes; it exposed unguarded source/raw-entry routes.
+  - Green: applied `preValidation` admin guards to source, raw-entry, failure queue, and feedback review routes so anonymous requests receive 401 before schema/handler work and `reader` sessions receive 403.
+  - Preserved public reader-safe routes, including reader feedback submission, without admin guards.
+  - Updated `docs/api/auth.md` with the protected API surfaces and 401/403 error responses.
+  - Quality review: close-read `apps/api/src/app.ts`, `apps/api/src/app.test.ts`, and `docs/api/auth.md`; removed an unused auth import.
+  - Verified with `pnpm --filter @reno-news/api test`, `pnpm lint`, `pnpm test`, and `git diff --check -- apps/api/src/app.ts apps/api/src/app.test.ts docs/api/auth.md`.
 
 ## Task 5: Web Session And Admin Route Guards
 

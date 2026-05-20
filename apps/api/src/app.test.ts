@@ -15,6 +15,7 @@ import type {
   SourceRecord
 } from "@reno-news/db";
 import { buildApp } from "./app";
+import type { AuthService } from "./auth";
 
 const sourceRecord: SourceRecord = {
   id: 1,
@@ -37,6 +38,10 @@ const sourceRecord: SourceRecord = {
   }
 };
 
+const adminSessionHeaders = {
+  cookie: "reno_news_session=admin-session-token"
+};
+
 function fakeRepository(overrides: Partial<SourceRepository> = {}): SourceRepository {
   return {
     listSources: async () => [sourceRecord],
@@ -47,6 +52,61 @@ function fakeRepository(overrides: Partial<SourceRepository> = {}): SourceReposi
     ...overrides
   };
 }
+
+function authServiceForCurrentUser(
+  user: { id: number; email: string; role: "reader" | "admin" } | null
+): AuthService {
+  return {
+    login: async () => ({ ok: false, error: "invalid_credentials" }),
+    currentUser: async (sessionToken) => (sessionToken ? user : null),
+    logout: async () => undefined
+  };
+}
+
+function adminAuthService(): AuthService {
+  return authServiceForCurrentUser({
+    id: 1,
+    email: "admin@example.com",
+    role: "admin"
+  });
+}
+
+function readerAuthService(): AuthService {
+  return authServiceForCurrentUser({
+    id: 2,
+    email: "reader@example.com",
+    role: "reader"
+  });
+}
+
+function withAdminAuth<T extends object>(dependencies: T): T & { authService: AuthService } {
+  return {
+    authService: adminAuthService(),
+    ...dependencies
+  };
+}
+
+const adminRouteCases = [
+  { method: "GET", url: "/sources" },
+  { method: "GET", url: "/sources/1" },
+  {
+    method: "POST",
+    url: "/sources",
+    payload: {
+      boardSlug: "ai",
+      sourceType: "rss",
+      title: "OpenAI News",
+      url: "https://openai.com/news/rss.xml"
+    }
+  },
+  { method: "PATCH", url: "/sources/1", payload: { enabled: false } },
+  { method: "GET", url: "/raw-entries" },
+  { method: "GET", url: "/raw-entries/1" },
+  { method: "PATCH", url: "/raw-entries/1", payload: { action: "hide" } },
+  { method: "GET", url: "/admin/failures" },
+  { method: "GET", url: "/admin/feedback" },
+  { method: "PATCH", url: "/admin/feedback/20", payload: { reviewStatus: "reviewed" } }
+] as const;
 
 const rawEntryRecord: RawEntryRecord = {
   id: 1,
@@ -429,14 +489,15 @@ test("POST /auth/logout revokes the current session and clears the cookie", asyn
 });
 
 test("GET /sources lists source registry records", async () => {
-  const app = buildApp({ logger: false }, { sourceRepository: fakeRepository() });
+  const app = buildApp({ logger: false }, withAdminAuth({ sourceRepository: fakeRepository() }));
   test.after(async () => {
     await app.close();
   });
 
   const response = await app.inject({
     method: "GET",
-    url: "/sources"
+    url: "/sources",
+    headers: adminSessionHeaders
   });
 
   assert.equal(response.statusCode, 200);
@@ -444,14 +505,15 @@ test("GET /sources lists source registry records", async () => {
 });
 
 test("GET /sources/:id returns source detail", async () => {
-  const app = buildApp({ logger: false }, { sourceRepository: fakeRepository() });
+  const app = buildApp({ logger: false }, withAdminAuth({ sourceRepository: fakeRepository() }));
   test.after(async () => {
     await app.close();
   });
 
   const response = await app.inject({
     method: "GET",
-    url: "/sources/1"
+    url: "/sources/1",
+    headers: adminSessionHeaders
   });
 
   assert.equal(response.statusCode, 200);
@@ -462,14 +524,14 @@ test("POST /sources creates a source with policy", async () => {
   let receivedBody: unknown;
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository({
         createSource: async (input) => {
           receivedBody = input;
           return sourceRecord;
         }
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -478,6 +540,7 @@ test("POST /sources creates a source with policy", async () => {
   const response = await app.inject({
     method: "POST",
     url: "/sources",
+    headers: adminSessionHeaders,
     payload: {
       boardSlug: "ai",
       sourceType: "rss",
@@ -515,7 +578,7 @@ test("POST /sources creates a source with policy", async () => {
 });
 
 test("POST /sources rejects invalid source policy values", async () => {
-  const app = buildApp({ logger: false }, { sourceRepository: fakeRepository() });
+  const app = buildApp({ logger: false }, withAdminAuth({ sourceRepository: fakeRepository() }));
   test.after(async () => {
     await app.close();
   });
@@ -523,6 +586,7 @@ test("POST /sources rejects invalid source policy values", async () => {
   const response = await app.inject({
     method: "POST",
     url: "/sources",
+    headers: adminSessionHeaders,
     payload: {
       boardSlug: "ai",
       sourceType: "rss",
@@ -548,7 +612,7 @@ test("PATCH /sources/:id updates enablement and policy fields", async () => {
   let receivedBody: unknown;
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository({
         updateSource: async (id, input) => {
           receivedId = id;
@@ -564,7 +628,7 @@ test("PATCH /sources/:id updates enablement and policy fields", async () => {
           };
         }
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -573,6 +637,7 @@ test("PATCH /sources/:id updates enablement and policy fields", async () => {
   const response = await app.inject({
     method: "PATCH",
     url: "/sources/1",
+    headers: adminSessionHeaders,
     payload: {
       enabled: false,
       policy: {
@@ -599,11 +664,11 @@ test("PATCH /sources/:id updates enablement and policy fields", async () => {
 test("PATCH /sources/:id returns 404 for missing sources", async () => {
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository({
         updateSource: async () => null
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -612,6 +677,7 @@ test("PATCH /sources/:id returns 404 for missing sources", async () => {
   const response = await app.inject({
     method: "PATCH",
     url: "/sources/999",
+    headers: adminSessionHeaders,
     payload: {
       enabled: false
     }
@@ -623,10 +689,10 @@ test("PATCH /sources/:id returns 404 for missing sources", async () => {
 test("GET /raw-entries lists raw entries", async () => {
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository(),
       rawEntryRepository: fakeRawEntryRepository()
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -634,7 +700,8 @@ test("GET /raw-entries lists raw entries", async () => {
 
   const response = await app.inject({
     method: "GET",
-    url: "/raw-entries"
+    url: "/raw-entries",
+    headers: adminSessionHeaders
   });
 
   assert.equal(response.statusCode, 200);
@@ -644,10 +711,10 @@ test("GET /raw-entries lists raw entries", async () => {
 test("GET /raw-entries/:id returns raw entry detail", async () => {
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository(),
       rawEntryRepository: fakeRawEntryRepository()
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -655,7 +722,8 @@ test("GET /raw-entries/:id returns raw entry detail", async () => {
 
   const response = await app.inject({
     method: "GET",
-    url: "/raw-entries/1"
+    url: "/raw-entries/1",
+    headers: adminSessionHeaders
   });
 
   assert.equal(response.statusCode, 200);
@@ -665,12 +733,12 @@ test("GET /raw-entries/:id returns raw entry detail", async () => {
 test("GET /raw-entries/:id returns 404 for missing raw entries", async () => {
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository(),
       rawEntryRepository: fakeRawEntryRepository({
         getRawEntry: async () => null
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -678,7 +746,8 @@ test("GET /raw-entries/:id returns 404 for missing raw entries", async () => {
 
   const response = await app.inject({
     method: "GET",
-    url: "/raw-entries/999"
+    url: "/raw-entries/999",
+    headers: adminSessionHeaders
   });
 
   assert.equal(response.statusCode, 404);
@@ -689,7 +758,7 @@ test("PATCH /raw-entries/:id applies a lifecycle action", async () => {
   let receivedInput: unknown;
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository(),
       rawEntryRepository: fakeRawEntryRepository({
         updateRawEntryLifecycle: async (id, input) => {
@@ -701,7 +770,7 @@ test("PATCH /raw-entries/:id applies a lifecycle action", async () => {
           };
         }
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -710,6 +779,7 @@ test("PATCH /raw-entries/:id applies a lifecycle action", async () => {
   const response = await app.inject({
     method: "PATCH",
     url: "/raw-entries/1",
+    headers: adminSessionHeaders,
     payload: {
       action: "hide"
     }
@@ -724,10 +794,10 @@ test("PATCH /raw-entries/:id applies a lifecycle action", async () => {
 test("PATCH /raw-entries/:id rejects unsupported lifecycle actions", async () => {
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository(),
       rawEntryRepository: fakeRawEntryRepository()
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -736,6 +806,7 @@ test("PATCH /raw-entries/:id rejects unsupported lifecycle actions", async () =>
   const response = await app.inject({
     method: "PATCH",
     url: "/raw-entries/1",
+    headers: adminSessionHeaders,
     payload: {
       action: "delete"
     }
@@ -747,12 +818,12 @@ test("PATCH /raw-entries/:id rejects unsupported lifecycle actions", async () =>
 test("PATCH /raw-entries/:id returns 404 for missing raw entries", async () => {
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository(),
       rawEntryRepository: fakeRawEntryRepository({
         updateRawEntryLifecycle: async () => null
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -761,6 +832,7 @@ test("PATCH /raw-entries/:id returns 404 for missing raw entries", async () => {
   const response = await app.inject({
     method: "PATCH",
     url: "/raw-entries/999",
+    headers: adminSessionHeaders,
     payload: {
       action: "hide"
     }
@@ -773,12 +845,40 @@ test("GET /admin/failures lists failure queue records with optional limit", asyn
   let receivedLimit: number | undefined;
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository(),
       rawEntryRepository: fakeRawEntryRepository(),
       failureQueueRepository: fakeFailureQueueRepository({
         listFailures: async (options) => {
           receivedLimit = options?.limit;
+          return [failureRecord];
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/admin/failures?limit=5",
+    headers: adminSessionHeaders
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), { failures: [failureRecord] });
+  assert.equal(receivedLimit, 5);
+});
+
+test("GET /admin/failures rejects anonymous sessions before repository work", async () => {
+  let repositoryCalled = false;
+  const app = buildApp(
+    { logger: false },
+    {
+      failureQueueRepository: fakeFailureQueueRepository({
+        listFailures: async () => {
+          repositoryCalled = true;
           return [failureRecord];
         }
       })
@@ -790,22 +890,69 @@ test("GET /admin/failures lists failure queue records with optional limit", asyn
 
   const response = await app.inject({
     method: "GET",
-    url: "/admin/failures?limit=5"
+    url: "/admin/failures"
   });
 
-  assert.equal(response.statusCode, 200);
-  assert.deepEqual(response.json(), { failures: [failureRecord] });
-  assert.equal(receivedLimit, 5);
+  assert.equal(response.statusCode, 401);
+  assert.deepEqual(response.json(), { error: "authentication_required" });
+  assert.equal(repositoryCalled, false);
+});
+
+test("admin workflow routes reject anonymous sessions", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: authServiceForCurrentUser(null)
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  for (const routeCase of adminRouteCases) {
+    const response = await app.inject(routeCase);
+    assert.equal(response.statusCode, 401, `${routeCase.method} ${routeCase.url}`);
+    assert.deepEqual(
+      response.json(),
+      { error: "authentication_required" },
+      `${routeCase.method} ${routeCase.url}`
+    );
+  }
+});
+
+test("admin workflow routes reject reader sessions", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: readerAuthService()
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  for (const routeCase of adminRouteCases) {
+    const response = await app.inject({
+      ...routeCase,
+      headers: adminSessionHeaders
+    });
+    assert.equal(response.statusCode, 403, `${routeCase.method} ${routeCase.url}`);
+    assert.deepEqual(
+      response.json(),
+      { error: "admin_required" },
+      `${routeCase.method} ${routeCase.url}`
+    );
+  }
 });
 
 test("GET /admin/failures rejects invalid limit", async () => {
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       sourceRepository: fakeRepository(),
       rawEntryRepository: fakeRawEntryRepository(),
       failureQueueRepository: fakeFailureQueueRepository()
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -813,7 +960,8 @@ test("GET /admin/failures rejects invalid limit", async () => {
 
   const response = await app.inject({
     method: "GET",
-    url: "/admin/failures?limit=0"
+    url: "/admin/failures?limit=0",
+    headers: adminSessionHeaders
   });
 
   assert.equal(response.statusCode, 400);
@@ -823,14 +971,14 @@ test("GET /admin/feedback lists recent feedback with optional limit", async () =
   let receivedLimit: number | undefined;
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       feedbackRepository: fakeFeedbackRepository({
         listFeedback: async (options) => {
           receivedLimit = options?.limit;
           return [feedbackRecord];
         }
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -838,7 +986,8 @@ test("GET /admin/feedback lists recent feedback with optional limit", async () =
 
   const response = await app.inject({
     method: "GET",
-    url: "/admin/feedback?limit=5"
+    url: "/admin/feedback?limit=5",
+    headers: adminSessionHeaders
   });
 
   assert.equal(response.statusCode, 200);
@@ -857,7 +1006,7 @@ test("PATCH /admin/feedback/:id updates feedback review state", async () => {
   };
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       feedbackRepository: fakeFeedbackRepository({
         updateFeedbackReview: async (id, input) => {
           receivedId = id;
@@ -865,7 +1014,7 @@ test("PATCH /admin/feedback/:id updates feedback review state", async () => {
           return reviewedFeedback;
         }
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -874,6 +1023,7 @@ test("PATCH /admin/feedback/:id updates feedback review state", async () => {
   const response = await app.inject({
     method: "PATCH",
     url: "/admin/feedback/20",
+    headers: adminSessionHeaders,
     payload: {
       reviewStatus: "dismissed",
       reviewNote: "Invalid duplicate report."
@@ -892,11 +1042,11 @@ test("PATCH /admin/feedback/:id updates feedback review state", async () => {
 test("PATCH /admin/feedback/:id returns 404 for missing feedback", async () => {
   const app = buildApp(
     { logger: false },
-    {
+    withAdminAuth({
       feedbackRepository: fakeFeedbackRepository({
         updateFeedbackReview: async () => null
       })
-    }
+    })
   );
   test.after(async () => {
     await app.close();
@@ -905,6 +1055,7 @@ test("PATCH /admin/feedback/:id returns 404 for missing feedback", async () => {
   const response = await app.inject({
     method: "PATCH",
     url: "/admin/feedback/999",
+    headers: adminSessionHeaders,
     payload: {
       reviewStatus: "dismissed"
     }
@@ -914,7 +1065,10 @@ test("PATCH /admin/feedback/:id returns 404 for missing feedback", async () => {
 });
 
 test("PATCH /admin/feedback/:id rejects invalid review payloads", async () => {
-  const app = buildApp({ logger: false }, { feedbackRepository: fakeFeedbackRepository() });
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({ feedbackRepository: fakeFeedbackRepository() })
+  );
   test.after(async () => {
     await app.close();
   });
@@ -922,6 +1076,7 @@ test("PATCH /admin/feedback/:id rejects invalid review payloads", async () => {
   const unsupported = await app.inject({
     method: "PATCH",
     url: "/admin/feedback/20",
+    headers: adminSessionHeaders,
     payload: {
       reviewStatus: "moderated"
     }
@@ -929,6 +1084,7 @@ test("PATCH /admin/feedback/:id rejects invalid review payloads", async () => {
   const oversized = await app.inject({
     method: "PATCH",
     url: "/admin/feedback/20",
+    headers: adminSessionHeaders,
     payload: {
       reviewStatus: "reviewed",
       reviewNote: "x".repeat(2001)
