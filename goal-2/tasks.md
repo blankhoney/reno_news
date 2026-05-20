@@ -403,12 +403,18 @@
 
 ## Check-Debug Loop 6
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 16-18.
 - Verification:
   - Run golden harness fixture tests, personal state API tests, migration checks, and relevant worker/web tests.
 - Completion Record:
-  - Pending.
+  - Verified fake golden-set regression with `pnpm ai:golden:check`; 50 samples passed, 0 failed.
+  - Verified the full worker suite with `uv --project services/worker run python -m unittest discover -s services/worker/tests`; 44 tests passed with 21 expected skips.
+  - Verified personal-state API and auth route behavior with `pnpm --filter @reno-news/api test`; 57 API route tests and 4 auth service tests passed.
+  - Verified migration contracts with `pnpm --filter @reno-news/db test`.
+  - Verified DB-backed personal-state idempotency and cross-user isolation with `pnpm --filter @reno-news/db test:integration`; 16 integration tests passed.
+  - Verified workspace gates with `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - No blocking defects were found for Tasks 16-18. Live MiniMax evaluation and browser-side personal-state migration remain future/external-scope items.
 
 ## Task 19: Web Personal State Migration From Local Storage
 
