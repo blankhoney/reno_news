@@ -23,13 +23,16 @@
 
 ## Task 1: Second-Version Master Plan And ADR Bootstrap
 
-- Status: Pending
+- Status: Completed
 - Objective: Extend the project planning docs with the second-version milestone route and create ADRs for irreversible decisions not already captured.
 - TDD/Verification:
   - Failing check first: add or run a doc contract check that expects V2 milestone headings and ADR index entries.
   - Pass criteria: `docs/CODEX_MASTER_PLAN.md` references the V2 execution route, and new ADRs cover auth/session/RBAC, production deployment boundary, observability, AI model gate, personal state, and source expansion ordering.
 - Completion Record:
-  - Pending.
+  - Added `pnpm v2:plan:check` and `scripts/check-v2-plan.mjs`.
+  - Red: `pnpm v2:plan:check` failed because `docs/CODEX_MASTER_PLAN.md` did not yet include `## 17. Second-Version Execution Plan`.
+  - Green: added the V2 execution plan to `docs/CODEX_MASTER_PLAN.md` and ADRs 0032-0038 for API-owned identity/RBAC, Caddy-only production boundary, observability, MiniMax schema gate, account-backed personal state, persisted digest editions, and ordered source expansion.
+  - Verified with `pnpm v2:plan:check`, `pnpm lint`, and `git diff --check -- package.json scripts/check-v2-plan.mjs docs/CODEX_MASTER_PLAN.md docs/adr/0032-api-owned-identity-sessions-and-rbac.md docs/adr/0033-production-deployment-uses-caddy-only-public-boundary.md docs/adr/0034-remote-observability-starts-with-prometheus-alertmanager-and-trace-ids.md docs/adr/0035-minimax-m27-is-primary-ai-provider-behind-a-schema-gate.md docs/adr/0036-account-backed-personal-state-replaces-local-only-reader-state.md docs/adr/0037-digest-editions-are-persisted-reviewable-objects.md docs/adr/0038-source-expansion-uses-ordered-low-concurrency-adapters.md`.
 
 ## Task 2: Auth/RBAC Schema Planning And Contract Tests
 

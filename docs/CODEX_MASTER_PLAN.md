@@ -1985,11 +1985,60 @@ Focus:
 
 ---
 
-## 16. End Marker
+## 16. Second-Version Scope Authorization
+
+MVP v0.1 remains frozen and complete. The second-version scope is now explicitly authorized and tracked through `goal-2/`.
+
+Second-version work must proceed through `goal-2/tasks.md` one task at a time. Each implementation task must use a tracer-bullet TDD loop, update its completion record, and avoid mixing unrelated user changes.
+
+The current non-goals remain unchanged unless a later `goal-2` task explicitly narrows them into a verifiable slice:
+
+- no full product redesign
+- no broad crawler expansion before production gates
+- no external search service as a default dependency
+- no production secret committed to the repository
+- no fake production verification for VPS-only or provider-key-only checks
+
+## 17. Second-Version Execution Plan
+
+| V2 Milestone | Name | Status | Exit Gate |
+|---|---|---|---|
+| V2.1 | Identity, RBAC, and Audit | Not Started | API-owned sessions, reader/admin roles, route guards, and audit events are covered by tests. |
+| V2.2 | Production Deploy, Secrets, and Off-Host Backup | Not Started | Only Caddy binds public ports, deploy/rollback contracts are documented, and backup/restore dry-runs are verifiable without secrets. |
+| V2.3 | Observability and Alerting | Not Started | `/metrics`, safe structured logs, trace ids, alert rules, and runbooks exist for service, queue, model, disk, and backup failures. |
+| V2.4 | MiniMax Model Integration and Evaluation Gate | Not Started | MiniMax M2.7 is behind the existing provider abstraction, all structured output passes schema validation or is quarantined, and a golden-set harness is available. |
+| V2.5 | Account-Backed Personal State and Digest Editions | Not Started | saved/read-later/read_status are account-backed, local state can migrate, and digest editions are persisted and replayable. |
+| V2.6 | Structured Source Expansion and Similarity Signals | Not Started | GitHub and arXiv adapters enter the existing pipeline safely; GDELT and RSSHub stay constrained; PostgreSQL remains the search source of truth. |
+
+### 17.1 Required Work Order
+
+1. Extend planning and ADRs before implementation.
+2. Build identity, authorization, and audit before exposing admin workflows.
+3. Add production deployment, secret, backup, observability, and alerting gates before treating the system as externally runnable.
+4. Integrate the real AI provider only behind schema validation, failure isolation, and regression evaluation.
+5. Move personal state and digest editions to the backend before adding delivery, recommendation, or multi-device expectations.
+6. Expand sources only after the production and AI quality gates are in place.
+
+### 17.2 ADR Requirements
+
+Second-version irreversible decisions must be recorded in `docs/adr/` before implementation:
+
+- API-owned identity, sessions, and RBAC
+- Caddy-only public production boundary
+- remote observability and alerting baseline
+- MiniMax provider use behind a schema gate
+- account-backed personal state replacing local-only state
+- persisted digest editions
+- ordered low-concurrency source expansion
+
+### 17.3 Validation Rule
+
+Before any V2 milestone is marked `Done`, the smallest relevant local checks must pass and the task record in `goal-2/tasks.md` must cite the exact commands or external blockers. Passing CI is useful evidence, but it is not sufficient unless the covered checks match the milestone's exit gate.
+
+## 18. End Marker
 
 Current required next action:
 
 ```text
-No remaining MVP v0.1 master-plan issue.
-Future production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation requires explicit new scope.
+Follow goal-2/tasks.md in order. The next incomplete task is the authoritative next action.
 ```

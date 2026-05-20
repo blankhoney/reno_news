@@ -16,7 +16,8 @@
     "db:backup:local": "sh scripts/db-backup.sh",
     "db:restore:drill": "sh scripts/db-restore-drill.sh",
     "release:audit:local": "node scripts/release-health-audit.mjs",
-    "disk:check:local": "node scripts/disk-usage-check.mjs"
+    "disk:check:local": "node scripts/disk-usage-check.mjs",
+    "v2:plan:check": "node scripts/check-v2-plan.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
