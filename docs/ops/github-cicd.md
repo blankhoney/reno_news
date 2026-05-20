@@ -30,6 +30,7 @@ Checks:
 - PostgreSQL migration, seed, and integration tests
 - Docker Compose config rendering for local development
 - Production Compose public-boundary check proving only Caddy publishes host ports
+- Production deploy contract check for required secrets, health checks, and rollback
 
 Configured branch protection for `main`:
 
@@ -98,10 +99,11 @@ RENO_NEWS_IMAGE_TAG
 Example remote command shape:
 
 ```bash
-cd /srv/reno_news && ./deploy.sh "$RENO_NEWS_IMAGE_TAG"
+cd <repo-on-server> && scripts/deploy-production.sh "$RENO_NEWS_IMAGE_TAG"
 ```
 
 Keep the real command in GitHub secrets or environment secrets, not in the repository.
+See `docs/ops/production-deploy.md` for the server env, health check, and rollback contract.
 
 ## Initial GitHub Setup
 
@@ -132,6 +134,7 @@ Expected behavior:
 
 - CI runs for pushes and pull requests.
 - CI verifies both the development Compose render and the production Caddy-only public boundary.
+- CI verifies the production deploy contract, including `scripts/deploy-production.sh`.
 - Image publishing runs after pushes to `main` and publishes all three GHCR images.
 - Deploy is available manually but fails early until all required deployment secrets are configured.
 

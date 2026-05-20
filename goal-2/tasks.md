@@ -169,13 +169,21 @@
 
 ## Task 8: Production Deploy Script And GitHub Secret Contract
 
-- Status: Pending
+- Status: Completed
 - Objective: Define deploy script, required GitHub secrets, release health checks, and rollback path without hardcoding private values.
 - TDD/Verification:
   - Failing shell/docs contract check first for required env names and health-check commands.
   - Pass criteria: deploy docs/scripts define GHCR pull, migration, health check, and rollback.
 - Completion Record:
-  - Pending.
+  - Red: added `pnpm deploy:contract:check`; it failed because `scripts/deploy-production.sh` did not exist.
+  - Green: added `scripts/deploy-production.sh` for the single-VPS Compose path. It accepts `RENO_NEWS_IMAGE_TAG`, pulls GHCR images, runs `pnpm db:migrate` through the API image, starts production Compose, probes Caddy/web/API/worker health endpoints, and attempts image-tag rollback from `.deploy/previous-image-tag` if post-deploy health fails.
+  - Added `docs/ops/production-deploy.md` defining GitHub secrets, server-local env, deploy flow, health check, rollback boundary, and local verification commands.
+  - Added `scripts/check-deploy-contract.mjs` and `pnpm deploy:contract:check` to verify the deploy contract without real secrets.
+  - Added the deploy contract check to the GitHub Actions Docker Compose config job and updated `docs/ops/github-cicd.md`.
+  - Updated the Production Audit report and test to reflect completed identity/audit/deploy-contract evidence while preserving the "not deployment approval" boundary.
+  - Quality review: close-read the deploy contract checker, deploy shell script, production deploy runbook, CI workflow, GitHub CI/CD runbook, Production Audit report, and updated migration test.
+  - Verified with `pnpm deploy:contract:check`, `DRY_RUN=1 scripts/deploy-production.sh sha-test`, `sh -n scripts/deploy-production.sh`, `pnpm compose:production:check`, `pnpm --filter @reno-news/db test`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Real deployment remains unverified because no VPS path, domain, production secrets, or remote environment values are available in this local session.
 
 ## Task 9: Off-Host Backup Foundation
 

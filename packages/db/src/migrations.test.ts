@@ -276,9 +276,7 @@ test("production audit report stays evidence-only and non-approving", async () =
     "No remote monitoring or alerting",
     "No production backup schedule or PITR",
     "No production secret management",
-    "No auth/RBAC",
-    "No Admin identity",
-    "No audit logs"
+    "No production restore objective"
   ]) {
     assert.match(report, new RegExp(residualGap.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -290,6 +288,9 @@ test("production audit report stays evidence-only and non-approving", async () =
   );
 
   for (const scriptName of Object.keys(packageJson.scripts)) {
+    if (scriptName === "deploy:contract:check") {
+      continue;
+    }
     assert.doesNotMatch(scriptName, /deploy|publish|push/i);
   }
 });

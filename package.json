@@ -18,6 +18,7 @@
     "release:audit:local": "node scripts/release-health-audit.mjs",
     "disk:check:local": "node scripts/disk-usage-check.mjs",
     "compose:production:check": "node scripts/check-production-compose.mjs",
+    "deploy:contract:check": "node scripts/check-deploy-contract.mjs",
     "v2:plan:check": "node scripts/check-v2-plan.mjs"
   },
   "devDependencies": {

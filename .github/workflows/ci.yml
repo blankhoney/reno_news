@@ -123,3 +123,6 @@ jobs:
 
       - name: Verify production Compose public boundary
         run: node scripts/check-production-compose.mjs
+
+      - name: Verify production deploy contract
+        run: node scripts/check-deploy-contract.mjs
