@@ -61,6 +61,38 @@ test("reader feedback review migration defines constrained review state", async 
   assert.match(migration, /reviewed_at timestamptz/);
 });
 
+test("auth identity migration defines invite-only users, sessions, and login attempts", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0010_auth_identity_rbac.sql"),
+    "utf8"
+  );
+
+  for (const tableName of ["users", "user_invites", "user_sessions", "auth_login_attempts"]) {
+    assert.match(migration, new RegExp(`create table if not exists ${tableName}`));
+  }
+
+  assert.match(migration, /users_role_check/);
+  assert.match(migration, /role text not null default 'reader'/);
+  assert.match(migration, /check \(role in \('reader', 'admin'\)\)/);
+  assert.match(migration, /password_hash text not null/);
+  assert.match(migration, /password_hash like '\$argon2id\$%'/);
+  assert.match(migration, /users_email_lower_unique/);
+
+  assert.match(migration, /user_invites_role_check/);
+  assert.match(migration, /token_hash text not null unique/);
+  assert.match(migration, /expires_at timestamptz not null/);
+  assert.match(migration, /accepted_by_user_id bigint unique references users\(id\)/);
+
+  assert.match(migration, /user_sessions_token_hash_unique/);
+  assert.match(migration, /session_token_hash text not null/);
+  assert.match(migration, /revoked_at timestamptz/);
+
+  assert.match(migration, /auth_login_attempts_outcome_check/);
+  assert.match(migration, /outcome text not null/);
+  assert.match(migration, /failure_reason text/);
+  assert.match(migration, /failure_reason is not null/);
+});
+
 test("backup and restore drill scripts stay local and disposable", async () => {
   const packageJson = JSON.parse(
     await readFile(join(process.cwd(), "../../package.json"), "utf8")

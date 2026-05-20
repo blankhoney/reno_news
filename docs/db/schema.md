@@ -91,6 +91,44 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 - Stores the versioned schema and separate JSON objects for scores, rationale, evidence, and summary.
 - Reader display, translation publishing, and search indexing are not represented by this table.
 
+## Users
+
+`users`
+
+- Stores authenticated reader/admin accounts for the second-version identity layer.
+- `email` is stored in canonical lowercase form and is unique case-insensitively.
+- `password_hash` must be an argon2id PHC string.
+- `role` is constrained to `reader` or `admin`.
+- `disabled_at` supports server-side account disablement without deleting audit history.
+
+## User Invites
+
+`user_invites`
+
+- Stores invite-only account creation records.
+- `email` is canonical lowercase and `role` is constrained to `reader` or `admin`.
+- `token_hash` is unique; raw invite tokens must not be stored.
+- `invited_by_user_id` may be null for bootstrap.
+- `accepted_by_user_id`, `accepted_at`, and `revoked_at` record the invite lifecycle.
+
+## User Sessions
+
+`user_sessions`
+
+- Stores server-side browser sessions for authenticated users.
+- `session_token_hash` is unique; raw session tokens must not be stored.
+- Sessions have `expires_at`, optional `revoked_at`, optional `last_seen_at`, and safe request metadata.
+- Sessions are deleted when the owning user is deleted.
+
+## Auth Login Attempts
+
+`auth_login_attempts`
+
+- Records observable login outcomes before the broader audit-log milestone.
+- `outcome` is constrained to `success` or `failure`.
+- `failure_reason` is required for failures and omitted for successes.
+- Failure reasons are constrained to the shared auth contract vocabulary.
+
 ## Translations
 
 `translations`

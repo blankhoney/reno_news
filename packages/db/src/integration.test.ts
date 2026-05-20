@@ -105,6 +105,179 @@ test("migrations and dev seed can be applied repeatedly", async () => {
   }
 });
 
+test("auth identity schema enforces roles, invites, sessions, and login attempts", async () => {
+  await runMigrations({ databaseUrl });
+
+  const unique = Date.now().toString(36);
+  const email = `auth-contract-${unique}@example.invalid`;
+  const invitedEmail = `auth-contract-invite-${unique}@example.invalid`;
+  const argon2idHash = "$argon2id$v=19$m=65536,t=3,p=4$c2FsdA$aGFzaA";
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+
+  await cleanupAuthFixture(pool, [email, invitedEmail]);
+
+  try {
+    const userResult = await pool.query<{ id: number; role: string }>(
+      `
+        insert into users (email, password_hash, role)
+        values ($1, $2, 'admin')
+        returning id::int, role
+      `,
+      [email, argon2idHash]
+    );
+    const userId = userResult.rows[0].id;
+
+    assert.equal(userResult.rows[0].role, "admin");
+
+    await assert.rejects(
+      pool.query(
+        "insert into users (email, password_hash, role) values ($1, $2, 'reader')",
+        [email, argon2idHash]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "insert into users (email, password_hash, role) values ($1, $2, 'owner')",
+        [`auth-contract-owner-${unique}@example.invalid`, argon2idHash]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "insert into users (email, password_hash, role) values ($1, 'not-argon2', 'reader')",
+        [`auth-contract-password-${unique}@example.invalid`]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        "insert into users (email, password_hash, role) values ($1, $2, 'reader')",
+        [email.toUpperCase(), argon2idHash]
+      )
+    );
+
+    await pool.query(
+      `
+        insert into user_invites (email, role, token_hash, invited_by_user_id, expires_at)
+        values ($1, 'reader', $2, $3, now() + interval '1 day')
+      `,
+      [invitedEmail, `invite-token-${unique}`, userId]
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into user_invites (email, role, token_hash, invited_by_user_id, expires_at)
+          values ($1, 'reader', $2, $3, now() + interval '1 day')
+        `,
+        [`auth-contract-duplicate-token-${unique}@example.invalid`, `invite-token-${unique}`, userId]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into user_invites (email, role, token_hash, invited_by_user_id, expires_at)
+          values ($1, 'owner', $2, $3, now() + interval '1 day')
+        `,
+        [`auth-contract-bad-invite-role-${unique}@example.invalid`, `bad-role-token-${unique}`, userId]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into user_invites (email, role, token_hash, invited_by_user_id, expires_at)
+          values ($1, 'reader', $2, $3, now() - interval '1 day')
+        `,
+        [`auth-contract-expired-invite-${unique}@example.invalid`, `expired-token-${unique}`, userId]
+      )
+    );
+
+    const sessionTokenHash = `session-token-${unique}-00000000000000000000000000000000`;
+    await pool.query(
+      `
+        insert into user_sessions (user_id, session_token_hash, expires_at)
+        values ($1, $2, now() + interval '1 day')
+      `,
+      [userId, sessionTokenHash]
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into user_sessions (user_id, session_token_hash, expires_at)
+          values ($1, $2, now() + interval '1 day')
+        `,
+        [userId, sessionTokenHash]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into user_sessions (user_id, session_token_hash, expires_at)
+          values ($1, 'short-token', now() + interval '1 day')
+        `,
+        [userId]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into user_sessions (user_id, session_token_hash, expires_at)
+          values ($1, $2, now() - interval '1 day')
+        `,
+        [userId, `expired-session-${unique}-000000000000000000000000`]
+      )
+    );
+
+    await pool.query(
+      `
+        insert into auth_login_attempts (user_id, email, outcome)
+        values ($1, $2, 'success')
+      `,
+      [userId, email]
+    );
+    await pool.query(
+      `
+        insert into auth_login_attempts (email, outcome, failure_reason)
+        values ($1, 'failure', 'invalid_credentials')
+      `,
+      [invitedEmail]
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into auth_login_attempts (email, outcome, failure_reason)
+          values ($1, 'success', 'invalid_credentials')
+        `,
+        [email]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into auth_login_attempts (email, outcome)
+          values ($1, 'failure')
+        `,
+        [invitedEmail]
+      )
+    );
+    await assert.rejects(
+      pool.query(
+        `
+          insert into auth_login_attempts (email, outcome, failure_reason)
+          values ($1, 'failure', 'unknown')
+        `,
+        [invitedEmail]
+      )
+    );
+  } finally {
+    await cleanupAuthFixture(pool, [email, invitedEmail]);
+    await pool.end();
+  }
+});
+
+async function cleanupAuthFixture(pool: Pool, emails: string[]) {
+  await pool.query("delete from auth_login_attempts where email = any($1::text[])", [emails]);
+  await pool.query("delete from user_invites where email = any($1::text[])", [emails]);
+  await pool.query("delete from users where email = any($1::text[])", [emails]);
+}
+
 test("source repository can create, update, and list worker-readable policies", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });

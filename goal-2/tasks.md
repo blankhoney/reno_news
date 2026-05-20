@@ -36,13 +36,19 @@
 
 ## Task 2: Auth/RBAC Schema Planning And Contract Tests
 
-- Status: Pending
+- Status: Completed
 - Objective: Define the minimal database schema and API contract for users, sessions, invites, roles, and auth failure behavior.
 - TDD/Verification:
   - Failing tests first for expected schema/contracts through public migration/API surfaces.
   - Pass criteria: migrations and contract tests define reader/admin identity, invite-only bootstrap, sessions, expiry, and uniqueness constraints.
 - Completion Record:
-  - Pending.
+  - Red: added the auth identity migration contract test; `pnpm --filter @reno-news/db test` failed because `infra/db/migrations/0010_auth_identity_rbac.sql` did not exist.
+  - Green: added `0010_auth_identity_rbac.sql` with `users`, `user_invites`, `user_sessions`, and `auth_login_attempts`.
+  - Red: added shared auth contract tests; `pnpm --filter @reno-news/contracts test` failed because auth role and failure-reason exports did not exist.
+  - Green: added auth role, user, login, current-user, logout, and error response contracts in `packages/contracts`.
+  - Added `docs/api/auth.md` and updated `docs/db/schema.md` for the new auth boundary.
+  - Postgres integration initially exposed a real SQL CHECK issue where failure login attempts without a reason were accepted; fixed the constraint with explicit `failure_reason is not null`.
+  - Verified with `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/contracts test`, `pnpm --filter @reno-news/db test:integration`, `pnpm lint`, `pnpm test`, and `git diff --check -- infra/db/migrations/0010_auth_identity_rbac.sql packages/db/src/migrations.test.ts packages/db/src/integration.test.ts packages/contracts/src/index.ts packages/contracts/src/index.test.ts docs/db/schema.md docs/api/auth.md`.
 
 ## Task 3: Minimal Invite-Only Auth Foundation
 
