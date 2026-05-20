@@ -1,6 +1,6 @@
 # Personal State API
 
-Task 17 defines the backend contract for authenticated reader personal state. Task 18 implements the routes.
+Task 17 defines the backend contract for authenticated reader personal state. Task 18 implements the routes. Task 19 connects the web local-state migration path to these APIs.
 
 Personal state is account-backed and scoped to the authenticated API session. Anonymous users may keep the existing browser-local experience, but anonymous requests cannot create server-side personal state.
 

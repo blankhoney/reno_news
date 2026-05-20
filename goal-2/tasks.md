@@ -418,13 +418,20 @@
 
 ## Task 19: Web Personal State Migration From Local Storage
 
-- Status: Pending
+- Status: Completed
 - Objective: Move reader saved/read-later/read state to backend APIs while preserving a migration path from existing localStorage state.
 - TDD/Verification:
   - Failing web tests first for logged-in sync, anonymous read-only fallback, and local migration.
   - Pass criteria: personal state is consistent after reload and across browser contexts for logged-in users.
 - Completion Record:
-  - Pending.
+  - Red/Green: added personal-state web tests for anonymous backend fallback, one-time local migration, migration marker preservation when anonymous, backend membership hydration from known snapshots, missing snapshot hydration through reader item detail, authenticated sync back to local storage, and read-status mutation payloads.
+  - Added browser-side Personal State API helpers for `GET /reader/personal-state`, saved/read-later/read-status mutations, local migration, backend-state hydration, and local cache writeback.
+  - Connected `PersonalControls` and `/personal` to load local state first, migrate saved/read-later state when authenticated, hydrate backend item ids, and keep anonymous/offline local fallback behavior.
+  - Marked reader detail pages as read through `/reader/personal-state/read-status` while keeping listing cards from marking items read.
+  - Updated personal-state web/API docs to record localStorage as migration input/cache and the backend tables as the authenticated source of truth.
+  - Quality review: close-read `personalState.ts`, `personalState.test.ts`, `PersonalControls.tsx`, `PersonalPageClient.tsx`, the reader item page integration, and personal-state docs.
+  - Verified with `pnpm --filter @reno-news/web test`, `pnpm --filter @reno-news/web lint`, `pnpm --filter @reno-news/web build`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Browser smoke: Playwright opened `http://localhost:3000/personal` and confirmed the page rendered the Saved and Read later empty states. This smoke used standalone web without API/Caddy, so `/api/reader/personal-state` returned expected local-dev 404s and exercised the fallback path, not a logged-in cross-device session.
 
 ## Task 20: Digest Edition Planning And Schema
 

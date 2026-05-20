@@ -51,7 +51,7 @@ export default async function ItemPage({ params, searchParams }: ItemPageProps) 
         </nav>
       </header>
 
-      <PersonalControls item={toPersonalItemSnapshot(item)} />
+      <PersonalControls item={toPersonalItemSnapshot(item)} markReadOnView />
 
       <nav className="language-switch" aria-label="Language view">
         <Link
