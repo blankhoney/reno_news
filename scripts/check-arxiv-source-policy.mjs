@@ -114,7 +114,9 @@ for (const expected of [
   requireText("docs/ops/arxiv-source-adapter.md", runbook, expected);
 }
 
-requireText("docs/CODEX_MASTER_PLAN.md", masterPlan, "| V2.6 | Structured Source Expansion and Similarity Signals | In Progress |");
+if (!/\| V2\.6 \| Structured Source Expansion and Similarity Signals \| (In Progress|Completed) \|/.test(masterPlan)) {
+  fail("docs/CODEX_MASTER_PLAN.md must include V2.6 with In Progress or Completed status");
+}
 requireText(".github/workflows/ci.yml", ciWorkflow, "node scripts/check-arxiv-source-policy.mjs");
 requireText("docs/ops/github-cicd.md", ciRunbook, "arXiv source policy contract check");
 

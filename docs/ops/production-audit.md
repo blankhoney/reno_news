@@ -33,12 +33,13 @@ This report records the MVP's current production-readiness evidence and Residual
 ## Explicit Non-Goals
 
 - This report does not deploy, create releases, update CI permissions, call remote monitors, send alerts, create credentials, mutate production data, prune Docker resources, delete backups, or approve launch.
-- It does not add semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+- It does not add semantic/vector search, external search services, digest delivery, editorial workflow, browser automation, additional source adapters beyond the documented source-expansion boundaries, or production backup automation.
 - It does not call MiniMax, create provider credentials, approve model quality, or bypass the local schema gate.
 - It does not replace security review, privacy review, legal review, incident response, or a future production release process.
 
 ## Runbook References
 
+- `docs/ops/final-production-gate-review.md`: Task 28 Final Production Gate Review, local evidence scope, blocking production gaps, non-blocking deferrals, and non-approval boundary.
 - `docs/ops/release-health-audit.md`: local Release Health Audit command, expected evidence, failure handling, rollback references, and limitations.
 - `docs/ops/production-deploy.md`: deployment secret contract, server env contract, health check, and rollback boundary.
 - `docs/ops/metrics.md`: Prometheus-compatible API and worker metrics, metric names, and limitations.

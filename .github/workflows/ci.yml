@@ -150,3 +150,6 @@ jobs:
 
       - name: Verify PostgreSQL similarity and dedup contract
         run: node scripts/check-postgres-similarity-contract.mjs
+
+      - name: Verify final production gate review
+        run: node scripts/check-final-production-gate-review.mjs

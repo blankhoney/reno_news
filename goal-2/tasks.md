@@ -632,13 +632,21 @@
 
 ## Task 28: Final Production Gate Review
 
-- Status: Pending
+- Status: Completed
 - Objective: Audit the project across user-facing behavior, API, auth, security, data integrity, ops, AI quality, and docs.
 - TDD/Verification:
   - Review-first: enumerate concrete failure candidates, then add regression tests or fixes for confirmed issues.
   - Pass criteria: all blocking production gate issues are fixed or explicitly documented as external-environment blockers.
 - Completion Record:
-  - Pending.
+  - Review-first: audited production-readiness evidence across reader/web behavior, API auth/RBAC/audit, data integrity, ops contracts, AI quality gates, source expansion constraints, CI/CD, and repository governance.
+  - Red: `node scripts/check-final-production-gate-review.mjs` failed because the final production gate check did not exist.
+  - Green: added `docs/ops/final-production-gate-review.md`, `scripts/check-final-production-gate-review.mjs`, `pnpm production:gate:check`, CI wiring, and runbook links.
+  - Fixed confirmed gate issues found during verification: GitHub/arXiv source policy checks now allow V2.6 to advance from `In Progress` to `Completed`, and `production-audit.md` no longer contains stale wording that contradicts completed V2 digest/source-adapter work.
+  - The final gate explicitly allows continued repo/CI/CD/deployment-handoff work but does not approve public production launch.
+  - Blocking production gaps are documented as external-environment or production-governance issues: VPS/server layout, production domain/TLS endpoint, deployment secrets/manual deploy, remote Prometheus/Alertmanager/paging, real off-host bucket/restore/PITR, live MiniMax evidence/fallback/budget enforcement, incident ownership, host/container hardening, and privacy/legal review.
+  - Quality review: close-read the final production gate report, final gate checker, GitHub/arXiv source policy checker changes, package script, CI workflow step, CI/CD runbook, and production audit update.
+  - Verified with `pnpm production:gate:check`, `pnpm source:expansion:check`, `pnpm github:source-policy:check`, `pnpm arxiv:source-policy:check`, `pnpm postgres:similarity:check`, `pnpm compose:production:check`, `pnpm deploy:contract:check`, `pnpm backup:offhost:check`, `pnpm alerts:check`, `pnpm ai:provider:check`, `pnpm ai:golden:check`, `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/db test:integration`, `pnpm --filter @reno-news/api test`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `docker compose -f infra/compose/compose.yml config`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - `pnpm release:audit:local` was intentionally not used as a decisive Task 28 gate because the full local Compose stack was not running; claiming it passed would be misleading.
 
 ## Task 29: Public Repo/CI/CD Verification And Release Handoff
 

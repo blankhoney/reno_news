@@ -145,7 +145,9 @@ for (const expected of [
   requireText("docs/adr/0038-source-expansion-uses-ordered-low-concurrency-adapters.md", adr, expected);
 }
 
-requireText("docs/CODEX_MASTER_PLAN.md", masterPlan, "| V2.6 | Structured Source Expansion and Similarity Signals | In Progress |");
+if (!/\| V2\.6 \| Structured Source Expansion and Similarity Signals \| (In Progress|Completed) \|/.test(masterPlan)) {
+  fail("docs/CODEX_MASTER_PLAN.md must include V2.6 with In Progress or Completed status");
+}
 requireText(".github/workflows/ci.yml", ciWorkflow, "node scripts/check-github-source-policy.mjs");
 requireText("docs/ops/github-cicd.md", ciRunbook, "GitHub source policy contract check");
 
