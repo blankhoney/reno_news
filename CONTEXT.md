@@ -160,6 +160,10 @@ _Avoid_: Digest, published article body, ranking score
 A reader-owned area for saved items, read-later items, annotations, and personal reading status.
 _Avoid_: Public pool, recommendation signal
 
+**Account-Backed Personal State**:
+Saved items, read-later items, and read status stored on the server for one authenticated user.
+_Avoid_: Browser cache, public ranking signal, cross-user preference
+
 **Saved Item**:
 A reader-marked item kept for later reference in the reader's personal space.
 _Avoid_: Public bookmark, ranking signal, admin curation
@@ -167,6 +171,10 @@ _Avoid_: Public bookmark, ranking signal, admin curation
 **Read Later Item**:
 A reader-marked item queued for future reading in the reader's personal space.
 _Avoid_: Published queue, digest item, recommendation
+
+**Read Status**:
+A per-user marker that records whether a reader has read a reader-visible item.
+_Avoid_: Global popularity, moderation state, digest inclusion
 
 **Feedback**:
 A reader-submitted item-scoped correction or complaint that is stored as an explicit signal, not as a personal preference or automatic ranking change.

@@ -2007,7 +2007,7 @@ The current non-goals remain unchanged unless a later `goal-2` task explicitly n
 | V2.2 | Production Deploy, Secrets, and Off-Host Backup | Completed | Only Caddy binds public ports, deploy/rollback contracts are documented, and backup/restore dry-runs are verifiable without secrets. |
 | V2.3 | Observability and Alerting | Completed | `/metrics`, safe structured logs, trace ids, alert rules, and runbooks exist for service, queue, model, disk, and backup failures. |
 | V2.4 | MiniMax Model Integration and Evaluation Gate | Completed | MiniMax M2.7 is behind the existing provider abstraction, all structured output passes schema validation or is quarantined, and a golden-set harness is available. |
-| V2.5 | Account-Backed Personal State and Digest Editions | Not Started | saved/read-later/read_status are account-backed, local state can migrate, and digest editions are persisted and replayable. |
+| V2.5 | Account-Backed Personal State and Digest Editions | In Progress | saved/read-later/read_status are account-backed, local state can migrate, and digest editions are persisted and replayable. |
 | V2.6 | Structured Source Expansion and Similarity Signals | Not Started | GitHub and arXiv adapters enter the existing pipeline safely; GDELT and RSSHub stay constrained; PostgreSQL remains the search source of truth. |
 
 ### 17.1 Required Work Order

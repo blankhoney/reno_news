@@ -113,6 +113,29 @@ test("audit events migration defines actor, action, object, request, and metadat
   assert.match(migration, /audit_events_object_created_idx/);
 });
 
+test("account personal state migration defines saved, read-later, and read status tables", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0012_user_personal_state.sql"),
+    "utf8"
+  );
+
+  for (const tableName of ["user_saved_items", "user_read_later_items", "user_read_status"]) {
+    assert.match(migration, new RegExp(`create table if not exists ${tableName}`));
+    assert.match(migration, new RegExp(`${tableName}_user_item_unique`));
+    assert.match(migration, /user_id bigint not null references users\(id\) on delete cascade/);
+    assert.match(migration, /raw_entry_id bigint not null references raw_entries\(id\) on delete cascade/);
+  }
+
+  assert.match(migration, /primary key \(user_id, raw_entry_id\)/);
+  assert.match(migration, /read_status text not null/);
+  assert.match(migration, /user_read_status_value_check/);
+  assert.match(migration, /check \(read_status in \('unread', 'read'\)\)/);
+  assert.match(migration, /read_at timestamptz/);
+  assert.match(migration, /user_saved_items_raw_entry_idx/);
+  assert.match(migration, /user_read_later_items_raw_entry_idx/);
+  assert.match(migration, /user_read_status_raw_entry_idx/);
+});
+
 test("backup and restore drill scripts stay local and disposable", async () => {
   const packageJson = JSON.parse(
     await readFile(join(process.cwd(), "../../package.json"), "utf8")

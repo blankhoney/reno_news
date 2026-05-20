@@ -43,3 +43,38 @@ export type AuthLogoutResponse = {
 export type AuthErrorResponse = {
   error: AuthLoginFailureReason | "unauthorized" | "forbidden";
 };
+
+export const personalStateKinds = ["saved", "read_later"] as const;
+
+export type PersonalStateKind = (typeof personalStateKinds)[number];
+
+export const readStatusValues = ["unread", "read"] as const;
+
+export type ReadStatusValue = (typeof readStatusValues)[number];
+
+export type PersonalStateItem = {
+  itemId: number;
+  createdAt: string;
+};
+
+export type ReadStatusItem = {
+  itemId: number;
+  status: ReadStatusValue;
+  updatedAt: string;
+};
+
+export type PersonalStateResponse = {
+  saved: PersonalStateItem[];
+  readLater: PersonalStateItem[];
+  readStatus: ReadStatusItem[];
+};
+
+export type PersonalStateMutationRequest = {
+  itemId: number;
+  active: boolean;
+};
+
+export type ReadStatusMutationRequest = {
+  itemId: number;
+  status: ReadStatusValue;
+};

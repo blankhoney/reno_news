@@ -120,6 +120,33 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 - Sessions have `expires_at`, optional `revoked_at`, optional `last_seen_at`, and safe request metadata.
 - Sessions are deleted when the owning user is deleted.
 
+## User Saved Items
+
+`user_saved_items`
+
+- Stores account-backed Saved Item membership for one authenticated user and one raw entry.
+- `(user_id, raw_entry_id)` is the primary key, so writes are idempotent per user and item.
+- Deleting a user or raw entry deletes only the matching personal-state rows.
+- `migrated_from_local` marks state imported from browser localStorage.
+
+## User Read-Later Items
+
+`user_read_later_items`
+
+- Stores account-backed Read Later Item membership for one authenticated user and one raw entry.
+- `(user_id, raw_entry_id)` is the primary key, so writes are idempotent per user and item.
+- Saved and read-later are intentionally separate tables because readers may use both markers on the same item.
+- `migrated_from_local` marks state imported from browser localStorage.
+
+## User Read Status
+
+`user_read_status`
+
+- Stores account-backed Read Status for one authenticated user and one raw entry.
+- `(user_id, raw_entry_id)` is the primary key, enforcing cross-user isolation while keeping updates idempotent.
+- `read_status` is constrained to `unread` or `read`.
+- `read_at` is required only when `read_status = 'read'`; `updated_at` records the latest state transition.
+
 ## Auth Login Attempts
 
 `auth_login_attempts`

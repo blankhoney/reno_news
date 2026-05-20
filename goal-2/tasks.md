@@ -370,13 +370,20 @@
 
 ## Task 17: Server-Side Personal State Planning And Schema
 
-- Status: Pending
+- Status: Completed
 - Objective: Define backend schema and contracts for saved, read-later, and read_status bound to authenticated users.
 - TDD/Verification:
   - Failing migration/API contract tests first.
   - Pass criteria: schema prevents cross-user conflicts and supports idempotent state changes.
 - Completion Record:
-  - Pending.
+  - Red: added a migration contract test for account-backed saved, read-later, and read status tables; it failed because `infra/db/migrations/0012_user_personal_state.sql` did not exist.
+  - Green: added `0012_user_personal_state.sql` with `user_saved_items`, `user_read_later_items`, and `user_read_status`, each keyed by `(user_id, raw_entry_id)` with cascading user/item ownership.
+  - Red: added shared contract tests for personal-state kinds and read-status vocabulary; they failed because the contract exports did not exist.
+  - Green: added `PersonalStateResponse`, mutation request types, `personalStateKinds`, and `readStatusValues` in `packages/contracts`.
+  - Added `docs/api/personal-state.md`, updated `docs/db/schema.md`, extended `CONTEXT.md`, and marked V2.5 as in progress in `docs/CODEX_MASTER_PLAN.md`.
+  - Quality review: close-read the migration, migration test, contracts, personal-state API doc, glossary/schema docs, and master-plan status update.
+  - Verified with `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/contracts test`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - DB-backed integration verification was not run because `DATABASE_URL` is not configured in this local shell.
 
 ## Task 18: Saved/Read-Later Backend APIs
 
