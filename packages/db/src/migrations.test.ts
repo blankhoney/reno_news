@@ -260,6 +260,7 @@ test("GitHub CI/CD workflows define quality gate, image publishing, and manual d
 
   for (const expectedCiBoundary of [
     "pull_request:",
+    "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24",
     "branches:",
     "- main",
     "JavaScript lint, test, build",
@@ -286,6 +287,7 @@ test("GitHub CI/CD workflows define quality gate, image publishing, and manual d
 
   for (const expectedPublishBoundary of [
     "packages: write",
+    "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24",
     "ghcr.io",
     "docker/login-action",
     "docker/metadata-action",
