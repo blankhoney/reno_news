@@ -124,10 +124,21 @@ This document summarizes the current SQL schema. SQL files in `infra/db/migratio
 
 `auth_login_attempts`
 
-- Records observable login outcomes before the broader audit-log milestone.
+- Records normalized login outcomes for auth security checks.
 - `outcome` is constrained to `success` or `failure`.
 - `failure_reason` is required for failures and omitted for successes.
 - Failure reasons are constrained to the shared auth contract vocabulary.
+
+## Audit Events
+
+`audit_events`
+
+- Stores append-only security and admin action records for login/logout, source changes, raw-entry lifecycle actions, and feedback review.
+- `actor_user_id` links to `users` when the actor is known and is set to null if the user is deleted.
+- `actor_role` is constrained to `reader` or `admin` when present.
+- `action`, `object_type`, `object_id`, and `request_id` identify what happened and which request produced the event.
+- `metadata_json` stores safe structured metadata only; raw credentials, invite tokens, session tokens, and full request payloads must not be stored.
+- Lookup indexes support actor, action, and object-oriented inspection.
 
 ## Translations
 

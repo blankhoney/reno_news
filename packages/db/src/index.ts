@@ -1,3 +1,4 @@
+export * from "./auditRepository";
 export * from "./authRepository";
 export * from "./failureQueueRepository";
 export * from "./feedbackRepository";

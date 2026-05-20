@@ -119,13 +119,20 @@
 
 ## Task 6: Audit Log Foundation
 
-- Status: Pending
+- Status: Completed
 - Objective: Add audit event storage and write events for login/logout, admin changes, retry/hide/restore, source policy edits, and feedback review.
 - TDD/Verification:
   - Failing tests first through public API actions, asserting observable audit query results via admin API.
   - Pass criteria: audit events include actor, action, object, timestamp, request id, and safe metadata.
 - Completion Record:
-  - Pending.
+  - Red: added an audit migration contract test; `pnpm --filter @reno-news/db test` failed because `infra/db/migrations/0011_audit_events.sql` did not exist.
+  - Green: added `audit_events` with actor, action, object, request id, JSON metadata, timestamp, constraints, and actor/action/object lookup indexes.
+  - Red/Green: added a Postgres-backed `AuditRepository` integration test and implemented `createAuditRepository`.
+  - Red/Green: added API route tests proving source updates create audit records visible through `GET /admin/audit-events`, then expanded coverage for login failure, login success, logout, source create, raw-entry hide/restore, feedback review, audit listing, and admin/reader authorization.
+  - Added audit terminology to `CONTEXT.md` and documented `audit_events` plus `/admin/audit-events` in DB/API docs.
+  - Current codebase has no manual failure retry endpoint; this task preserves audit support for existing irreversible actions without adding a retry workflow.
+  - Quality review: close-read the audit migration, audit repository, DB tests, API route implementation, API tests, `CONTEXT.md`, `docs/api/auth.md`, and `docs/db/schema.md`.
+  - Verified with `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/db test:integration`, `pnpm --filter @reno-news/api test`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check` for touched Task 6 files.
 
 ## Check-Debug Loop 2
 

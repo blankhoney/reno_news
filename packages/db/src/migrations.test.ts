@@ -93,6 +93,26 @@ test("auth identity migration defines invite-only users, sessions, and login att
   assert.match(migration, /failure_reason is not null/);
 });
 
+test("audit events migration defines actor, action, object, request, and metadata fields", async () => {
+  const migration = await readFile(
+    join(process.cwd(), "../../infra/db/migrations/0011_audit_events.sql"),
+    "utf8"
+  );
+
+  assert.match(migration, /create table if not exists audit_events/);
+  assert.match(migration, /actor_user_id bigint references users\(id\) on delete set null/);
+  assert.match(migration, /actor_role text/);
+  assert.match(migration, /action text not null/);
+  assert.match(migration, /object_type text not null/);
+  assert.match(migration, /object_id text/);
+  assert.match(migration, /request_id text not null/);
+  assert.match(migration, /metadata_json jsonb not null default '\{\}'::jsonb/);
+  assert.match(migration, /created_at timestamptz not null default now\(\)/);
+  assert.match(migration, /audit_events_actor_created_idx/);
+  assert.match(migration, /audit_events_action_created_idx/);
+  assert.match(migration, /audit_events_object_created_idx/);
+});
+
 test("backup and restore drill scripts stay local and disposable", async () => {
   const packageJson = JSON.parse(
     await readFile(join(process.cwd(), "../../package.json"), "utf8")

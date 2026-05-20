@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type {
+  AuditEventRecord,
+  AuditRepository,
   FailureQueueRecord,
   FailureQueueRepository,
   FeedbackRecord,
@@ -104,6 +106,7 @@ const adminRouteCases = [
   { method: "GET", url: "/raw-entries/1" },
   { method: "PATCH", url: "/raw-entries/1", payload: { action: "hide" } },
   { method: "GET", url: "/admin/failures" },
+  { method: "GET", url: "/admin/audit-events" },
   { method: "GET", url: "/admin/feedback" },
   { method: "PATCH", url: "/admin/feedback/20", payload: { reviewStatus: "reviewed" } }
 ] as const;
@@ -150,6 +153,33 @@ const failureRecord: FailureQueueRecord = {
   purpose: null,
   createdAt: "2026-05-20T00:00:00.000Z"
 };
+
+const auditEventRecord: AuditEventRecord = {
+  id: 99,
+  actorUserId: 1,
+  actorRole: "admin",
+  action: "source.update",
+  objectType: "source",
+  objectId: "1",
+  requestId: "request-1",
+  metadata: {
+    fields: ["enabled"]
+  },
+  createdAt: "2026-05-20T00:00:00.000Z"
+};
+
+function fakeAuditRepository(overrides: Partial<AuditRepository> = {}): AuditRepository {
+  return {
+    recordAuditEvent: async () => undefined,
+    listAuditEvents: async () => [auditEventRecord],
+    close: async () => undefined,
+    ...overrides
+  };
+}
+
+function recordedRequestId(events: unknown[], index = 0): string {
+  return events[index] ? (events[index] as { requestId: string }).requestId : "";
+}
 
 const feedbackRecord: FeedbackRecord = {
   id: 20,
@@ -253,6 +283,7 @@ test("GET /healthz reports the API service as healthy", async () => {
 });
 
 test("POST /auth/login rejects invalid credentials without setting a session cookie", async () => {
+  const recordedEvents: unknown[] = [];
   const app = buildApp(
     { logger: false },
     {
@@ -260,7 +291,12 @@ test("POST /auth/login rejects invalid credentials without setting a session coo
         login: async () => ({ ok: false, error: "invalid_credentials" }),
         currentUser: async () => null,
         logout: async () => undefined
-      }
+      },
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
+        }
+      })
     }
   );
   test.after(async () => {
@@ -279,6 +315,126 @@ test("POST /auth/login rejects invalid credentials without setting a session coo
   assert.equal(response.statusCode, 401);
   assert.deepEqual(response.json(), { error: "invalid_credentials" });
   assert.equal(response.headers["set-cookie"], undefined);
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: null,
+      actorRole: null,
+      action: "auth.login_failed",
+      objectType: "auth",
+      objectId: null,
+      requestId: recordedEvents[0]
+        ? (recordedEvents[0] as { requestId: string }).requestId
+        : "",
+      metadata: { failureReason: "invalid_credentials" }
+    }
+  ]);
+  assert.match((recordedEvents[0] as { requestId: string }).requestId, /\S/);
+});
+
+test("POST /auth/login records successful login audit metadata", async () => {
+  const recordedEvents: unknown[] = [];
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => ({
+          ok: true,
+          user: {
+            id: 42,
+            email: "reader@example.com",
+            role: "reader"
+          },
+          sessionToken: "raw-session-token",
+          expiresAt: new Date("2026-05-21T12:00:00.000Z")
+        }),
+        currentUser: async () => null,
+        logout: async () => undefined
+      },
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/auth/login",
+    payload: {
+      email: "reader@example.com",
+      password: "correct-password"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 42,
+      actorRole: "reader",
+      action: "auth.login",
+      objectType: "user",
+      objectId: "42",
+      requestId: recordedEvents[0]
+        ? (recordedEvents[0] as { requestId: string }).requestId
+        : "",
+      metadata: { outcome: "success" }
+    }
+  ]);
+  assert.match((recordedEvents[0] as { requestId: string }).requestId, /\S/);
+});
+
+test("POST /auth/logout records logout audit metadata for a current user", async () => {
+  const recordedEvents: unknown[] = [];
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => ({ ok: false, error: "invalid_credentials" }),
+        currentUser: async () => ({
+          id: 42,
+          email: "reader@example.com",
+          role: "reader"
+        }),
+        logout: async () => undefined
+      },
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/auth/logout",
+    headers: {
+      cookie: "reno_news_session=raw-session-token"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 42,
+      actorRole: "reader",
+      action: "auth.logout",
+      objectType: "user",
+      objectId: "42",
+      requestId: recordedEvents[0]
+        ? (recordedEvents[0] as { requestId: string }).requestId
+        : "",
+      metadata: { outcome: "success" }
+    }
+  ]);
+  assert.match((recordedEvents[0] as { requestId: string }).requestId, /\S/);
 });
 
 test("POST /auth/login rejects malformed email before auth service work", async () => {
@@ -522,6 +678,7 @@ test("GET /sources/:id returns source detail", async () => {
 
 test("POST /sources creates a source with policy", async () => {
   let receivedBody: unknown;
+  const recordedEvents: unknown[] = [];
   const app = buildApp(
     { logger: false },
     withAdminAuth({
@@ -529,6 +686,11 @@ test("POST /sources creates a source with policy", async () => {
         createSource: async (input) => {
           receivedBody = input;
           return sourceRecord;
+        }
+      }),
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
         }
       })
     })
@@ -575,6 +737,21 @@ test("POST /sources creates a source with policy", async () => {
       riskLevel: "medium"
     }
   });
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 1,
+      actorRole: "admin",
+      action: "source.create",
+      objectType: "source",
+      objectId: "1",
+      requestId: recordedRequestId(recordedEvents),
+      metadata: {
+        boardSlug: "ai",
+        sourceType: "rss"
+      }
+    }
+  ]);
+  assert.match(recordedRequestId(recordedEvents), /\S/);
 });
 
 test("POST /sources rejects invalid source policy values", async () => {
@@ -659,6 +836,62 @@ test("PATCH /sources/:id updates enablement and policy fields", async () => {
       riskLevel: "high"
     }
   });
+});
+
+test("PATCH /sources/:id records an audit event visible through the admin audit API", async () => {
+  const recordedEvents: unknown[] = [];
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      sourceRepository: fakeRepository({
+        updateSource: async () => ({
+          ...sourceRecord,
+          enabled: false
+        })
+      }),
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
+        },
+        listAuditEvents: async () => [auditEventRecord]
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const patchResponse = await app.inject({
+    method: "PATCH",
+    url: "/sources/1",
+    headers: adminSessionHeaders,
+    payload: {
+      enabled: false
+    }
+  });
+  const auditResponse = await app.inject({
+    method: "GET",
+    url: "/admin/audit-events",
+    headers: adminSessionHeaders
+  });
+
+  assert.equal(patchResponse.statusCode, 200);
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 1,
+      actorRole: "admin",
+      action: "source.update",
+      objectType: "source",
+      objectId: "1",
+      requestId: recordedEvents[0]
+        ? (recordedEvents[0] as { requestId: string }).requestId
+        : "",
+      metadata: { fields: ["enabled"] }
+    }
+  ]);
+  assert.match((recordedEvents[0] as { requestId: string }).requestId, /\S/);
+  assert.equal(auditResponse.statusCode, 200);
+  assert.deepEqual(auditResponse.json(), { auditEvents: [auditEventRecord] });
 });
 
 test("PATCH /sources/:id returns 404 for missing sources", async () => {
@@ -756,6 +989,7 @@ test("GET /raw-entries/:id returns 404 for missing raw entries", async () => {
 test("PATCH /raw-entries/:id applies a lifecycle action", async () => {
   let receivedId: number | undefined;
   let receivedInput: unknown;
+  const recordedEvents: unknown[] = [];
   const app = buildApp(
     { logger: false },
     withAdminAuth({
@@ -768,6 +1002,11 @@ test("PATCH /raw-entries/:id applies a lifecycle action", async () => {
             ...rawEntryRecord,
             lifecycleStatus: "hidden"
           };
+        }
+      }),
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
         }
       })
     })
@@ -789,6 +1028,66 @@ test("PATCH /raw-entries/:id applies a lifecycle action", async () => {
   assert.equal(response.json().lifecycleStatus, "hidden");
   assert.equal(receivedId, 1);
   assert.deepEqual(receivedInput, { action: "hide" });
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 1,
+      actorRole: "admin",
+      action: "raw_entry.hide",
+      objectType: "raw_entry",
+      objectId: "1",
+      requestId: recordedRequestId(recordedEvents),
+      metadata: { action: "hide" }
+    }
+  ]);
+  assert.match(recordedRequestId(recordedEvents), /\S/);
+});
+
+test("PATCH /raw-entries/:id records restore audit events", async () => {
+  const recordedEvents: unknown[] = [];
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      sourceRepository: fakeRepository(),
+      rawEntryRepository: fakeRawEntryRepository({
+        updateRawEntryLifecycle: async () => ({
+          ...rawEntryRecord,
+          lifecycleStatus: "candidate"
+        })
+      }),
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PATCH",
+    url: "/raw-entries/1",
+    headers: adminSessionHeaders,
+    payload: {
+      action: "restore"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().lifecycleStatus, "candidate");
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 1,
+      actorRole: "admin",
+      action: "raw_entry.restore",
+      objectType: "raw_entry",
+      objectId: "1",
+      requestId: recordedRequestId(recordedEvents),
+      metadata: { action: "restore" }
+    }
+  ]);
+  assert.match(recordedRequestId(recordedEvents), /\S/);
 });
 
 test("PATCH /raw-entries/:id rejects unsupported lifecycle actions", async () => {
@@ -967,6 +1266,34 @@ test("GET /admin/failures rejects invalid limit", async () => {
   assert.equal(response.statusCode, 400);
 });
 
+test("GET /admin/audit-events lists audit records with optional limit", async () => {
+  let receivedLimit: number | undefined;
+  const app = buildApp(
+    { logger: false },
+    withAdminAuth({
+      auditRepository: fakeAuditRepository({
+        listAuditEvents: async (options) => {
+          receivedLimit = options?.limit;
+          return [auditEventRecord];
+        }
+      })
+    })
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/admin/audit-events?limit=5",
+    headers: adminSessionHeaders
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(receivedLimit, 5);
+  assert.deepEqual(response.json(), { auditEvents: [auditEventRecord] });
+});
+
 test("GET /admin/feedback lists recent feedback with optional limit", async () => {
   let receivedLimit: number | undefined;
   const app = buildApp(
@@ -998,6 +1325,7 @@ test("GET /admin/feedback lists recent feedback with optional limit", async () =
 test("PATCH /admin/feedback/:id updates feedback review state", async () => {
   let receivedId: number | undefined;
   let receivedInput: unknown;
+  const recordedEvents: unknown[] = [];
   const reviewedFeedback: FeedbackRecord = {
     ...feedbackRecord,
     reviewStatus: "dismissed",
@@ -1012,6 +1340,11 @@ test("PATCH /admin/feedback/:id updates feedback review state", async () => {
           receivedId = id;
           receivedInput = input;
           return reviewedFeedback;
+        }
+      }),
+      auditRepository: fakeAuditRepository({
+        recordAuditEvent: async (input) => {
+          recordedEvents.push(input);
         }
       })
     })
@@ -1037,6 +1370,18 @@ test("PATCH /admin/feedback/:id updates feedback review state", async () => {
   });
   assert.equal(receivedId, 20);
   assert.deepEqual(response.json(), { feedback: reviewedFeedback });
+  assert.deepEqual(recordedEvents, [
+    {
+      actorUserId: 1,
+      actorRole: "admin",
+      action: "feedback.review",
+      objectType: "reader_feedback",
+      objectId: "20",
+      requestId: recordedRequestId(recordedEvents),
+      metadata: { reviewStatus: "dismissed" }
+    }
+  ]);
+  assert.match(recordedRequestId(recordedEvents), /\S/);
 });
 
 test("PATCH /admin/feedback/:id returns 404 for missing feedback", async () => {

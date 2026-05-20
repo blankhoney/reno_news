@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { runMigrations, runSeed } from "./runner";
+import { createAuditRepository } from "./auditRepository";
 import { createAuthRepository } from "./authRepository";
 import { createFeedbackRepository } from "./feedbackRepository";
 import { createFailureQueueRepository } from "./failureQueueRepository";
@@ -344,7 +345,67 @@ test("auth repository reads users, manages sessions, and records login attempts"
   }
 });
 
+test("audit repository records and lists actor-scoped events", async () => {
+  await runMigrations({ databaseUrl });
+
+  const unique = Date.now().toString(36);
+  const email = `audit-repository-${unique}@example.invalid`;
+  const requestId = `audit-request-${unique}`;
+  const argon2idHash = "$argon2id$v=19$m=65536,t=3,p=4$c2FsdA$aGFzaA";
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+
+  await cleanupAuthFixture(pool, [email]);
+  await pool.query("delete from audit_events where request_id = $1", [requestId]);
+
+  try {
+    const userResult = await pool.query<{ id: number }>(
+      `
+        insert into users (email, password_hash, role)
+        values ($1, $2, 'admin')
+        returning id::int
+      `,
+      [email, argon2idHash]
+    );
+    const userId = userResult.rows[0].id;
+    const repository = createAuditRepository(databaseUrl);
+
+    try {
+      await repository.recordAuditEvent({
+        actorUserId: userId,
+        actorRole: "admin",
+        action: "source.update",
+        objectType: "source",
+        objectId: "1",
+        requestId,
+        metadata: { fields: ["enabled"] }
+      });
+
+      const events = await repository.listAuditEvents({ limit: 10 });
+      const event = events.find((candidate) => candidate.requestId === requestId);
+
+      assert.ok(event);
+      assert.equal(event.actorUserId, userId);
+      assert.equal(event.actorRole, "admin");
+      assert.equal(event.action, "source.update");
+      assert.equal(event.objectType, "source");
+      assert.equal(event.objectId, "1");
+      assert.deepEqual(event.metadata, { fields: ["enabled"] });
+      assert.match(event.createdAt, /^\d{4}-\d{2}-\d{2}T/);
+    } finally {
+      await repository.close();
+    }
+  } finally {
+    await pool.query("delete from audit_events where request_id = $1", [requestId]);
+    await cleanupAuthFixture(pool, [email]);
+    await pool.end();
+  }
+});
+
 async function cleanupAuthFixture(pool: Pool, emails: string[]) {
+  await pool.query(
+    "delete from audit_events where actor_user_id in (select id from users where email = any($1::text[]))",
+    [emails]
+  );
   await pool.query("delete from auth_login_attempts where email = any($1::text[])", [emails]);
   await pool.query("delete from user_invites where email = any($1::text[])", [emails]);
   await pool.query("delete from users where email = any($1::text[])", [emails]);

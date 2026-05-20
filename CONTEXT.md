@@ -56,6 +56,10 @@ _Avoid_: Crawl config, fetch settings
 An admin-authored adjustment to a source's access, retention, translation, risk, or public-display rules.
 _Avoid_: Reader preference, ranking change, feed setting
 
+**Audit Event**:
+An append-only record of a security-sensitive or admin-authored action, including actor, action, object, request id, timestamp, and safe metadata.
+_Avoid_: Application log, Reader Feedback, Release Audit
+
 **Rights Policy**:
 Rules that decide whether retrieved content may be stored, translated, snapshotted, or publicly displayed.
 _Avoid_: Robots policy, copyright flag, share level
@@ -235,6 +239,7 @@ _Avoid_: Bug when it is an acknowledged scope gap, blocker when it does not stop
 ## Relationships
 
 - An **Admin** uses the **Admin Debug Surface** to maintain and inspect the **Source Registry**, **Source Policies**, **Rights Policies**, **Boards**, and **Rubrics**.
+- An **Audit Event** records security-sensitive actions such as login, logout, **Policy Change**, **Manual Moderation Action**, and **Feedback Review** without becoming the action itself.
 - A **Source** uses one **Source Adapter** to discover **Candidate Items**.
 - A **Policy Change** applies to one **Source** and changes its **Source Policy** or **Rights Policy**.
 - An **Ingest Attempt** records one **Source Adapter** execution for one **Source**.

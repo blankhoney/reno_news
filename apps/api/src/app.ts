@@ -5,9 +5,10 @@ import Fastify, {
   type FastifyServerOptions
 } from "fastify";
 import fastifyCookie from "@fastify/cookie";
-import type { AuthLoginFailureReason } from "@reno-news/contracts";
+import type { AuthLoginFailureReason, AuthUser } from "@reno-news/contracts";
 import {
   BoardNotFoundError,
+  createAuditRepository,
   createAuthRepository,
   createFeedbackRepository,
   createFailureQueueRepository,
@@ -15,6 +16,7 @@ import {
   createReaderRepository,
   createSourceRepository,
   isUniqueViolation,
+  type AuditRepository,
   type CreateSourceInput,
   type FeedbackRepository,
   type FailureQueueRepository,
@@ -27,6 +29,7 @@ import { createAuthService, type AuthService } from "./auth";
 
 type AppDependencies = {
   authService?: AuthService;
+  auditRepository?: AuditRepository;
   sourceRepository?: SourceRepository;
   rawEntryRepository?: RawEntryRepository;
   readerRepository?: ReaderRepository;
@@ -70,6 +73,10 @@ type FailureQueueQuery = {
   limit?: number;
 };
 
+type AuditEventsQuery = {
+  limit?: number;
+};
+
 type RawEntryLifecycleBody = {
   action: "hide" | "restore";
 };
@@ -77,6 +84,10 @@ type RawEntryLifecycleBody = {
 type AuthLoginBody = {
   email: string;
   password: string;
+};
+
+type AdminRequest = FastifyRequest & {
+  adminUser?: AuthUser;
 };
 
 class DatabaseNotConfiguredError extends Error {
@@ -239,6 +250,8 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   app.register(fastifyCookie);
 
   const authService = dependencies.authService ?? authServiceFromEnvironment(app);
+  const auditRepository =
+    dependencies.auditRepository ?? auditRepositoryFromEnvironment(app);
   const sourceRepository = dependencies.sourceRepository ?? sourceRepositoryFromEnvironment(app);
   const rawEntryRepository =
     dependencies.rawEntryRepository ?? rawEntryRepositoryFromEnvironment(app);
@@ -272,8 +285,21 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
         });
 
         if (!result.ok) {
+          await recordAuditEvent(auditRepository, request, {
+            action: "auth.login_failed",
+            objectType: "auth",
+            metadata: { failureReason: result.error }
+          });
           return reply.code(authLoginFailureStatuses[result.error]).send({ error: result.error });
         }
+
+        await recordAuditEvent(auditRepository, request, {
+          actor: result.user,
+          action: "auth.login",
+          objectType: "user",
+          objectId: String(result.user.id),
+          metadata: { outcome: "success" }
+        });
 
         reply.setCookie(authSessionCookieName, result.sessionToken, {
           path: "/",
@@ -305,7 +331,18 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
 
   app.post("/auth/logout", async (request, reply) => {
     try {
-      await authService.logout(request.cookies[authSessionCookieName]);
+      const sessionToken = request.cookies[authSessionCookieName];
+      const user = await authService.currentUser(sessionToken);
+      await authService.logout(sessionToken);
+      if (user) {
+        await recordAuditEvent(auditRepository, request, {
+          actor: user,
+          action: "auth.logout",
+          objectType: "user",
+          objectId: String(user.id),
+          metadata: { outcome: "success" }
+        });
+      }
       reply.clearCookie(authSessionCookieName, { path: "/" });
       return { status: "ok" };
     } catch (error) {
@@ -357,6 +394,16 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     async (request, reply) => {
       try {
         const source = await sourceRepository.createSource(request.body as CreateSourceInput);
+        await recordAuditEvent(auditRepository, request, {
+          actor: adminUserFromRequest(request),
+          action: "source.create",
+          objectType: "source",
+          objectId: String(source.id),
+          metadata: {
+            boardSlug: source.boardSlug,
+            sourceType: source.sourceType
+          }
+        });
         return reply.code(201).send(source);
       } catch (error) {
         return sendSourceError(reply, error);
@@ -376,11 +423,20 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     async (request, reply) => {
       try {
         const { id } = request.params as SourceParams;
-        const source = await sourceRepository.updateSource(Number(id), request.body as UpdateSourceInput);
+        const body = request.body as UpdateSourceInput;
+        const source = await sourceRepository.updateSource(Number(id), body);
 
         if (!source) {
           return reply.code(404).send({ error: "Source not found" });
         }
+
+        await recordAuditEvent(auditRepository, request, {
+          actor: adminUserFromRequest(request),
+          action: "source.update",
+          objectType: "source",
+          objectId: String(id),
+          metadata: { fields: Object.keys(body) }
+        });
 
         return source;
       } catch (error) {
@@ -434,14 +490,23 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     async (request, reply) => {
       try {
         const { id } = request.params as SourceParams;
+        const body = request.body as RawEntryLifecycleBody;
         const rawEntry = await rawEntryRepository.updateRawEntryLifecycle(
           Number(id),
-          request.body as RawEntryLifecycleBody
+          body
         );
 
         if (!rawEntry) {
           return reply.code(404).send({ error: "Raw entry not found" });
         }
+
+        await recordAuditEvent(auditRepository, request, {
+          actor: adminUserFromRequest(request),
+          action: `raw_entry.${body.action}`,
+          objectType: "raw_entry",
+          objectId: String(id),
+          metadata: { action: body.action }
+        });
 
         return rawEntry;
       } catch (error) {
@@ -463,6 +528,25 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
         const query = request.query as FailureQueueQuery;
         const failures = await failureQueueRepository.listFailures({ limit: query.limit });
         return { failures };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.get(
+    "/admin/audit-events",
+    {
+      preValidation: requireAdmin,
+      schema: {
+        querystring: failureQueueQuerySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const query = request.query as AuditEventsQuery;
+        const auditEvents = await auditRepository.listAuditEvents({ limit: query.limit });
+        return { auditEvents };
       } catch (error) {
         return sendSourceError(reply, error);
       }
@@ -500,14 +584,23 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     async (request, reply) => {
       try {
         const { id } = request.params as SourceParams;
+        const body = request.body as FeedbackReviewBody;
         const feedback = await feedbackRepository.updateFeedbackReview(
           Number(id),
-          request.body as FeedbackReviewBody
+          body
         );
 
         if (!feedback) {
           return reply.code(404).send({ error: "Feedback not found" });
         }
+
+        await recordAuditEvent(auditRepository, request, {
+          actor: adminUserFromRequest(request),
+          action: "feedback.review",
+          objectType: "reader_feedback",
+          objectId: String(id),
+          metadata: { reviewStatus: body.reviewStatus }
+        });
 
         return { feedback };
       } catch (error) {
@@ -676,10 +769,38 @@ function createRequireAdmin(authService: AuthService) {
       if (user.role !== "admin") {
         return reply.code(403).send({ error: "admin_required" });
       }
+
+      (request as AdminRequest).adminUser = user;
     } catch (error) {
       return sendSourceError(reply, error);
     }
   };
+}
+
+function adminUserFromRequest(request: FastifyRequest): AuthUser | null {
+  return (request as AdminRequest).adminUser ?? null;
+}
+
+async function recordAuditEvent(
+  auditRepository: AuditRepository,
+  request: FastifyRequest,
+  input: {
+    actor?: AuthUser | null;
+    action: string;
+    objectType: string;
+    objectId?: string | null;
+    metadata?: Record<string, unknown>;
+  }
+): Promise<void> {
+  await auditRepository.recordAuditEvent({
+    actorUserId: input.actor?.id ?? null,
+    actorRole: input.actor?.role ?? null,
+    action: input.action,
+    objectType: input.objectType,
+    objectId: input.objectId ?? null,
+    requestId: String(request.id),
+    metadata: input.metadata ?? {}
+  });
 }
 
 function sourceRepositoryFromEnvironment(app: FastifyInstance): SourceRepository {
@@ -713,6 +834,22 @@ function authServiceFromEnvironment(app: FastifyInstance): AuthService {
   });
 
   return service;
+}
+
+function auditRepositoryFromEnvironment(app: FastifyInstance): AuditRepository {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredAuditRepository;
+  }
+
+  const repository = createAuditRepository(databaseUrl);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return repository;
 }
 
 function rawEntryRepositoryFromEnvironment(app: FastifyInstance): RawEntryRepository {
@@ -803,6 +940,14 @@ const unconfiguredAuthService: AuthService = {
   },
   currentUser: async () => null,
   logout: async () => undefined
+};
+
+const unconfiguredAuditRepository: AuditRepository = {
+  recordAuditEvent: async () => undefined,
+  listAuditEvents: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  close: async () => undefined
 };
 
 const unconfiguredRawEntryRepository: RawEntryRepository = {

@@ -114,6 +114,7 @@ The protected surfaces are:
 - `GET /raw-entries/:id`
 - `PATCH /raw-entries/:id`
 - `GET /admin/failures`
+- `GET /admin/audit-events`
 - `GET /admin/feedback`
 - `PATCH /admin/feedback/:id`
 
@@ -121,6 +122,22 @@ Reader-safe routes, including reader item views, digest, search, related items,
 and reader feedback submission, remain public at this stage. Account-bound
 personal-state routes are introduced later and must be scoped to the
 authenticated user.
+
+## Audit Events
+
+The API records append-only audit events for security-sensitive and admin
+actions:
+
+- Login failure and login success.
+- Logout when a current user session exists.
+- Source create and source policy/update changes.
+- Raw-entry hide and restore lifecycle actions.
+- Feedback review status changes.
+
+`GET /admin/audit-events` returns recent audit events for admin inspection. Each
+event contains actor id/role when known, action, object type/id, request id,
+timestamp, and safe metadata. Audit metadata must not include passwords, raw
+session tokens, invite tokens, or full request payloads.
 
 ## Non-Goals
 
