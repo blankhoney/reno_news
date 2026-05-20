@@ -136,12 +136,21 @@
 
 ## Check-Debug Loop 2
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 4-6.
 - Verification:
   - Run auth/RBAC/audit API tests, web guard checks, migration checks, and a security route matrix review.
 - Completion Record:
-  - Pending.
+  - Verified API auth/RBAC/audit behavior with `pnpm --filter @reno-news/api test`; 49 API route tests and 4 auth service tests passed.
+  - Verified web session/admin guard behavior with `pnpm --filter @reno-news/web test`; 38 web tests passed.
+  - Verified migration contracts with `pnpm --filter @reno-news/db test`.
+  - Verified Postgres-backed auth/audit/repository behavior with `pnpm --filter @reno-news/db test:integration`.
+  - Verified workspace type/lint with `pnpm lint`.
+  - Verified full workspace test surface with `pnpm test`.
+  - Verified production build/typecheck surface with `pnpm build`.
+  - Verified whitespace safety with `git diff --check`.
+  - Security route matrix review: admin/source/raw-entry/failure/audit/feedback admin routes reject anonymous sessions with 401 and reader sessions with 403; public reader routes remain unguarded as intended.
+  - No blocking defects were found for Tasks 4-6.
 
 ## Task 7: Production Compose Boundary
 
