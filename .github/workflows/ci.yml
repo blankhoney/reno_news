@@ -138,3 +138,6 @@ jobs:
 
       - name: Verify AI provider contract
         run: node scripts/check-ai-provider-contract.mjs
+
+      - name: Verify GitHub source policy contract
+        run: node scripts/check-github-source-policy.mjs

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "adapter": "github",
+  "enabled": false,
+  "scope": {
+    "allowlistOnly": true,
+    "allowedRepositoryShape": {
+      "owner": "GitHub account or organization login",
+      "repo": "repository name without .git",
+      "boardSlug": "existing Reno News board slug",
+      "sourcePolicy": "existing source policy id or operator-managed policy binding"
+    },
+    "allowedRepositories": [],
+    "allowedEndpoints": [
+      "GET /repos/{owner}/{repo}",
+      "GET /repos/{owner}/{repo}/releases"
+    ],
+    "forbiddenPatterns": [
+      "broad search polling",
+      "full organization crawl",
+      "full user crawl",
+      "issues polling",
+      "pull request polling",
+      "repository contents crawl",
+      "asset download mirroring"
+    ]
+  },
+  "rateLimit": {
+    "concurrency": 1,
+    "primary": {
+      "unauthenticatedRequestsPerHour": 60,
+      "authenticatedRequestsPerHour": 5000
+    },
+    "secondaryLimitPolicy": [
+      "serialize requests through the worker queue",
+      "stop immediately when retry-after is present",
+      "pause until x-ratelimit-reset when primary remaining is 0",
+      "otherwise wait at least one minute and use exponential backoff",
+      "prefer authenticated conditional requests with ETag or Last-Modified headers"
+    ],
+    "requestPolicy": {
+      "useConditionalRequests": true,
+      "conditionalRequests": "Store ETag and Last-Modified per endpoint when available.",
+      "polling": "Only low-frequency allowlisted repository polling is allowed until webhooks are explicitly planned."
+    }
+  },
+  "mapping": {
+    "repository": {
+      "externalId": "github:repository:{owner}/{repo}",
+      "urlField": "html_url",
+      "titleField": "full_name",
+      "summaryField": "description",
+      "publishedAtField": "pushed_at",
+      "rawPayload": [
+        "provider",
+        "owner",
+        "repo",
+        "endpoint",
+        "id",
+        "node_id",
+        "full_name",
+        "html_url",
+        "description",
+        "pushed_at",
+        "updated_at",
+        "license"
+      ]
+    },
+    "release": {
+      "externalId": "github:release:{owner}/{repo}:{release_id}",
+      "urlField": "html_url",
+      "titleField": "name or tag_name",
+      "summaryField": "body",
+      "publishedAtField": "published_at",
+      "rawPayload": [
+        "provider",
+        "owner",
+        "repo",
+        "endpoint",
+        "id",
+        "node_id",
+        "tag_name",
+        "name",
+        "html_url",
+        "body",
+        "draft",
+        "prerelease",
+        "published_at",
+        "created_at"
+      ]
+    }
+  },
+  "failureIsolation": {
+    "recordAttempts": true,
+    "failureQueueStage": "github_source_ingest",
+    "rssAtomBaselineMustContinue": true
+  },
+  "references": [
+    "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api",
+    "https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api",
+    "https://docs.github.com/en/rest/repos/repos#get-a-repository",
+    "https://docs.github.com/en/rest/releases/releases#list-releases"
+  ]
+}

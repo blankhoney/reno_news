@@ -482,13 +482,19 @@
 
 ## Task 22: GitHub Source Adapter Planning And Policy
 
-- Status: Pending
+- Status: Completed
 - Objective: Define GitHub adapter scope, rate-limit policy, allowed entities, and source mapping before implementation.
 - TDD/Verification:
   - Failing docs/config contract check first for allowlist and rate-limit settings.
   - Pass criteria: docs and config define Releases/Repository metadata first, low concurrency, and no broad search polling.
 - Completion Record:
-  - Pending.
+  - Red: added `scripts/check-github-source-policy.mjs` and `pnpm github:source-policy:check`; it failed because `config/source-adapters/github.json` did not exist.
+  - Green: added `config/source-adapters/github.json` with a default-disabled, allowlist-only GitHub policy for `GET /repos/{owner}/{repo}` and `GET /repos/{owner}/{repo}/releases`, empty operator-managed repository allowlist, `concurrency = 1`, primary rate-limit budgets, secondary-limit handling, conditional request policy, source mapping, and failure isolation.
+  - Added `docs/ops/github-source-adapter.md` documenting scope, no broad search polling, allowed entity shape, rate-limit behavior, source/raw-entry mapping, RSS/Atom isolation, and official GitHub REST references.
+  - Wired the contract check into CI and updated `docs/ops/github-cicd.md`; marked V2.6 as in progress without claiming runtime adapter implementation.
+  - Quality review: close-read the GitHub policy checker, JSON policy, source-adapter runbook, CI workflow, CI/CD runbook, master-plan status, and package script.
+  - Verified with `pnpm github:source-policy:check`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: this task intentionally makes no live GitHub API call, configures no token, and does not implement the runtime adapter; Task 23 owns ingestion behavior.
 
 ## Task 23: GitHub Releases Adapter Foundation
 

@@ -34,6 +34,7 @@ Checks:
 - Off-host backup contract check for S3-compatible dry-run, retention, and restore drill docs
 - Alert rules contract check for Prometheus alert names, metric references, and runbook links
 - AI provider contract check for MiniMax boundary, schema gate, env names, and no live provider calls by default
+- GitHub source policy contract check for allowlist-only Releases/repository metadata scope and low-concurrency rate-limit handling
 
 Configured branch protection for `main`:
 
@@ -140,6 +141,7 @@ Expected behavior:
 - CI verifies the production deploy contract, including `scripts/deploy-production.sh`.
 - CI verifies the AI provider documentation contract without requiring a MiniMax key.
 - CI runs the fake AI golden-set harness without requiring provider credentials.
+- CI verifies the GitHub source policy contract without requiring a GitHub token or live API call.
 - Image publishing runs after pushes to `main` and publishes all three GHCR images.
 - Deploy is available manually but fails early until all required deployment secrets are configured.
 
