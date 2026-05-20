@@ -18,6 +18,7 @@ import {
   isUniqueViolation,
   type AuditRepository,
   type CreateSourceInput,
+  type FailureQueueRecord,
   type FeedbackRepository,
   type FailureQueueRepository,
   type RawEntryRepository,
@@ -110,6 +111,7 @@ const translationPolicies = ["none", "private_only", "public_excerpt", "public_f
 const riskLevels = ["low", "medium", "high"];
 const rawEntryLifecycleActions = ["hide", "restore"];
 const feedbackReviewStatuses = ["open", "reviewed", "dismissed", "resolved"];
+const failureStages = ["source_ingest", "extraction", "model_call"] as const;
 const feedbackTypes = [
   "correction",
   "quality_issue",
@@ -266,6 +268,17 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     status: "ok",
     service: "api"
   }));
+
+  app.get("/metrics", async (_request, reply) => {
+    try {
+      const failures = await failureQueueRepository.listFailures({ limit: 1000 });
+      return reply
+        .header("content-type", "text/plain; version=0.0.4; charset=utf-8")
+        .send(renderApiMetrics(failures));
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  });
 
   app.post(
     "/auth/login",
@@ -751,6 +764,48 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   );
 
   return app;
+}
+
+function renderApiMetrics(failures: FailureQueueRecord[]): string {
+  const countsByStage = new Map<(typeof failureStages)[number], number>(
+    failureStages.map((stage) => [stage, 0])
+  );
+
+  for (const failure of failures) {
+    countsByStage.set(failure.failureStage, (countsByStage.get(failure.failureStage) ?? 0) + 1);
+  }
+
+  const lines = [
+    "# HELP reno_news_api_up API service health as seen by the metrics endpoint.",
+    "# TYPE reno_news_api_up gauge",
+    "reno_news_api_up 1",
+    "# HELP reno_news_api_failure_queue_backlog Current failure queue backlog.",
+    "# TYPE reno_news_api_failure_queue_backlog gauge",
+    `reno_news_api_failure_queue_backlog ${failures.length}`
+  ];
+
+  for (const stage of failureStages) {
+    lines.push(
+      `reno_news_api_failure_queue_backlog{stage="${stage}"} ${countsByStage.get(stage) ?? 0}`
+    );
+  }
+
+  lines.push(
+    "# HELP reno_news_api_ingest_failures Current source ingest failures in the failure queue.",
+    "# TYPE reno_news_api_ingest_failures gauge",
+    `reno_news_api_ingest_failures ${countsByStage.get("source_ingest") ?? 0}`,
+    "# HELP reno_news_api_model_failures Current model call failures in the failure queue.",
+    "# TYPE reno_news_api_model_failures gauge",
+    `reno_news_api_model_failures ${countsByStage.get("model_call") ?? 0}`,
+    "# HELP reno_news_api_backup_offhost_contract_configured Off-host backup contract is present in this build.",
+    "# TYPE reno_news_api_backup_offhost_contract_configured gauge",
+    "reno_news_api_backup_offhost_contract_configured 1",
+    "# HELP reno_news_api_disk_usage_guard_configured Disk usage guard contract is present in this build.",
+    "# TYPE reno_news_api_disk_usage_guard_configured gauge",
+    "reno_news_api_disk_usage_guard_configured 1"
+  );
+
+  return `${lines.join("\n")}\n`;
 }
 
 function createRequireAdmin(authService: AuthService) {

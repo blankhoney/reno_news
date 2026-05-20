@@ -219,13 +219,19 @@
 
 ## Task 10: Metrics Endpoint Foundation
 
-- Status: Pending
+- Status: Completed
 - Objective: Expose minimal service and worker metrics for health, queue depth, ingest failures, model failures, and disk/backup signals where feasible.
 - TDD/Verification:
   - Failing metrics endpoint tests first for expected metric names and labels.
   - Pass criteria: `/metrics` exposes stable Prometheus-compatible metrics without sensitive values.
 - Completion Record:
-  - Pending.
+  - Red: added API and worker tests for `GET /metrics`; both failed with 404 before implementation.
+  - Green: added API `/metrics` as Prometheus-compatible text derived from the existing failure queue read model, including service up, failure backlog by stage, ingest failures, model failures, and static backup/disk guard contract signals.
+  - Green: added worker `/metrics` with service up, manual ingest request/failure counters, and last manual ingest status labels.
+  - Added `docs/ops/metrics.md`, updated the production audit report, and marked V2.3 as in progress in `docs/CODEX_MASTER_PLAN.md`.
+  - Quality review: close-read the API route, API metrics renderer, API test, worker server, worker test, metrics runbook, and production audit update.
+  - Verified with `pnpm --filter @reno-news/api test`, `uv --project services/worker run python -m unittest services.worker.tests.test_health`, `pnpm --filter @reno-news/db test`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: API failure metrics are backlog gauges, worker counters are process-local, and remote Prometheus scraping/alerting is deferred to Tasks 11-12.
 
 ## Task 11: Structured Logging And Request Trace Id
 

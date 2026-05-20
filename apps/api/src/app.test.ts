@@ -282,6 +282,54 @@ test("GET /healthz reports the API service as healthy", async () => {
   });
 });
 
+test("GET /metrics exposes Prometheus service and failure queue metrics", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      failureQueueRepository: fakeFailureQueueRepository({
+        listFailures: async () => [
+          failureRecord,
+          {
+            ...failureRecord,
+            id: 11,
+            failureStage: "extraction",
+            failureType: "parse"
+          },
+          {
+            ...failureRecord,
+            id: 12,
+            failureStage: "model_call",
+            purpose: "translation",
+            errorCode: "adapter_error"
+          }
+        ]
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/metrics"
+  });
+  const body = response.body;
+
+  assert.equal(response.statusCode, 200);
+  assert.match(response.headers["content-type"] as string, /^text\/plain/);
+  assert.match(body, /# TYPE reno_news_api_up gauge/);
+  assert.match(body, /reno_news_api_up 1/);
+  assert.match(body, /reno_news_api_failure_queue_backlog 3/);
+  assert.match(body, /reno_news_api_failure_queue_backlog\{stage="source_ingest"\} 1/);
+  assert.match(body, /reno_news_api_failure_queue_backlog\{stage="extraction"\} 1/);
+  assert.match(body, /reno_news_api_failure_queue_backlog\{stage="model_call"\} 1/);
+  assert.match(body, /reno_news_api_ingest_failures 1/);
+  assert.match(body, /reno_news_api_model_failures 1/);
+  assert.match(body, /reno_news_api_backup_offhost_contract_configured 1/);
+  assert.doesNotMatch(body, /admin-session-token|password|secret|DATABASE_URL/i);
+});
+
 test("POST /auth/login rejects invalid credentials without setting a session cookie", async () => {
   const recordedEvents: unknown[] = [];
   const app = buildApp(
