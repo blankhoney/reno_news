@@ -1,8 +1,8 @@
 .agent
+.agents/
+skills-lock.json
 Agent.md
 .DS_Store
-docs
-CONTEXT.md
 node_modules
 .pnpm-store
 .next

@@ -6,12 +6,20 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  lint-test-build:
+  javascript:
+    name: JavaScript lint, test, build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -19,7 +27,7 @@ jobs:
           version: 11.1.1
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
@@ -36,9 +44,76 @@ jobs:
       - name: Build JavaScript packages
         run: pnpm build
 
+  python-worker:
+    name: Python worker tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v5
+
+      - name: Verify worker lockfile
+        working-directory: services/worker
+        run: uv lock --check
 
       - name: Test Python worker
         working-directory: services/worker
         run: uv run python -m unittest discover -s tests
+
+  database-integration:
+    name: PostgreSQL integration tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: reno_news
+          POSTGRES_USER: reno_news
+          POSTGRES_PASSWORD: reno_news
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U reno_news -d reno_news"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgres://reno_news:reno_news@localhost:5432/reno_news
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install JavaScript dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Migrate database
+        run: pnpm db:migrate
+
+      - name: Seed database
+        run: pnpm db:seed
+
+      - name: Run DB integration tests
+        run: pnpm --filter @reno-news/db test:integration
+
+  docker-compose-config:
+    name: Docker Compose config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Render Compose config
+        run: docker compose -f infra/compose/compose.yml config

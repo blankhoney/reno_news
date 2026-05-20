@@ -220,7 +220,7 @@ test("production audit report stays evidence-only and non-approving", async () =
 
   for (const residualGap of [
     "No production deployment target",
-    "No protected deployment environment",
+    "No confirmed protected deployment environment policy",
     "No remote monitoring or alerting",
     "No production backup schedule or PITR",
     "No production secret management",
@@ -240,6 +240,94 @@ test("production audit report stays evidence-only and non-approving", async () =
   for (const scriptName of Object.keys(packageJson.scripts)) {
     assert.doesNotMatch(scriptName, /deploy|publish|push/i);
   }
+});
+
+test("GitHub CI/CD workflows define quality gate, image publishing, and manual deploy handoff", async () => {
+  const ciWorkflow = await readFile(join(process.cwd(), "../../.github/workflows/ci.yml"), "utf8");
+  const publishWorkflow = await readFile(
+    join(process.cwd(), "../../.github/workflows/docker-publish.yml"),
+    "utf8"
+  );
+  const deployWorkflow = await readFile(
+    join(process.cwd(), "../../.github/workflows/deploy.yml"),
+    "utf8"
+  );
+  const runbook = await readFile(join(process.cwd(), "../../docs/ops/github-cicd.md"), "utf8");
+  const adr = await readFile(
+    join(process.cwd(), "../../docs/adr/0030-github-actions-ghcr-and-manual-ssh-deploy.md"),
+    "utf8"
+  );
+
+  for (const expectedCiBoundary of [
+    "pull_request:",
+    "branches:",
+    "- main",
+    "JavaScript lint, test, build",
+    "pnpm install --frozen-lockfile",
+    "pnpm lint",
+    "pnpm test",
+    "pnpm build",
+    "Python worker tests",
+    "uv lock --check",
+    "uv run python -m unittest discover -s tests",
+    "PostgreSQL integration tests",
+    "postgres:18-alpine",
+    "pnpm db:migrate",
+    "pnpm db:seed",
+    "pnpm --filter @reno-news/db test:integration",
+    "Docker Compose config",
+    "docker compose -f infra/compose/compose.yml config"
+  ]) {
+    assert.match(
+      ciWorkflow,
+      new RegExp(expectedCiBoundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    );
+  }
+
+  for (const expectedPublishBoundary of [
+    "packages: write",
+    "ghcr.io",
+    "docker/login-action",
+    "docker/metadata-action",
+    "docker/build-push-action",
+    "apps/web/Dockerfile",
+    "apps/api/Dockerfile",
+    "services/worker/Dockerfile",
+    "reno-news-web",
+    "reno-news-api",
+    "reno-news-worker",
+    "type=sha,prefix=sha-",
+    "type=ref,event=tag"
+  ]) {
+    assert.match(
+      publishWorkflow,
+      new RegExp(expectedPublishBoundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    );
+  }
+
+  for (const expectedDeployBoundary of [
+    "workflow_dispatch:",
+    "environment: production",
+    "DEPLOY_HOST",
+    "DEPLOY_USER",
+    "DEPLOY_SSH_KEY",
+    "DEPLOY_COMMAND",
+    "RENO_NEWS_IMAGE_TAG",
+    "ssh \"$DEPLOY_USER@$DEPLOY_HOST\""
+  ]) {
+    assert.match(
+      deployWorkflow,
+      new RegExp(expectedDeployBoundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    );
+  }
+
+  assert.doesNotMatch(deployWorkflow, /blankhoney\.xyz|\/srv\/reno_news|BEGIN OPENSSH PRIVATE KEY/);
+  assert.match(runbook, /blankhoney\/reno_news/);
+  assert.match(runbook, /ghcr\.io\/blankhoney\/reno-news-web/);
+  assert.match(runbook, /Recommended branch protection/);
+  assert.match(runbook, /Required repository or environment secrets/);
+  assert.match(adr, /manual SSH deploy/);
+  assert.match(adr, /must not hard-code any server/);
 });
 
 test("compose dev services run current source without image rebuild", async () => {

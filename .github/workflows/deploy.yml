@@ -1,0 +1,59 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: GHCR image tag to deploy, for example latest or sha-<commit>
+        required: true
+        default: latest
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    name: Production deploy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Validate deployment secrets
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_COMMAND: ${{ secrets.DEPLOY_COMMAND }}
+        run: |
+          missing=0
+          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_SSH_KEY DEPLOY_COMMAND; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Required secret ${name} is not configured"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Install SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Run remote deployment command
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_COMMAND: ${{ secrets.DEPLOY_COMMAND }}
+          RENO_NEWS_IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" \
+            "RENO_NEWS_IMAGE_TAG='$RENO_NEWS_IMAGE_TAG' $DEPLOY_COMMAND"
