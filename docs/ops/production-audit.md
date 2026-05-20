@@ -7,12 +7,12 @@ This report records the MVP's current production-readiness evidence and Residual
 | Area | Current Evidence | Result |
 |---|---|---|
 | Repository checks | `pnpm release:audit:local` runs frozen install, lint, tests, build, worker tests, and worker lock verification. | Evidence exists locally |
-| Runtime health | The Release Health Audit checks direct web/API/worker health and Caddy health probes including `http://localhost:8080/api/healthz`. `docs/ops/metrics.md` defines the API and worker `/metrics` surface, and `docs/ops/logging-trace.md` defines the request id/logging contract. | Evidence exists locally |
+| Runtime health | The Release Health Audit checks direct web/API/worker health and Caddy health probes including `http://localhost:8080/api/healthz`. `docs/ops/metrics.md` defines the API and worker `/metrics` surface, `docs/ops/logging-trace.md` defines the request id/logging contract, and `docs/ops/alerts.md` defines the alert runbooks. | Evidence exists locally |
 | Data safety | `docs/ops/backup-restore.md` defines local Backup Snapshot and Restore Drill steps using a disposable restore target. `docs/ops/offhost-backup.md` and `pnpm backup:offhost:check` define the S3-compatible off-host backup contract. | Evidence exists locally |
 | Disk guardrails | `pnpm disk:check:local` reports Docker disk usage and local backup artifact size without deleting data. | Evidence exists locally |
 | Log retention | `infra/compose/compose.yml` defines bounded `json-file` log retention for all Compose services. | Evidence exists locally |
 | Identity boundary | API-owned sessions, admin route guards, and audit events are covered by route and migration tests. | Evidence exists locally |
-| GitHub CI/CD | `.github/workflows/ci.yml`, `.github/workflows/docker-publish.yml`, and `.github/workflows/deploy.yml` define CI checks, GHCR image publishing, production boundary checks, deploy contract checks, off-host backup contract checks, and a manual deployment handoff. | Evidence exists in repo |
+| GitHub CI/CD | `.github/workflows/ci.yml`, `.github/workflows/docker-publish.yml`, and `.github/workflows/deploy.yml` define CI checks, GHCR image publishing, production boundary checks, deploy contract checks, off-host backup contract checks, alert rule checks, and a manual deployment handoff. | Evidence exists in repo |
 | GitHub repository governance | `blankhoney/reno_news` is public, uses `main` as the default branch, and has branch/environment protection configured in GitHub settings. | Evidence exists on GitHub |
 | Scope control | `docs/CODEX_MASTER_PLAN.md` keeps remote monitoring, alerting, production backup automation, and deferred product features out of the current MVP. | Evidence exists locally |
 
@@ -40,6 +40,7 @@ This report records the MVP's current production-readiness evidence and Residual
 - `docs/ops/production-deploy.md`: deployment secret contract, server env contract, health check, and rollback boundary.
 - `docs/ops/metrics.md`: Prometheus-compatible API and worker metrics, metric names, and limitations.
 - `docs/ops/logging-trace.md`: `x-request-id` propagation, safe structured log fields, and logging limitations.
+- `docs/ops/alerts.md`: Prometheus alert runbooks for service, backlog, ingest, model, backup, and disk signals.
 - `docs/ops/backup-restore.md`: local Backup Snapshot and Restore Drill steps, cleanup, and production backup limitations.
 - `docs/ops/offhost-backup.md`: S3-compatible backup dry-run, required environment, retention policy file, and restore drill flow.
 - `docs/ops/disk-usage.md`: local Disk Usage Guard command, evidence, failure handling, manual cleanup guidance, and limitations.

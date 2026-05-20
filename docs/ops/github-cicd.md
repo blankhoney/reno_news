@@ -32,6 +32,7 @@ Checks:
 - Production Compose public-boundary check proving only Caddy publishes host ports
 - Production deploy contract check for required secrets, health checks, and rollback
 - Off-host backup contract check for S3-compatible dry-run, retention, and restore drill docs
+- Alert rules contract check for Prometheus alert names, metric references, and runbook links
 
 Configured branch protection for `main`:
 

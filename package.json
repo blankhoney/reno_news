@@ -17,6 +17,7 @@
     "db:backup:offhost": "sh scripts/db-backup-offhost.sh",
     "db:restore:drill": "sh scripts/db-restore-drill.sh",
     "backup:offhost:check": "node scripts/check-offhost-backup-contract.mjs",
+    "alerts:check": "node scripts/check-alert-rules.mjs",
     "release:audit:local": "node scripts/release-health-audit.mjs",
     "disk:check:local": "node scripts/disk-usage-check.mjs",
     "compose:production:check": "node scripts/check-production-compose.mjs",

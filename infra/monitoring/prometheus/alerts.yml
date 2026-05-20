@@ -1,0 +1,65 @@
+groups:
+  - name: reno-news
+    rules:
+      - alert: RenoNewsApiDown
+        expr: up{job="reno-news-api"} == 0 or absent(up{job="reno-news-api"})
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Reno News API target is down
+          runbook_url: docs/ops/alerts.md#renonewsapidown
+
+      - alert: RenoNewsWorkerDown
+        expr: up{job="reno-news-worker"} == 0 or absent(up{job="reno-news-worker"})
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Reno News worker target is down
+          runbook_url: docs/ops/alerts.md#renonewsworkerdown
+
+      - alert: RenoNewsFailureQueueBacklogHigh
+        expr: reno_news_api_failure_queue_backlog > 50
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Reno News failure queue backlog is high
+          runbook_url: docs/ops/alerts.md#renonewsfailurequeuebackloghigh
+
+      - alert: RenoNewsIngestFailuresHigh
+        expr: reno_news_api_ingest_failures > 20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Reno News ingest failures are high
+          runbook_url: docs/ops/alerts.md#renonewsingestfailureshigh
+
+      - alert: RenoNewsModelFailuresPresent
+        expr: reno_news_api_model_failures > 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Reno News model failures are present
+          runbook_url: docs/ops/alerts.md#renonewsmodelfailurespresent
+
+      - alert: RenoNewsBackupSignalMissing
+        expr: reno_news_api_backup_offhost_contract_configured != 1 or absent(reno_news_api_backup_offhost_contract_configured)
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Reno News backup signal is missing
+          runbook_url: docs/ops/alerts.md#renonewsbackupsignalmissing
+
+      - alert: RenoNewsDiskRisk
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.15
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Reno News host disk free space is low
+          runbook_url: docs/ops/alerts.md#renonewsdiskrisk

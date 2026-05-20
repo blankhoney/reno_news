@@ -129,3 +129,6 @@ jobs:
 
       - name: Verify off-host backup contract
         run: node scripts/check-offhost-backup-contract.mjs
+
+      - name: Verify alert rules contract
+        run: node scripts/check-alert-rules.mjs

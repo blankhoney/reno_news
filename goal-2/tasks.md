@@ -252,13 +252,19 @@
 
 ## Task 12: Prometheus Alert Rules And Ops Runbooks
 
-- Status: Pending
+- Status: Completed
 - Objective: Add Prometheus/Alertmanager rules and runbooks for service down, queue backlog, high failure rate, model failures, backup failure, and disk risk.
 - TDD/Verification:
   - Failing rule syntax or docs contract check first.
   - Pass criteria: alert rules validate locally and runbooks describe diagnosis and mitigation.
 - Completion Record:
-  - Pending.
+  - Red: added `scripts/check-alert-rules.mjs`; `node scripts/check-alert-rules.mjs` failed because `infra/monitoring/prometheus/alerts.yml` did not exist.
+  - Green: added `infra/monitoring/prometheus/alerts.yml` with alert contracts for API down, worker down, failure backlog, ingest failures, model failures, backup signal missing, and disk risk.
+  - Added `docs/ops/alerts.md` with diagnosis, mitigation, escalation, and limitations for every alert.
+  - Added `pnpm alerts:check`, wired the alert contract into CI, and updated CI/CD and production audit docs.
+  - Quality review: close-read alert rules, alert runbook, alert contract checker, CI/CD runbook, production audit update, and DB production-audit test update.
+  - Verified with `pnpm alerts:check`, `pnpm --filter @reno-news/db test`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: these are repo-local Prometheus rule/runbook contracts only; no Prometheus server, Alertmanager receiver, paging channel, node exporter, or production route is created.
 
 ## Check-Debug Loop 4
 
