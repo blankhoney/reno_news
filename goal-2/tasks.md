@@ -203,12 +203,19 @@
 
 ## Check-Debug Loop 3
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 7-9.
 - Verification:
   - Run compose config checks, shellcheck or script syntax checks where available, docs contract checks, and `git diff --check`.
 - Completion Record:
-  - Pending.
+  - Verified production Compose boundary with `pnpm compose:production:check`; only Caddy is allowed to publish host ports in the production override.
+  - Verified the development Compose config still renders with `docker compose -f infra/compose/compose.yml config`.
+  - Verified production deploy contract with `pnpm deploy:contract:check` and `DRY_RUN=1 scripts/deploy-production.sh sha-test`.
+  - Verified off-host backup contract with `pnpm backup:offhost:check` and `DRY_RUN=1 BACKUP_S3_BUCKET=example-bucket BACKUP_S3_ENDPOINT_URL=https://s3.example.invalid pnpm db:backup:offhost`.
+  - Verified deploy and off-host backup shell syntax with `sh -n scripts/deploy-production.sh` and `sh -n scripts/db-backup-offhost.sh`.
+  - Reused the Task 9 full workspace verification from the same code state: `pnpm lint`, `pnpm test`, and `pnpm build` all passed.
+  - Marked V2.2 in `docs/CODEX_MASTER_PLAN.md` as completed because the local exit gate is now satisfied.
+  - Real production deployment, real object-store upload, scheduled backup, off-host restore drill, and remote monitoring remain external-environment gaps.
 
 ## Task 10: Metrics Endpoint Foundation
 
