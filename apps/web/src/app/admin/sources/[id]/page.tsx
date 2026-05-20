@@ -11,10 +11,12 @@ import {
   updateSourceEnabledAction,
   updateSourcePolicyAction
 } from "../../actions";
+import { requireAdminSession } from "../../session";
 
 export default async function SourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const source = await getSource(id);
+  const adminSession = await requireAdminSession();
+  const source = await getSource(id, adminSession);
 
   return (
     <main className="admin-shell">

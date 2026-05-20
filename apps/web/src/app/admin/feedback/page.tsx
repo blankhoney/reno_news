@@ -5,9 +5,11 @@ import {
   type FeedbackRecord
 } from "../api";
 import { updateFeedbackReviewAction } from "../actions";
+import { requireAdminSession } from "../session";
 
 export default async function AdminFeedbackPage() {
-  const feedback = await getFeedback();
+  const adminSession = await requireAdminSession();
+  const feedback = await getFeedback(adminSession);
 
   return (
     <main className="admin-shell">

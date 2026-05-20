@@ -100,13 +100,22 @@
 
 ## Task 5: Web Session And Admin Route Guards
 
-- Status: Pending
+- Status: Completed
 - Objective: Connect the web app to API-owned session state and protect admin UI entry points.
 - TDD/Verification:
   - Failing web tests or browser smoke first for anonymous admin access and logged-in admin access.
   - Pass criteria: anonymous users are redirected or blocked from admin UI; reader pages keep working.
 - Completion Record:
-  - Pending.
+  - Red: added a web admin API test requiring `getCurrentUser` to forward `reno_news_session` to `/auth/me`; it failed because the helper did not exist.
+  - Green: added `AdminApiContext`, `getCurrentUser`, and cookie-aware admin request headers.
+  - Red: added tests requiring admin read/mutation helpers to forward the same cookie context; they failed for `getFailures` and `updateSourcePolicy`.
+  - Green: threaded `AdminApiContext` through source, raw-entry, failure, and feedback admin helpers while preserving old no-cookie request shapes.
+  - Red/Green: added `session.ts` guard helpers and tests for session cookie header construction and admin-vs-reader user checks.
+  - Connected all admin pages to `requireAdminSession()` before data loading and passed the session context to API helpers.
+  - Connected admin server actions to `requireAdminSession()` before mutations; API mutations forward the cookie and worker ingest remains guarded by the server action.
+  - Checked Next.js 16.2.2 docs for async `cookies()` and server action `redirect()` usage before implementing the guard.
+  - Quality review: close-read `apps/web/src/app/admin/api.ts`, `session.ts`, admin pages, admin actions, and related tests.
+  - Verified with `pnpm --filter @reno-news/web test`, `pnpm --filter @reno-news/web lint`, `pnpm --filter @reno-news/web build`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check` for touched web files.
 
 ## Task 6: Audit Log Foundation
 

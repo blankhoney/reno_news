@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getFailures, type FailureRecord } from "../api";
+import { requireAdminSession } from "../session";
 
 export default async function AdminFailuresPage() {
-  const failures = await getFailures();
+  const adminSession = await requireAdminSession();
+  const failures = await getFailures(adminSession);
 
   return (
     <main className="admin-shell">

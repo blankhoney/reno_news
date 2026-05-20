@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { getRawEntry } from "../../api";
 import { updateRawEntryLifecycleAction } from "../../actions";
+import { requireAdminSession } from "../../session";
 
 export default async function RawEntryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const entry = await getRawEntry(id);
+  const adminSession = await requireAdminSession();
+  const entry = await getRawEntry(id, adminSession);
   const lifecycleAction = entry.lifecycleStatus === "hidden" ? "restore" : "hide";
   const lifecycleActionLabel = entry.lifecycleStatus === "hidden" ? "Restore" : "Hide";
 

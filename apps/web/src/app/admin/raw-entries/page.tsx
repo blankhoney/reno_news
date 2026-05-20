@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getRawEntries } from "../api";
+import { requireAdminSession } from "../session";
 
 export default async function RawEntriesPage() {
-  const rawEntries = await getRawEntries();
+  const adminSession = await requireAdminSession();
+  const rawEntries = await getRawEntries(adminSession);
 
   return (
     <main className="admin-shell">

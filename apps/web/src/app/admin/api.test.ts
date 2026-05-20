@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   feedbackReviewUpdateFromFormData,
+  getCurrentUser,
   getFeedback,
   getFailures,
   joinServiceUrl,
@@ -24,6 +25,40 @@ test("joinServiceUrl handles trailing and leading slashes", () => {
     joinServiceUrl("http://localhost:3001", "sources/1"),
     "http://localhost:3001/sources/1"
   );
+});
+
+test("getCurrentUser forwards the admin session cookie to the auth API", async () => {
+  const previousFetch = globalThis.fetch;
+  let requestUrl = "";
+  let requestInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    requestUrl = String(url);
+    requestInit = init;
+    return Response.json({
+      user: {
+        id: 1,
+        email: "admin@example.com",
+        role: "admin"
+      }
+    });
+  }) as typeof fetch;
+  test.after(() => {
+    globalThis.fetch = previousFetch;
+  });
+
+  const user = await getCurrentUser({ cookieHeader: "reno_news_session=abc123" });
+
+  assert.equal(requestUrl, "http://localhost:3001/auth/me");
+  assert.deepEqual(requestInit, {
+    cache: "no-store",
+    headers: { cookie: "reno_news_session=abc123" }
+  });
+  assert.deepEqual(user, {
+    id: 1,
+    email: "admin@example.com",
+    role: "admin"
+  });
 });
 
 test("sourcePolicyUpdateFromFormData builds a constrained policy payload", () => {
@@ -92,6 +127,35 @@ test("updateSourcePolicy sends nested policy payload to the source API", async (
   assert.equal(requestInit?.method, "PATCH");
   assert.deepEqual(requestInit?.headers, { "content-type": "application/json" });
   assert.equal(requestInit?.body, JSON.stringify({ policy }));
+});
+
+test("updateSourcePolicy forwards the admin session cookie with JSON headers", async () => {
+  const previousFetch = globalThis.fetch;
+  const policy: SourcePolicyUpdate = {
+    crawlEnabled: true,
+    fetchIntervalMinutes: 30,
+    maxRequestsPerHour: 6,
+    saveLevel: "snapshot",
+    rightsPolicy: "private_allowed",
+    translationPolicy: "public_excerpt",
+    riskLevel: "medium"
+  };
+  let requestInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+    requestInit = init;
+    return new Response("{}", { status: 200 });
+  }) as typeof fetch;
+  test.after(() => {
+    globalThis.fetch = previousFetch;
+  });
+
+  await updateSourcePolicy("7", policy, { cookieHeader: "reno_news_session=abc123" });
+
+  assert.deepEqual(requestInit?.headers, {
+    "content-type": "application/json",
+    cookie: "reno_news_session=abc123"
+  });
 });
 
 test("rawEntryLifecycleActionFromFormData builds a constrained action payload", () => {
@@ -243,6 +307,26 @@ test("getFailures fetches admin failure queue without caching", async () => {
   assert.deepEqual(requestInit, { cache: "no-store" });
   assert.equal(failures[0].failureStage, "source_ingest");
   assert.equal(failures[0].sourceTitle, "OpenAI News");
+});
+
+test("getFailures forwards the admin session cookie", async () => {
+  const previousFetch = globalThis.fetch;
+  let requestInit: RequestInit | undefined;
+
+  globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+    requestInit = init;
+    return Response.json({ failures: [] });
+  }) as typeof fetch;
+  test.after(() => {
+    globalThis.fetch = previousFetch;
+  });
+
+  await getFailures({ cookieHeader: "reno_news_session=abc123" });
+
+  assert.deepEqual(requestInit, {
+    cache: "no-store",
+    headers: { cookie: "reno_news_session=abc123" }
+  });
 });
 
 test("getFeedback fetches admin feedback without caching", async () => {

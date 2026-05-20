@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getSources } from "./api";
+import { requireAdminSession } from "./session";
 
 export default async function AdminPage() {
-  const sources = await getSources();
+  const adminSession = await requireAdminSession();
+  const sources = await getSources(adminSession);
 
   return (
     <main className="admin-shell">

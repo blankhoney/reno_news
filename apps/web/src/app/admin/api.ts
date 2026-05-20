@@ -102,6 +102,16 @@ export type FeedbackRecord = {
   createdAt: string;
 };
 
+export type AuthUser = {
+  id: number;
+  email: string;
+  role: "reader" | "admin";
+};
+
+export type AdminApiContext = {
+  cookieHeader?: string;
+};
+
 export function joinServiceUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }
@@ -114,8 +124,36 @@ export function workerUrl(path: string): string {
   return joinServiceUrl(process.env.WORKER_BASE_URL ?? "http://localhost:3002", path);
 }
 
-export async function getSources(): Promise<SourceRecord[]> {
-  const response = await fetch(apiUrl("/sources"), { cache: "no-store" });
+export function adminApiHeaders(
+  context: AdminApiContext = {},
+  headers: Record<string, string> = {}
+): Record<string, string> | undefined {
+  if (!context.cookieHeader) {
+    return Object.keys(headers).length > 0 ? headers : undefined;
+  }
+
+  return {
+    ...headers,
+    cookie: context.cookieHeader
+  };
+}
+
+function noStoreAdminRequestInit(context: AdminApiContext = {}): RequestInit {
+  const headers = adminApiHeaders(context);
+  return headers ? { cache: "no-store", headers } : { cache: "no-store" };
+}
+
+export async function getCurrentUser(context: AdminApiContext = {}): Promise<AuthUser | null> {
+  const response = await fetch(apiUrl("/auth/me"), noStoreAdminRequestInit(context));
+  if (!response.ok) {
+    throw new Error(`Failed to load current user: ${response.status}`);
+  }
+  const payload = (await response.json()) as { user: AuthUser | null };
+  return payload.user;
+}
+
+export async function getSources(context: AdminApiContext = {}): Promise<SourceRecord[]> {
+  const response = await fetch(apiUrl("/sources"), noStoreAdminRequestInit(context));
   if (!response.ok) {
     throw new Error(`Failed to load sources: ${response.status}`);
   }
@@ -123,18 +161,25 @@ export async function getSources(): Promise<SourceRecord[]> {
   return payload.sources;
 }
 
-export async function getSource(id: string): Promise<SourceRecord> {
-  const response = await fetch(apiUrl(`/sources/${id}`), { cache: "no-store" });
+export async function getSource(
+  id: string,
+  context: AdminApiContext = {}
+): Promise<SourceRecord> {
+  const response = await fetch(apiUrl(`/sources/${id}`), noStoreAdminRequestInit(context));
   if (!response.ok) {
     throw new Error(`Failed to load source ${id}: ${response.status}`);
   }
   return (await response.json()) as SourceRecord;
 }
 
-export async function setSourceEnabled(id: string, enabled: boolean): Promise<void> {
+export async function setSourceEnabled(
+  id: string,
+  enabled: boolean,
+  context: AdminApiContext = {}
+): Promise<void> {
   const response = await fetch(apiUrl(`/sources/${id}`), {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
+    headers: adminApiHeaders(context, { "content-type": "application/json" }),
     body: JSON.stringify({ enabled })
   });
   if (!response.ok) {
@@ -142,10 +187,14 @@ export async function setSourceEnabled(id: string, enabled: boolean): Promise<vo
   }
 }
 
-export async function updateSourcePolicy(id: string, policy: SourcePolicyUpdate): Promise<void> {
+export async function updateSourcePolicy(
+  id: string,
+  policy: SourcePolicyUpdate,
+  context: AdminApiContext = {}
+): Promise<void> {
   const response = await fetch(apiUrl(`/sources/${id}`), {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
+    headers: adminApiHeaders(context, { "content-type": "application/json" }),
     body: JSON.stringify({ policy })
   });
   if (!response.ok) {
@@ -155,11 +204,12 @@ export async function updateSourcePolicy(id: string, policy: SourcePolicyUpdate)
 
 export async function updateRawEntryLifecycle(
   id: string,
-  update: RawEntryLifecycleUpdate
+  update: RawEntryLifecycleUpdate,
+  context: AdminApiContext = {}
 ): Promise<void> {
   const response = await fetch(apiUrl(`/raw-entries/${id}`), {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
+    headers: adminApiHeaders(context, { "content-type": "application/json" }),
     body: JSON.stringify(update)
   });
   if (!response.ok) {
@@ -169,11 +219,12 @@ export async function updateRawEntryLifecycle(
 
 export async function updateFeedbackReview(
   id: string,
-  update: FeedbackReviewUpdate
+  update: FeedbackReviewUpdate,
+  context: AdminApiContext = {}
 ): Promise<void> {
   const response = await fetch(apiUrl(`/admin/feedback/${id}`), {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
+    headers: adminApiHeaders(context, { "content-type": "application/json" }),
     body: JSON.stringify(update)
   });
   if (!response.ok) {
@@ -225,8 +276,10 @@ export async function triggerSourceIngest(id: string): Promise<void> {
   }
 }
 
-export async function getRawEntries(): Promise<RawEntryRecord[]> {
-  const response = await fetch(apiUrl("/raw-entries"), { cache: "no-store" });
+export async function getRawEntries(
+  context: AdminApiContext = {}
+): Promise<RawEntryRecord[]> {
+  const response = await fetch(apiUrl("/raw-entries"), noStoreAdminRequestInit(context));
   if (!response.ok) {
     throw new Error(`Failed to load raw entries: ${response.status}`);
   }
@@ -234,16 +287,19 @@ export async function getRawEntries(): Promise<RawEntryRecord[]> {
   return payload.rawEntries;
 }
 
-export async function getRawEntry(id: string): Promise<RawEntryRecord> {
-  const response = await fetch(apiUrl(`/raw-entries/${id}`), { cache: "no-store" });
+export async function getRawEntry(
+  id: string,
+  context: AdminApiContext = {}
+): Promise<RawEntryRecord> {
+  const response = await fetch(apiUrl(`/raw-entries/${id}`), noStoreAdminRequestInit(context));
   if (!response.ok) {
     throw new Error(`Failed to load raw entry ${id}: ${response.status}`);
   }
   return (await response.json()) as RawEntryRecord;
 }
 
-export async function getFailures(): Promise<FailureRecord[]> {
-  const response = await fetch(apiUrl("/admin/failures"), { cache: "no-store" });
+export async function getFailures(context: AdminApiContext = {}): Promise<FailureRecord[]> {
+  const response = await fetch(apiUrl("/admin/failures"), noStoreAdminRequestInit(context));
   if (!response.ok) {
     throw new Error(`Failed to load failures: ${response.status}`);
   }
@@ -251,8 +307,8 @@ export async function getFailures(): Promise<FailureRecord[]> {
   return payload.failures;
 }
 
-export async function getFeedback(): Promise<FeedbackRecord[]> {
-  const response = await fetch(apiUrl("/admin/feedback"), { cache: "no-store" });
+export async function getFeedback(context: AdminApiContext = {}): Promise<FeedbackRecord[]> {
+  const response = await fetch(apiUrl("/admin/feedback"), noStoreAdminRequestInit(context));
   if (!response.ok) {
     throw new Error(`Failed to load feedback: ${response.status}`);
   }
