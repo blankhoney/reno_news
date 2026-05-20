@@ -538,12 +538,22 @@
 
 ## Check-Debug Loop 8
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 22-24.
 - Verification:
   - Run source adapter tests, worker tests, rate-limit contract checks, and source docs review.
 - Completion Record:
-  - Pending.
+  - Verified GitHub source policy contract with `pnpm github:source-policy:check`.
+  - Verified arXiv source policy contract with `pnpm arxiv:source-policy:check`.
+  - Verified source-type migrations and CI contract docs with `pnpm --filter @reno-news/db test`.
+  - Verified Source Registry acceptance and audit metadata for GitHub/arXiv sources with `pnpm --filter @reno-news/api test`.
+  - Verified adapter dispatch, scheduler routing, GitHub fixture/rate-limit behavior, and arXiv fixture/rate-limit/pagination behavior with `uv --project services/worker run python -m unittest services.worker.tests.test_github_ingest services.worker.tests.test_arxiv_ingest services.worker.tests.test_source_ingest services.worker.tests.test_scheduler`.
+  - Verified the full worker suite with `uv --project services/worker run python -m unittest discover -s services/worker/tests`; 56 tests passed with 25 expected skips.
+  - Verified DB-backed migration/repository behavior with `pnpm --filter @reno-news/db test:integration`.
+  - Verified DB-backed GitHub and arXiv source adapter integration with `DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news uv --project services/worker run python -m unittest services.worker.tests.test_github_ingest services.worker.tests.test_arxiv_ingest`.
+  - Verified workspace gates with `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Source docs review: GitHub remains repository/release only with no Search/Issues/contents/assets; arXiv remains metadata-only, query-allowlisted, Atom-paginated, attribution-aware, and no PDF/source mirroring. GDELT and RSSHub are still not scheduled or implemented.
+  - No blocking defects were found for Tasks 22-24. Live GitHub/arXiv API calls, production operator allowlists, tokens, and provider-side rate-limit behavior remain external-environment checks.
 
 ## Task 25: GDELT Radar And RSSHub Whitelist Planning
 
