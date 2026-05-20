@@ -1673,3 +1673,34 @@ Completion notes:
 - Confirmed `apps/web/next-env.d.ts` has no diff and no local backup dump files exist.
 - Ran a code-surface deferred-scope scan across scripts, infra, apps, packages, and services; found no production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search service, persisted digest table, browser automation, non-RSS adapter, cron/systemd, WAL, or PITR implementation.
 - Did not add production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+
+## Task 47: Final Review And Closeout
+
+Status: Done
+
+Scope:
+- Re-read the final master plan status and goal state.
+- Run final release, disk, health, user-facing smoke, and deferred-scope checks.
+- Review client-side/user-facing behavior, code/test state, security/operations boundaries, and documentation accuracy.
+- Add a final review log and close out the master plan and goal tracker.
+- Do not add new product features or production operations.
+
+Verification:
+- `pnpm release:audit:local`
+- `pnpm disk:check:local`
+- User-facing HTTP smoke for key reader/admin routes.
+- Code-surface deferred-scope scan.
+- Final git status contains only unrelated untracked repo-local skill files plus `AGENTS.md` and `skills-lock.json`.
+
+Completion notes:
+- Completed final review on 2026-05-20.
+- Added `docs/logs/2026-05-20-final-review.md`.
+- Verified `pnpm release:audit:local`; it ended with `Release Health Audit OK`.
+- Verified `pnpm disk:check:local`; it ended with `Disk Usage Guard OK`.
+- Verified `pnpm --filter @reno-news/db test:integration`; all 12 integration tests passed.
+- Verified `pnpm --filter @reno-news/web build` after current-code smoke and restored `apps/web/next-env.d.ts` to production route types.
+- Verified current-code HTTP smoke on local API `3101` and local web `3100` for reader home, board, search, digest, item detail, personal space, admin home, failure queue, feedback review, and matching API routes.
+- Confirmed code-surface deferred-scope scan found no production deploy, release workflow, image push, GitHub release, remote monitoring, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search service, persisted digest table, browser automation, non-RSS adapter, cron/systemd, WAL, or PITR implementation.
+- Confirmed `apps/web/next-env.d.ts` has no final diff, `backups/` has no local dump files, and port `3100` was stopped after smoke.
+- Found one runtime limitation: existing Compose containers were healthy but stale for current reader/admin feature routes; a local Compose rebuild attempt hung at base image metadata resolution and was stopped. Current source-run services verified the application behavior.
+- Marked `docs/CODEX_MASTER_PLAN.md` complete.

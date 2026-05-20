@@ -13,8 +13,8 @@ This file tracks implementation progress for the MVP v0.1 execution blueprint.
 | Field | Value |
 |---|---|
 | Current Milestone | Milestone 7 |
-| Current Issue | Final review and closeout |
-| Overall Status | Review Needed |
+| Current Issue | Complete |
+| Overall Status | Done |
 | Last Updated | 2026-05-20 |
 | Updated By | Codex |
 | Blockers | None |
@@ -1723,8 +1723,8 @@ Any scope change must be recorded here before implementation.
 
 ## 8. Current Next Action
 
-Run final review and closeout.
-Do not implement production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+No remaining MVP v0.1 master-plan issue.
+Future production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation requires explicit new scope.
 ---
 ## 9. Codex Operating Rules
 
@@ -1990,6 +1990,6 @@ Focus:
 Current required next action:
 
 ```text
-Run final review and closeout.
-Do not implement production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation.
+No remaining MVP v0.1 master-plan issue.
+Future production deploy, release workflow, image push, GitHub release, remote monitoring integration, alerting, production credentials, auth/RBAC, Admin identity, audit logs, destructive cleanup automation, semantic/vector search, external search services, digest delivery, persisted digest tables, editorial workflow, browser automation, non-RSS adapters, or production backup automation requires explicit new scope.
 ```
