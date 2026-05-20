@@ -34,6 +34,23 @@ signal_payload_json
 
 The table rejects self-pairs and duplicate `(raw_entry_id, similar_raw_entry_id, signal_type)` rows. These records are evidence for later folding logic; they do not hide, delete, publish, rank, or expose items by themselves.
 
+## Related Items Runtime
+
+`GET /reader/items/:id/related` now consumes similarity and duplicate signals while keeping the existing reader-safe visibility filters. A related candidate may enter the result set through shared source, shared board, PostgreSQL FTS, an explicit `raw_entry_similarity_signals` row from the target to the candidate, or title trigram similarity.
+
+Runtime ordering is:
+
+1. explicit Similarity Signal score;
+2. title trigram score;
+3. shared source;
+4. shared board;
+5. PostgreSQL full-text rank;
+6. recency and id tie-breakers.
+
+Duplicate Groups fold within related-item results. If a candidate group has a representative raw entry, only that representative is returned. Entries in the target item's own Duplicate Group are excluded, so a duplicate of the current page is not presented as a nearby read.
+
+URL trigram evidence is stored and indexed for duplicate/similarity signal generation, but it is not used directly as a reader related-item candidate signal because common source domains can be too broad.
+
 ## pgvector Boundary
 
 `pgvector` remains optional and is not enabled by the base migration. A later implementation may add vector columns and HNSW or IVFFlat indexes only after the operator chooses a PostgreSQL image with pgvector installed, an embedding model, a vector dimension, and a refresh workflow.

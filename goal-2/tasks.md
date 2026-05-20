@@ -596,13 +596,20 @@
 
 ## Task 27: Related/Duplicate Fold Enhancement
 
-- Status: Pending
+- Status: Completed
 - Objective: Implement related item and duplicate folding improvements without replacing existing search.
 - TDD/Verification:
   - Failing API/query tests first for duplicate clusters and related item ordering.
   - Pass criteria: duplicates fold predictably and related items improve without breaking existing search endpoints.
 - Completion Record:
-  - Pending.
+  - Red/Green: extended the DB-backed related-items integration test so a high-score explicit `raw_entry_similarity_signals` row pulls in an otherwise distant candidate, ranks it before board/source/FTS matches, and folds a same-group shadow item behind the Duplicate Group representative.
+  - Red/Green: added a title trigram related-item candidate without an explicit signal; it failed until `listRelatedReaderItems` consumed `pg_trgm` title similarity as a secondary ordering signal.
+  - Updated `ReaderRepository.listRelatedReaderItems` to keep existing reader-safe visibility filters, exclude the target item and target Duplicate Group, admit candidates by shared source, shared board, FTS, explicit Similarity Signal, or title trigram score, and fold candidate Duplicate Groups to their representative row when present.
+  - Preserved PostgreSQL FTS as the primary Reader Search path; `searchReaderItems` and the search API were not changed.
+  - Documented related-item ordering and duplicate folding in `docs/api/reader.md` and `docs/ops/postgres-similarity-dedup.md`, including the boundary that URL trigram evidence is stored/indexed but not used directly for reader related candidates because common domains over-match.
+  - Quality review: close-read the related-items SQL, related integration test fixture/assertions, reader API docs, and similarity/dedup runbook.
+  - Verified with `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/db test:integration`, `pnpm --filter @reno-news/api test`, `pnpm postgres:similarity:check`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: duplicate folding is currently implemented on the related-items surface only; reader list, search, digest, embedding generation, pgvector, and admin duplicate review workflows remain out of this task.
 
 ## Check-Debug Loop 9
 

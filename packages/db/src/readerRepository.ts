@@ -275,6 +275,9 @@ async function listRelatedReaderItems(
       select
         re.id,
         re.source_id,
+        re.duplicate_group_id,
+        re.title,
+        re.url,
         b.slug as board_slug,
         concat_ws(
           ' ',
@@ -302,67 +305,121 @@ async function listRelatedReaderItems(
         limit 1
       ) sb on true
       where re.id = $1
-    )
-    select
-      re.id::int as "id",
-      b.slug as "boardSlug",
-      b.name as "boardName",
-      s.title as "sourceTitle",
-      re.title as "title",
-      re.url as "url",
-      coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
-      re.published_at as "publishedAt",
-      re.created_at as "createdAt"
-    from target
-    join raw_entries re on re.id != target.id
-    join sources s on s.id = re.source_id
-    join boards b on b.id = s.board_id
-    left join lateral (
+    ),
+    candidates as (
       select
-        one_sentence,
-        detailed_summary,
-        why_it_matters,
-        source_note,
-        china_relevance
-      from summary_blocks
-      where raw_entry_id = re.id
-      order by id desc
-      limit 1
-    ) sb on true
-    cross join lateral (
-      select concat_ws(
-        ' ',
+        re.id,
+        re.duplicate_group_id,
+        dg.representative_raw_entry_id,
+        b.slug as board_slug,
+        b.name as board_name,
+        s.id as source_id,
+        s.title as source_title,
         re.title,
         re.url,
-        s.title,
-        b.name,
-        re.summary_raw,
-        sb.one_sentence,
-        sb.detailed_summary,
-        sb.why_it_matters,
-        sb.source_note,
-        sb.china_relevance
-      ) as text
-    ) related_document
-    cross join lateral (
-      select
-        to_tsvector('simple', related_document.text) as document,
-        websearch_to_tsquery('simple', target.text) as query
-    ) related_index
-    where s.enabled = true
-      and re.lifecycle_status != 'hidden'
-      and re.rights_status != 'blocked'
-      and (
-        s.id = target.source_id
-        or b.slug = target.board_slug
-        or related_index.document @@ related_index.query
-      )
+        coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as summary,
+        re.published_at,
+        re.created_at,
+        coalesce(similarity.score, 0) as similarity_score,
+        similarity(re.title, target.title) as trigram_score,
+        related_index.document,
+        related_index.query
+      from target
+      join raw_entries re on re.id != target.id
+      join sources s on s.id = re.source_id
+      join boards b on b.id = s.board_id
+      left join raw_entry_duplicate_groups dg on dg.id = re.duplicate_group_id
+      left join lateral (
+        select
+          one_sentence,
+          detailed_summary,
+          why_it_matters,
+          source_note,
+          china_relevance
+        from summary_blocks
+        where raw_entry_id = re.id
+        order by id desc
+        limit 1
+      ) sb on true
+      left join lateral (
+        select max(score) as score
+        from raw_entry_similarity_signals
+        where raw_entry_id = target.id
+          and similar_raw_entry_id = re.id
+      ) similarity on true
+      cross join lateral (
+        select concat_ws(
+          ' ',
+          re.title,
+          re.url,
+          s.title,
+          b.name,
+          re.summary_raw,
+          sb.one_sentence,
+          sb.detailed_summary,
+          sb.why_it_matters,
+          sb.source_note,
+          sb.china_relevance
+        ) as text
+      ) related_document
+      cross join lateral (
+        select
+          to_tsvector('simple', related_document.text) as document,
+          websearch_to_tsquery('simple', target.text) as query
+      ) related_index
+      where s.enabled = true
+        and re.lifecycle_status != 'hidden'
+        and re.rights_status != 'blocked'
+        and (
+          target.duplicate_group_id is null
+          or re.duplicate_group_id is distinct from target.duplicate_group_id
+        )
+        and (
+          s.id = target.source_id
+          or b.slug = target.board_slug
+          or related_index.document @@ related_index.query
+          or similarity.score is not null
+          or similarity(re.title, target.title) >= 0.35
+        )
+    ),
+    folded_candidates as (
+      select *
+      from (
+        select
+          candidates.*,
+          row_number() over (
+            partition by coalesce(duplicate_group_id, -id)
+            order by
+              case when representative_raw_entry_id = id then 0 else 1 end,
+              similarity_score desc,
+              trigram_score desc,
+              coalesce(published_at, created_at) desc,
+              id desc
+          ) as duplicate_rank
+        from candidates
+      ) ranked_candidates
+      where duplicate_rank = 1
+    )
+    select
+      id::int as "id",
+      board_slug as "boardSlug",
+      board_name as "boardName",
+      source_title as "sourceTitle",
+      title as "title",
+      url as "url",
+      summary as "summary",
+      published_at as "publishedAt",
+      created_at as "createdAt"
+    from folded_candidates
     order by
-      case when s.id = target.source_id then 0 else 1 end,
-      case when b.slug = target.board_slug then 0 else 1 end,
-      ts_rank_cd(related_index.document, related_index.query) desc,
-      coalesce(re.published_at, re.created_at) desc,
-      re.id desc
+      case when similarity_score > 0 then 0 when trigram_score >= 0.35 then 1 else 2 end,
+      similarity_score desc,
+      trigram_score desc,
+      case when source_id = (select source_id from target) then 0 else 1 end,
+      case when board_slug = (select board_slug from target) then 0 else 1 end,
+      ts_rank_cd(document, query) desc,
+      coalesce(published_at, created_at) desc,
+      id desc
     limit $2
     `,
     [input.id, limit]

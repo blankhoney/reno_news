@@ -154,6 +154,8 @@ Optional query:
 
 Related item selection uses the same reader-visible pool as reader lists, item details, and search. It excludes the current item and does not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin-only diagnostics.
 
+Ordering signals are, in order: explicit `raw_entry_similarity_signals`, title trigram similarity, shared source, shared board, PostgreSQL full-text rank, recency, and id. Items in the same Duplicate Group are folded to the group's representative item when present, and entries in the target item's own Duplicate Group are excluded.
+
 Response:
 
 ```json

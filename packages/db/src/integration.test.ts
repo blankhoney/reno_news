@@ -1149,6 +1149,59 @@ test("reader repository lists related items from the reader-safe visible pool", 
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
+    const similarityRepresentativeId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-similarity-representative",
+      title: "Distant Signal Representative",
+      boardSlug: "semiconductor",
+      summaryOneSentence: "Independent text without the graph marker",
+      sourceUrl: "https://example.invalid/reader-detail-related-similarity-representative.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const similarityShadowId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-similarity-shadow",
+      title: "Distant Signal Shadow",
+      boardSlug: "semiconductor",
+      summaryOneSentence: "Independent text without the graph marker",
+      sourceUrl: "https://example.invalid/reader-detail-related-similarity-shadow.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const trigramCandidateId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-related-trigram-candidate",
+      title: "Related Grahp Target",
+      boardSlug: "semiconductor",
+      summaryOneSentence: "Independent text without the graph marker",
+      sourceUrl: "https://example.invalid/reader-detail-related-trigram-candidate.xml",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const similarityGroup = await pool.query<{ id: number }>(
+      `
+        insert into raw_entry_duplicate_groups (group_kind, group_key, representative_raw_entry_id)
+        values ('title_url_trgm', 'reader-detail-related-similarity-group', $1)
+        returning id::int
+      `,
+      [similarityRepresentativeId]
+    );
+    await pool.query("update raw_entries set duplicate_group_id = $1 where id = any($2::bigint[])", [
+      similarityGroup.rows[0].id,
+      [similarityRepresentativeId, similarityShadowId]
+    ]);
+    await pool.query(
+      `
+        insert into raw_entry_similarity_signals (
+          raw_entry_id,
+          similar_raw_entry_id,
+          signal_type,
+          score
+        )
+        values
+          ($1, $2, 'title_trgm', 0.9700),
+          ($1, $3, 'title_trgm', 0.9600)
+      `,
+      [targetId, similarityRepresentativeId, similarityShadowId]
+    );
     const hiddenId = await createReaderDetailFixture(pool, {
       externalId: "reader-detail-related-hidden",
       title: "Related Graph Hidden",
@@ -1189,12 +1242,23 @@ test("reader repository lists related items from the reader-safe visible pool", 
     const isolated = await repository.listRelatedReaderItems({ id: isolatedId, limit: 10 });
 
     assert.ok(related);
-    assert.equal(related[0].id, sameBoardId);
+    assert.equal(related[0].id, similarityRepresentativeId);
     assert.equal(limited?.length, 1);
-    assert.equal(limited?.[0].id, sameBoardId);
+    assert.equal(limited?.[0].id, similarityRepresentativeId);
     assert.equal(related.some((item) => item.id === targetId), false);
     assert.equal(related.some((item) => item.id === sameBoardId), true);
     assert.equal(related.some((item) => item.id === otherBoardId), true);
+    assert.equal(related.some((item) => item.id === similarityRepresentativeId), true);
+    assert.equal(related.some((item) => item.id === similarityShadowId), false);
+    assert.equal(related.some((item) => item.id === trigramCandidateId), true);
+    assert.ok(
+      related.findIndex((item) => item.id === similarityRepresentativeId) <
+        related.findIndex((item) => item.id === trigramCandidateId)
+    );
+    assert.ok(
+      related.findIndex((item) => item.id === trigramCandidateId) <
+        related.findIndex((item) => item.id === sameBoardId)
+    );
     assert.equal(related.some((item) => item.id === hiddenId), false);
     assert.equal(related.some((item) => item.id === blockedId), false);
     assert.equal(related.some((item) => item.id === disabledId), false);
@@ -1203,6 +1267,7 @@ test("reader repository lists related items from the reader-safe visible pool", 
   } finally {
     await repository.close();
     await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from raw_entry_duplicate_groups where group_key = 'reader-detail-related-similarity-group'");
     await pool.query("delete from boards where slug = 'related-empty'");
     await pool.end();
   }
