@@ -67,12 +67,19 @@
 
 ## Check-Debug Loop 1
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 1-3.
 - Verification:
   - Run auth-related API tests, migration checks, lint/typecheck for touched packages, and `git diff --check`.
 - Completion Record:
-  - Pending.
+  - Verified second-version planning contract with `pnpm v2:plan:check`.
+  - Verified workspace type/lint coverage with `pnpm lint`.
+  - Verified workspace unit/API/web/package tests with `pnpm test`.
+  - Verified Postgres-backed migration and repository behavior with `pnpm --filter @reno-news/db test:integration`.
+  - Verified production build/typecheck surface with `pnpm build`.
+  - Verified Compose config renders with `docker compose -f infra/compose/compose.yml config`.
+  - Verified whitespace safety with `git diff --check`.
+  - No blocking defects were found for Tasks 1-3.
 
 ## Task 4: API Authorization Matrix
 
