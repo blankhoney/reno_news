@@ -336,12 +336,19 @@
 
 ## Check-Debug Loop 5
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 13-15.
 - Verification:
   - Run AI adapter tests, schema tests, worker tests, and migration checks.
 - Completion Record:
-  - Pending.
+  - Verified MiniMax provider documentation/config contract with `pnpm ai:provider:check`.
+  - Verified V2 planning contract still tolerates status progression with `pnpm v2:plan:check`.
+  - Verified MiniMax adapter and schema gate behavior with `uv --project services/worker run python -m unittest services.worker.tests.test_ai_evaluation`; 13 tests passed with expected DB skips.
+  - Verified the full worker suite with `uv --project services/worker run python -m unittest discover -s services/worker/tests`; 41 tests passed with expected skips.
+  - Verified DB migration/docs contracts with `pnpm --filter @reno-news/db test`.
+  - Verified workspace quality gates with `pnpm lint`, `pnpm test`, and `pnpm build`.
+  - Verified whitespace safety with `git diff --check`.
+  - No blocking defects were found for Tasks 13-15. Real MiniMax live calls, provider credentials, DB-backed worker integration assertions, fallback provider implementation, and golden-set quality reports remain outside this local check loop.
 
 ## Task 16: Golden Set Regression Harness
 
