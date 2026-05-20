@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { runMigrations, runSeed } from "./runner";
+import { createAuthRepository } from "./authRepository";
 import { createFeedbackRepository } from "./feedbackRepository";
 import { createFailureQueueRepository } from "./failureQueueRepository";
 import { createRawEntryRepository } from "./rawEntryRepository";
@@ -266,6 +267,77 @@ test("auth identity schema enforces roles, invites, sessions, and login attempts
         [invitedEmail]
       )
     );
+  } finally {
+    await cleanupAuthFixture(pool, [email, invitedEmail]);
+    await pool.end();
+  }
+});
+
+test("auth repository reads users, manages sessions, and records login attempts", async () => {
+  await runMigrations({ databaseUrl });
+
+  const unique = Date.now().toString(36);
+  const email = `auth-repository-${unique}@example.invalid`;
+  const invitedEmail = `auth-repository-invite-${unique}@example.invalid`;
+  const argon2idHash = "$argon2id$v=19$m=65536,t=3,p=4$c2FsdA$aGFzaA";
+  const sessionTokenHash = `session-token-${unique}-00000000000000000000000000000000`;
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+
+  await cleanupAuthFixture(pool, [email, invitedEmail]);
+
+  try {
+    const userResult = await pool.query<{ id: number }>(
+      `
+        insert into users (email, password_hash, role)
+        values ($1, $2, 'reader')
+        returning id::int
+      `,
+      [email, argon2idHash]
+    );
+    const userId = userResult.rows[0].id;
+    await pool.query(
+      `
+        insert into user_invites (email, role, token_hash, invited_by_user_id, expires_at)
+        values ($1, 'reader', $2, $3, now() + interval '1 day')
+      `,
+      [invitedEmail, `auth-repository-invite-token-${unique}`, userId]
+    );
+
+    const repository = createAuthRepository(databaseUrl);
+
+    try {
+      const user = await repository.findUserByEmail(email);
+      assert.equal(user?.id, userId);
+      assert.equal(user?.passwordHash, argon2idHash);
+      assert.equal(await repository.hasPendingInvite(invitedEmail), true);
+
+      await repository.createSession({
+        userId,
+        sessionTokenHash,
+        expiresAt: new Date(Date.now() + 60_000)
+      });
+      assert.deepEqual(await repository.findUserBySessionTokenHash(sessionTokenHash), {
+        id: userId,
+        email,
+        role: "reader"
+      });
+
+      await repository.recordLoginAttempt({
+        userId,
+        email,
+        outcome: "success"
+      });
+      await repository.recordLoginAttempt({
+        email: invitedEmail,
+        outcome: "failure",
+        failureReason: "invite_required"
+      });
+
+      await repository.revokeSession(sessionTokenHash);
+      assert.equal(await repository.findUserBySessionTokenHash(sessionTokenHash), null);
+    } finally {
+      await repository.close();
+    }
   } finally {
     await cleanupAuthFixture(pool, [email, invitedEmail]);
     await pool.end();

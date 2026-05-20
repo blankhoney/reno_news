@@ -3,8 +3,11 @@ import Fastify, {
   type FastifyReply,
   type FastifyServerOptions
 } from "fastify";
+import fastifyCookie from "@fastify/cookie";
+import type { AuthLoginFailureReason, AuthUser } from "@reno-news/contracts";
 import {
   BoardNotFoundError,
+  createAuthRepository,
   createFeedbackRepository,
   createFailureQueueRepository,
   createRawEntryRepository,
@@ -19,8 +22,10 @@ import {
   type SourceRepository,
   type UpdateSourceInput
 } from "@reno-news/db";
+import { createAuthService, type AuthService } from "./auth";
 
 type AppDependencies = {
+  authService?: AuthService;
   sourceRepository?: SourceRepository;
   rawEntryRepository?: RawEntryRepository;
   readerRepository?: ReaderRepository;
@@ -68,6 +73,11 @@ type RawEntryLifecycleBody = {
   action: "hide" | "restore";
 };
 
+type AuthLoginBody = {
+  email: string;
+  password: string;
+};
+
 class DatabaseNotConfiguredError extends Error {
   constructor() {
     super("DATABASE_URL is required");
@@ -95,6 +105,14 @@ const feedbackTypes = [
   "broken_link",
   "rights_concern"
 ];
+const authSessionCookieName = "reno_news_session";
+const authLoginFailureStatuses: Record<AuthLoginFailureReason, number> = {
+  invalid_credentials: 401,
+  invite_required: 403,
+  user_disabled: 403,
+  session_expired: 401,
+  rate_limited: 429
+};
 
 const sourcePolicySchema = {
   type: "object",
@@ -205,8 +223,21 @@ const rawEntryLifecycleBodySchema = {
   }
 };
 
+const authLoginBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["email", "password"],
+  properties: {
+    email: { type: "string", minLength: 3, pattern: "^[^\\s@]+@[^\\s@]+$" },
+    password: { type: "string", minLength: 1 }
+  }
+};
+
 export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDependencies = {}) {
   const app = Fastify(options);
+  app.register(fastifyCookie);
+
+  const authService = dependencies.authService ?? authServiceFromEnvironment(app);
   const sourceRepository = dependencies.sourceRepository ?? sourceRepositoryFromEnvironment(app);
   const rawEntryRepository =
     dependencies.rawEntryRepository ?? rawEntryRepositoryFromEnvironment(app);
@@ -220,6 +251,65 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     status: "ok",
     service: "api"
   }));
+
+  app.post(
+    "/auth/login",
+    {
+      schema: {
+        body: authLoginBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const { email, password } = request.body as AuthLoginBody;
+        const result = await authService.login({
+          email,
+          password,
+          userAgent: request.headers["user-agent"],
+          ipAddress: request.ip
+        });
+
+        if (!result.ok) {
+          return reply.code(authLoginFailureStatuses[result.error]).send({ error: result.error });
+        }
+
+        reply.setCookie(authSessionCookieName, result.sessionToken, {
+          path: "/",
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          expires: result.expiresAt
+        });
+
+        return reply.send({ user: result.user });
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.get("/auth/me", async (request, reply) => {
+    try {
+      const sessionToken = request.cookies[authSessionCookieName];
+      const user = await authService.currentUser(sessionToken);
+      if (sessionToken && !user) {
+        reply.clearCookie(authSessionCookieName, { path: "/" });
+      }
+      return { user };
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  });
+
+  app.post("/auth/logout", async (request, reply) => {
+    try {
+      await authService.logout(request.cookies[authSessionCookieName]);
+      reply.clearCookie(authSessionCookieName, { path: "/" });
+      return { status: "ok" };
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  });
 
   app.get("/sources", async (_request, reply) => {
     try {
@@ -576,6 +666,23 @@ function sourceRepositoryFromEnvironment(app: FastifyInstance): SourceRepository
   return repository;
 }
 
+function authServiceFromEnvironment(app: FastifyInstance): AuthService {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredAuthService;
+  }
+
+  const repository = createAuthRepository(databaseUrl);
+  const service = createAuthService(repository);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return service;
+}
+
 function rawEntryRepositoryFromEnvironment(app: FastifyInstance): RawEntryRepository {
   const databaseUrl = process.env.DATABASE_URL;
 
@@ -656,6 +763,14 @@ const unconfiguredSourceRepository: SourceRepository = {
   listEnabledSourcePolicies: async () => {
     throw new DatabaseNotConfiguredError();
   }
+};
+
+const unconfiguredAuthService: AuthService = {
+  login: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  currentUser: async () => null,
+  logout: async () => undefined
 };
 
 const unconfiguredRawEntryRepository: RawEntryRepository = {

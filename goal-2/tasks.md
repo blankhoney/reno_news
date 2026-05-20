@@ -52,13 +52,18 @@
 
 ## Task 3: Minimal Invite-Only Auth Foundation
 
-- Status: Pending
+- Status: Completed
 - Objective: Implement invite-only email/password login, argon2id password hashing, session creation, logout, and current-user endpoint.
 - TDD/Verification:
   - One route behavior at a time: failed login, successful invite login, current session, logout.
   - Pass criteria: API tests prove anonymous, logged-in reader, expired session, and logout behavior.
 - Completion Record:
-  - Pending.
+  - Red/Green: added API route tests for invalid credentials, malformed email rejection, successful login cookie creation, anonymous `/auth/me`, valid session `/auth/me`, expired session cookie clearing, and logout.
+  - Red/Green: added auth service tests for argon2id hashing/verification, active account login session creation, failed password attempts, and session-token hash lookup/logout.
+  - Green: implemented `@fastify/cookie`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`, argon2id password helpers, session token generation/hashing, and DB-backed `AuthRepository`.
+  - Added the API dependency on `@reno-news/contracts`, exported package contracts for workspace imports, and allowed the `argon2` native build in `pnpm-workspace.yaml`.
+  - Quality review: close-read `apps/api/src/app.ts`, `apps/api/src/auth.ts`, `packages/db/src/authRepository.ts`, auth API tests, auth service tests, auth DB integration tests, and package/workspace dependency changes; moved `AuthService` ownership into `auth.ts` and added malformed email rejection.
+  - Verified with `pnpm --filter @reno-news/api test`, `pnpm lint`, `pnpm test`, `pnpm --filter @reno-news/db test:integration`, and `git diff --check -- apps/api/package.json apps/api/src/app.ts apps/api/src/app.test.ts apps/api/src/auth.ts apps/api/src/auth.test.ts packages/db/src/authRepository.ts packages/db/src/index.ts packages/db/src/integration.test.ts packages/contracts/package.json pnpm-lock.yaml pnpm-workspace.yaml`.
 
 ## Check-Debug Loop 1
 

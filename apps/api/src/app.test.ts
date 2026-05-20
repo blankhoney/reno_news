@@ -192,6 +192,242 @@ test("GET /healthz reports the API service as healthy", async () => {
   });
 });
 
+test("POST /auth/login rejects invalid credentials without setting a session cookie", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => ({ ok: false, error: "invalid_credentials" }),
+        currentUser: async () => null,
+        logout: async () => undefined
+      }
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/auth/login",
+    payload: {
+      email: "reader@example.com",
+      password: "wrong-password"
+    }
+  });
+
+  assert.equal(response.statusCode, 401);
+  assert.deepEqual(response.json(), { error: "invalid_credentials" });
+  assert.equal(response.headers["set-cookie"], undefined);
+});
+
+test("POST /auth/login rejects malformed email before auth service work", async () => {
+  let loginCalled = false;
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => {
+          loginCalled = true;
+          return { ok: false, error: "invalid_credentials" };
+        },
+        currentUser: async () => null,
+        logout: async () => undefined
+      }
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/auth/login",
+    payload: {
+      email: "not-an-email",
+      password: "wrong-password"
+    }
+  });
+
+  assert.equal(response.statusCode, 400);
+  assert.equal(loginCalled, false);
+  assert.equal(response.headers["set-cookie"], undefined);
+});
+
+test("POST /auth/login returns a user and sets the session cookie on success", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => ({
+          ok: true,
+          user: {
+            id: 42,
+            email: "reader@example.com",
+            role: "reader"
+          },
+          sessionToken: "raw-session-token",
+          expiresAt: new Date("2026-05-21T12:00:00.000Z")
+        }),
+        currentUser: async () => null,
+        logout: async () => undefined
+      }
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/auth/login",
+    payload: {
+      email: "reader@example.com",
+      password: "correct-password"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), {
+    user: {
+      id: 42,
+      email: "reader@example.com",
+      role: "reader"
+    }
+  });
+  assert.match(String(response.headers["set-cookie"]), /reno_news_session=raw-session-token/);
+  assert.match(String(response.headers["set-cookie"]), /HttpOnly/);
+  assert.match(String(response.headers["set-cookie"]), /SameSite=Lax/);
+});
+
+test("GET /auth/me returns null for anonymous requests", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => ({ ok: false, error: "invalid_credentials" }),
+        currentUser: async () => null,
+        logout: async () => undefined
+      }
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/auth/me"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), { user: null });
+});
+
+test("GET /auth/me returns the current user for a valid session cookie", async () => {
+  let seenSessionToken: string | undefined;
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => ({ ok: false, error: "invalid_credentials" }),
+        currentUser: async (sessionToken) => {
+          seenSessionToken = sessionToken;
+          return {
+            id: 42,
+            email: "reader@example.com",
+            role: "reader"
+          };
+        },
+        logout: async () => undefined
+      }
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/auth/me",
+    headers: {
+      cookie: "reno_news_session=raw-session-token"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(seenSessionToken, "raw-session-token");
+  assert.deepEqual(response.json(), {
+    user: {
+      id: 42,
+      email: "reader@example.com",
+      role: "reader"
+    }
+  });
+});
+
+test("GET /auth/me clears the session cookie when the session is invalid", async () => {
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => ({ ok: false, error: "invalid_credentials" }),
+        currentUser: async () => null,
+        logout: async () => undefined
+      }
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/auth/me",
+    headers: {
+      cookie: "reno_news_session=expired-session-token"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), { user: null });
+  assert.match(String(response.headers["set-cookie"]), /reno_news_session=/);
+  assert.match(String(response.headers["set-cookie"]), /Max-Age=0/);
+});
+
+test("POST /auth/logout revokes the current session and clears the cookie", async () => {
+  let revokedSessionToken: string | undefined;
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: {
+        login: async () => ({ ok: false, error: "invalid_credentials" }),
+        currentUser: async () => null,
+        logout: async (sessionToken) => {
+          revokedSessionToken = sessionToken;
+        }
+      }
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/auth/logout",
+    headers: {
+      cookie: "reno_news_session=raw-session-token"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(revokedSessionToken, "raw-session-token");
+  assert.deepEqual(response.json(), { status: "ok" });
+  assert.match(String(response.headers["set-cookie"]), /reno_news_session=/);
+  assert.match(String(response.headers["set-cookie"]), /Max-Age=0/);
+});
+
 test("GET /sources lists source registry records", async () => {
   const app = buildApp({ logger: false }, { sourceRepository: fakeRepository() });
   test.after(async () => {
