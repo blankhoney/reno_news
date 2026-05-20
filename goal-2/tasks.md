@@ -300,13 +300,21 @@
 
 ## Task 14: MiniMax Real Adapter Foundation
 
-- Status: Pending
+- Status: Completed
 - Objective: Add real MiniMax adapter behind existing AI provider abstraction and record calls in `model_calls`.
 - TDD/Verification:
   - Failing adapter tests first using mocked public HTTP boundary, not private internals.
   - Pass criteria: adapter handles success, timeout, retryable failure, non-retryable failure, and budget metadata.
 - Completion Record:
-  - Pending.
+  - Red/Green: added a mocked Anthropic-compatible MiniMax evaluation adapter test; it first failed because no MiniMax config or adapter existed, then passed after adding `MiniMaxEvaluationAdapter`.
+  - Added `MiniMaxConfig`, typed `ProviderAdapterError`, Anthropic-compatible `/v1/messages` request construction, forced `ai_evaluation` tool calling, tool-use output parsing, and safe request/response metadata.
+  - Verified the adapter does not use `response_format`; M2.7 structured output remains tool-call JSON plus local validation.
+  - Red/Green: added tests for retryable 429 before success, non-retryable 400 terminal failure, timeout retry exhaustion, and retryable 500 exhaustion.
+  - Updated `evaluate_raw_entry` so typed provider adapter failures are recorded in `model_calls` with provider, model, latency when available, error code, and redacted metadata instead of generic `adapter/unknown`.
+  - Budget metadata now includes max output tokens, retry attempts, and daily budget cents in redacted request metadata; usage metadata is captured from successful provider responses when present.
+  - Quality review: close-read `services/worker/src/reno_worker/ai_evaluation.py` and `services/worker/tests/test_ai_evaluation.py`.
+  - Verified with `uv --project services/worker run python -m unittest services.worker.tests.test_ai_evaluation`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `pnpm ai:provider:check`, `pnpm lint`, and `git diff --check`.
+  - Real MiniMax live smoke remains unverified because no `MINIMAX_API_KEY` or provider budget is available in this local session.
 
 ## Task 15: Schema Validation Repair And Failure Gate
 

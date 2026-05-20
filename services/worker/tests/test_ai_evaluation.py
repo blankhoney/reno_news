@@ -1,14 +1,19 @@
+import json
 import os
 import unittest
 from types import SimpleNamespace
 
+import httpx
 import psycopg
 from psycopg.rows import dict_row
 
 from reno_worker.ai_evaluation import (
     AdapterResult,
     EvaluationInput,
+    MiniMaxConfig,
+    MiniMaxEvaluationAdapter,
     OpenAIResponsesAdapter,
+    ProviderAdapterError,
     build_responses_request,
     evaluate_raw_entry,
 )
@@ -70,6 +75,233 @@ class AiEvaluationTest(unittest.TestCase):
         self.assertEqual(result.provider, "openai")
         self.assertEqual(result.model, "gpt-5-mini")
         self.assertEqual(result.output["scores"]["relevance"], 0.8)
+
+    def test_minimax_adapter_posts_anthropic_tool_request_and_parses_tool_use(self) -> None:
+        requests: list[dict[str, object]] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requests.append(
+                {
+                    "url": str(request.url),
+                    "api_key": request.headers.get("x-api-key"),
+                    "body": json.loads(request.content.decode("utf-8")),
+                }
+            )
+            return httpx.Response(
+                200,
+                json={
+                    "id": "msg_fixture",
+                    "model": "MiniMax-M2.7",
+                    "stop_reason": "tool_use",
+                    "content": [
+                        {
+                            "type": "tool_use",
+                            "id": "tool_fixture",
+                            "name": "ai_evaluation",
+                            "input": EVALUATION_OUTPUT,
+                        }
+                    ],
+                    "usage": {"input_tokens": 11, "output_tokens": 22},
+                },
+            )
+
+        http_client = httpx.Client(transport=httpx.MockTransport(handler))
+        adapter = MiniMaxEvaluationAdapter(
+            config=MiniMaxConfig(
+                api_key="test-key",
+                base_url="https://api.minimax.io/anthropic",
+                model="MiniMax-M2.7",
+                timeout_ms=1000,
+                max_output_tokens=2048,
+                retry_attempts=0,
+                daily_budget_cents=123,
+            ),
+            http_client=http_client,
+        )
+
+        result = adapter(
+            EvaluationInput(
+                raw_entry_id=101,
+                extraction_id=202,
+                extracted_text="deterministic extracted text",
+            )
+        )
+
+        self.assertEqual(result.provider, "minimax")
+        self.assertEqual(result.model, "MiniMax-M2.7")
+        self.assertEqual(result.output["scores"]["relevance"], 0.8)
+        self.assertEqual(result.request_redacted["schemaVersion"], "ai_evaluation.v1")
+        self.assertEqual(result.request_redacted["budgetCents"], 123)
+        self.assertEqual(result.response_redacted["usage"]["input_tokens"], 11)
+        self.assertEqual(requests[0]["url"], "https://api.minimax.io/anthropic/v1/messages")
+        self.assertEqual(requests[0]["api_key"], "test-key")
+        body = requests[0]["body"]
+        self.assertEqual(body["model"], "MiniMax-M2.7")
+        self.assertEqual(body["max_tokens"], 2048)
+        self.assertNotIn("response_format", body)
+        self.assertEqual(body["tool_choice"], {"type": "tool", "name": "ai_evaluation"})
+        self.assertEqual(body["tools"][0]["name"], "ai_evaluation")
+        self.assertEqual(body["tools"][0]["input_schema"]["required"], ["scores", "rationale", "evidence", "summary"])
+
+    def test_minimax_adapter_retries_retryable_status_before_success(self) -> None:
+        attempts = 0
+
+        def handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            attempts += 1
+            if attempts == 1:
+                return httpx.Response(429, json={"error": {"message": "rate limited"}})
+            return httpx.Response(
+                200,
+                json={
+                    "id": "msg_fixture",
+                    "model": "MiniMax-M2.7",
+                    "stop_reason": "tool_use",
+                    "content": [
+                        {
+                            "type": "tool_use",
+                            "name": "ai_evaluation",
+                            "input": EVALUATION_OUTPUT,
+                        }
+                    ],
+                    "usage": {"input_tokens": 11, "output_tokens": 22},
+                },
+            )
+
+        adapter = MiniMaxEvaluationAdapter(
+            config=MiniMaxConfig(
+                api_key="test-key",
+                base_url="https://api.minimax.io/anthropic",
+                model="MiniMax-M2.7",
+                timeout_ms=1000,
+                max_output_tokens=2048,
+                retry_attempts=1,
+                daily_budget_cents=123,
+            ),
+            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        )
+
+        result = adapter(
+            EvaluationInput(
+                raw_entry_id=101,
+                extraction_id=202,
+                extracted_text="deterministic extracted text",
+            )
+        )
+
+        self.assertEqual(attempts, 2)
+        self.assertEqual(result.output["scores"]["relevance"], 0.8)
+        self.assertEqual(result.response_redacted["retryCount"], 1)
+
+    def test_minimax_adapter_raises_typed_error_for_non_retryable_status(self) -> None:
+        attempts = 0
+
+        def handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            attempts += 1
+            return httpx.Response(400, json={"error": {"message": "bad request"}})
+
+        adapter = MiniMaxEvaluationAdapter(
+            config=MiniMaxConfig(
+                api_key="test-key",
+                base_url="https://api.minimax.io/anthropic",
+                model="MiniMax-M2.7",
+                timeout_ms=1000,
+                max_output_tokens=2048,
+                retry_attempts=2,
+                daily_budget_cents=123,
+            ),
+            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        )
+
+        with self.assertRaises(ProviderAdapterError) as error_context:
+            adapter(
+                EvaluationInput(
+                    raw_entry_id=101,
+                    extraction_id=202,
+                    extracted_text="deterministic extracted text",
+                )
+            )
+
+        self.assertEqual(attempts, 1)
+        self.assertEqual(error_context.exception.provider, "minimax")
+        self.assertEqual(error_context.exception.model, "MiniMax-M2.7")
+        self.assertEqual(error_context.exception.error_code, "provider_http_error")
+        self.assertFalse(error_context.exception.retryable)
+        self.assertEqual(error_context.exception.response_redacted["statusCode"], 400)
+
+    def test_minimax_adapter_raises_typed_error_after_timeout_retries(self) -> None:
+        attempts = 0
+
+        def handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            attempts += 1
+            raise httpx.TimeoutException("provider timed out")
+
+        adapter = MiniMaxEvaluationAdapter(
+            config=MiniMaxConfig(
+                api_key="test-key",
+                base_url="https://api.minimax.io/anthropic",
+                model="MiniMax-M2.7",
+                timeout_ms=1000,
+                max_output_tokens=2048,
+                retry_attempts=1,
+                daily_budget_cents=123,
+            ),
+            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        )
+
+        with self.assertRaises(ProviderAdapterError) as error_context:
+            adapter(
+                EvaluationInput(
+                    raw_entry_id=101,
+                    extraction_id=202,
+                    extracted_text="deterministic extracted text",
+                )
+            )
+
+        self.assertEqual(attempts, 2)
+        self.assertEqual(error_context.exception.provider, "minimax")
+        self.assertEqual(error_context.exception.error_code, "provider_timeout")
+        self.assertTrue(error_context.exception.retryable)
+        self.assertEqual(error_context.exception.request_redacted["retryAttempts"], 1)
+        self.assertEqual(error_context.exception.response_redacted["retryCount"], 1)
+
+    def test_minimax_adapter_classifies_retryable_status_after_exhaustion(self) -> None:
+        attempts = 0
+
+        def handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            attempts += 1
+            return httpx.Response(500, json={"error": {"message": "provider unavailable"}})
+
+        adapter = MiniMaxEvaluationAdapter(
+            config=MiniMaxConfig(
+                api_key="test-key",
+                base_url="https://api.minimax.io/anthropic",
+                model="MiniMax-M2.7",
+                timeout_ms=1000,
+                max_output_tokens=2048,
+                retry_attempts=1,
+                daily_budget_cents=123,
+            ),
+            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        )
+
+        with self.assertRaises(ProviderAdapterError) as error_context:
+            adapter(
+                EvaluationInput(
+                    raw_entry_id=101,
+                    extraction_id=202,
+                    extracted_text="deterministic extracted text",
+                )
+            )
+
+        self.assertEqual(attempts, 2)
+        self.assertEqual(error_context.exception.error_code, "provider_retry_exhausted")
+        self.assertTrue(error_context.exception.retryable)
+        self.assertEqual(error_context.exception.response_redacted["statusCode"], 500)
+        self.assertEqual(error_context.exception.response_redacted["retryCount"], 1)
 
     @unittest.skipUnless(os.environ.get("DATABASE_URL"), "DATABASE_URL integration target not set")
     def test_evaluate_raw_entry_persists_model_call_and_evaluation(self) -> None:
