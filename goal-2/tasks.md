@@ -268,12 +268,18 @@
 
 ## Check-Debug Loop 4
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 10-12.
 - Verification:
   - Run metrics tests, log/trace tests, alert rule validation if tooling exists, and ops doc checks.
 - Completion Record:
-  - Pending.
+  - Verified API metrics, trace-id propagation, auth/audit propagation, and route behavior with `pnpm --filter @reno-news/api test`; 51 API route tests and 4 auth service tests passed.
+  - Verified worker metrics and request-id logging behavior with `uv --project services/worker run python -m unittest discover -s services/worker/tests`; 34 worker tests passed with expected skips.
+  - Verified alert rule and runbook contract with `pnpm alerts:check`.
+  - Verified DB migration/docs contracts with `pnpm --filter @reno-news/db test`.
+  - Verified workspace quality gates with `pnpm lint`, `pnpm test`, and `pnpm build`.
+  - Marked V2.3 in `docs/CODEX_MASTER_PLAN.md` as completed because the local exit gate is now satisfied.
+  - Real Prometheus scraping, Alertmanager receivers, node exporter, log shipping, OpenTelemetry export, paging, and production routing remain external-environment gaps.
 
 ## Task 13: MiniMax Adapter Planning And ADR
 
