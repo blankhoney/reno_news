@@ -613,12 +613,22 @@
 
 ## Check-Debug Loop 9
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 25-27.
 - Verification:
   - Run search/query tests, source config checks, migration checks, and relevant API tests.
 - Completion Record:
-  - Pending.
+  - Verified GDELT/RSSHub constraints with `pnpm source:expansion:check`; GDELT remains candidate-radar only and RSSHub remains explicit-whitelist only.
+  - Verified GitHub and arXiv source policy contracts with `pnpm github:source-policy:check` and `pnpm arxiv:source-policy:check`.
+  - Verified PostgreSQL similarity/dedup contract with `pnpm postgres:similarity:check`.
+  - Verified migration contracts with `pnpm --filter @reno-news/db test`.
+  - Verified DB-backed search/related/dedup behavior with `pnpm --filter @reno-news/db test:integration`; this includes reader search, related item similarity ordering, Duplicate Group folding, and canonical hash constraints.
+  - Verified reader API route behavior with `pnpm --filter @reno-news/api test`.
+  - Verified source adapter dispatch and scheduler guards with `uv --project services/worker run python -m unittest services.worker.tests.test_scheduler services.worker.tests.test_source_ingest services.worker.tests.test_github_ingest services.worker.tests.test_arxiv_ingest`.
+  - Verified the full worker suite with `uv --project services/worker run python -m unittest discover -s services/worker/tests`; 57 tests passed with 25 expected skips.
+  - Verified workspace gates with `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Marked V2.6 in `docs/CODEX_MASTER_PLAN.md` as completed because the local exit gate is satisfied.
+  - Remaining external gaps: no live GitHub/arXiv API calls, production operator allowlists, real RSSHub routes, GDELT runtime radar, pgvector extension, embeddings, or external search service were added or verified.
 
 ## Task 28: Final Production Gate Review
 
