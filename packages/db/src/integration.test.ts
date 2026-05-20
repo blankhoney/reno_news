@@ -6,6 +6,7 @@ import { createAuditRepository } from "./auditRepository";
 import { createAuthRepository } from "./authRepository";
 import { createFeedbackRepository } from "./feedbackRepository";
 import { createFailureQueueRepository } from "./failureQueueRepository";
+import { createPersonalStateRepository } from "./personalStateRepository";
 import { createRawEntryRepository } from "./rawEntryRepository";
 import { createReaderRepository } from "./readerRepository";
 import { createSourceRepository } from "./sourceRepository";
@@ -397,6 +398,101 @@ test("audit repository records and lists actor-scoped events", async () => {
   } finally {
     await pool.query("delete from audit_events where request_id = $1", [requestId]);
     await cleanupAuthFixture(pool, [email]);
+    await pool.end();
+  }
+});
+
+test("personal state repository stores idempotent state per user", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const unique = Date.now().toString(36);
+  const firstEmail = `personal-state-a-${unique}@example.invalid`;
+  const secondEmail = `personal-state-b-${unique}@example.invalid`;
+  const argon2idHash = "$argon2id$v=19$m=65536,t=3,p=4$c2FsdA$aGFzaA";
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+
+  await cleanupAuthFixture(pool, [firstEmail, secondEmail]);
+
+  try {
+    const firstUser = await pool.query<{ id: number }>(
+      `
+        insert into users (email, password_hash, role)
+        values ($1, $2, 'reader')
+        returning id::int
+      `,
+      [firstEmail, argon2idHash]
+    );
+    const secondUser = await pool.query<{ id: number }>(
+      `
+        insert into users (email, password_hash, role)
+        values ($1, $2, 'reader')
+        returning id::int
+      `,
+      [secondEmail, argon2idHash]
+    );
+    const rawEntry = await pool.query<{ id: number }>(
+      "select id::int from raw_entries where external_id = 'sample-ai-001'"
+    );
+    const firstUserId = firstUser.rows[0].id;
+    const secondUserId = secondUser.rows[0].id;
+    const itemId = rawEntry.rows[0].id;
+    const repository = createPersonalStateRepository(databaseUrl);
+
+    try {
+      assert.deepEqual(await repository.getPersonalState({ userId: firstUserId }), {
+        saved: [],
+        readLater: [],
+        readStatus: []
+      });
+
+      await repository.setSavedItem({ userId: firstUserId, itemId, active: true });
+      await repository.setSavedItem({ userId: firstUserId, itemId, active: true });
+      await repository.setReadLaterItem({ userId: firstUserId, itemId, active: true });
+      const afterRead = await repository.setReadStatus({
+        userId: firstUserId,
+        itemId,
+        status: "read"
+      });
+
+      assert.deepEqual(
+        afterRead.saved.map((item) => item.itemId),
+        [itemId]
+      );
+      assert.deepEqual(
+        afterRead.readLater.map((item) => item.itemId),
+        [itemId]
+      );
+      assert.deepEqual(afterRead.readStatus.map((item) => [item.itemId, item.status]), [
+        [itemId, "read"]
+      ]);
+      assert.deepEqual(await repository.getPersonalState({ userId: secondUserId }), {
+        saved: [],
+        readLater: [],
+        readStatus: []
+      });
+
+      const savedCount = await pool.query<{ count: string }>(
+        "select count(*) from user_saved_items where user_id = $1 and raw_entry_id = $2",
+        [firstUserId, itemId]
+      );
+      assert.equal(Number(savedCount.rows[0].count), 1);
+
+      const afterRemove = await repository.setSavedItem({
+        userId: firstUserId,
+        itemId,
+        active: false
+      });
+      assert.deepEqual(afterRemove.saved, []);
+      assert.deepEqual(
+        afterRemove.readLater.map((item) => item.itemId),
+        [itemId]
+      );
+    } finally {
+      await repository.close();
+    }
+  } finally {
+    await cleanupAuthFixture(pool, [firstEmail, secondEmail]);
     await pool.end();
   }
 });

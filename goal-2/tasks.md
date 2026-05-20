@@ -387,13 +387,19 @@
 
 ## Task 18: Saved/Read-Later Backend APIs
 
-- Status: Pending
+- Status: Completed
 - Objective: Implement authenticated APIs for saved, read-later, and read status.
 - TDD/Verification:
   - Failing API tests first for create, remove, list, idempotency, and cross-user isolation.
   - Pass criteria: authenticated users see only their own personal state; anonymous writes are rejected.
 - Completion Record:
-  - Pending.
+  - Red/Green: added `GET /reader/personal-state` anonymous and authenticated route tests; the first red failed at 404, then passed after adding a session-backed current-user guard and personal-state repository seam.
+  - Red/Green: added `PUT /reader/personal-state/saved`, `read-later`, and `read-status` API tests; each route first failed at 404, then passed with strict request schemas and current-session user binding.
+  - Red/Green: added a DB-backed personal-state repository integration test; it first failed against the stub, then passed after adding SQL-backed idempotent insert/delete/upsert and per-user reads.
+  - Fixed a route validation issue found by the tests: request bodies with extra fields such as client-supplied `userId` are now rejected instead of silently stripped.
+  - Added `createPersonalStateRepository`, exported the repository from `@reno-news/db`, wired it into the API environment factory, and updated `docs/api/personal-state.md` to document implemented routes and mutation responses.
+  - Quality review: close-read the changed API route sections, auth helper, unconfigured fallback, personal-state repository, API tests, DB integration test, and API doc.
+  - Verified with `pnpm --filter @reno-news/api test`, `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/db test:integration`, `pnpm v2:plan:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
 
 ## Check-Debug Loop 6
 

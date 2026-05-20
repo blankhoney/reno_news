@@ -7,6 +7,7 @@ import type {
   FailureQueueRepository,
   FeedbackRecord,
   FeedbackRepository,
+  PersonalStateRepository,
   RawEntryRecord,
   RawEntryRepository,
   ReaderBoard,
@@ -42,6 +43,10 @@ const sourceRecord: SourceRecord = {
 
 const adminSessionHeaders = {
   cookie: "reno_news_session=admin-session-token"
+};
+
+const readerSessionHeaders = {
+  cookie: "reno_news_session=reader-session-token"
 };
 
 function fakeRepository(overrides: Partial<SourceRepository> = {}): SourceRepository {
@@ -259,6 +264,25 @@ function fakeReaderRepository(overrides: Partial<ReaderRepository> = {}): Reader
     listRelatedReaderItems: async () => [readerItem],
     listReaderDigestItems: async () => [readerItem],
     getReaderItemDetail: async () => readerItemDetail,
+    close: async () => undefined,
+    ...overrides
+  };
+}
+
+const personalStateResponse = {
+  saved: [{ itemId: 1, createdAt: "2026-05-21T00:00:00.000Z" }],
+  readLater: [],
+  readStatus: []
+};
+
+function fakePersonalStateRepository(
+  overrides: Partial<PersonalStateRepository> = {}
+): PersonalStateRepository {
+  return {
+    getPersonalState: async () => personalStateResponse,
+    setSavedItem: async () => personalStateResponse,
+    setReadLaterItem: async () => personalStateResponse,
+    setReadStatus: async () => personalStateResponse,
     close: async () => undefined,
     ...overrides
   };
@@ -1536,6 +1560,246 @@ test("GET /reader/boards lists reader boards", async () => {
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.json(), { boards: [readerBoard] });
+});
+
+test("GET /reader/personal-state rejects anonymous sessions before repository work", async () => {
+  let repositoryCalled = false;
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: authServiceForCurrentUser(null),
+      personalStateRepository: fakePersonalStateRepository({
+        getPersonalState: async () => {
+          repositoryCalled = true;
+          return personalStateResponse;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/personal-state"
+  });
+
+  assert.equal(response.statusCode, 401);
+  assert.deepEqual(response.json(), { error: "authentication_required" });
+  assert.equal(repositoryCalled, false);
+});
+
+test("GET /reader/personal-state returns the current user's state", async () => {
+  let receivedUserId: number | undefined;
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: readerAuthService(),
+      personalStateRepository: fakePersonalStateRepository({
+        getPersonalState: async (input) => {
+          receivedUserId = input.userId;
+          return personalStateResponse;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/personal-state",
+    headers: readerSessionHeaders
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(receivedUserId, 2);
+  assert.deepEqual(response.json(), personalStateResponse);
+});
+
+test("PUT /reader/personal-state/saved sets saved state for the current user", async () => {
+  let receivedInput: unknown;
+  const updatedState = {
+    saved: [{ itemId: 42, createdAt: "2026-05-21T01:00:00.000Z" }],
+    readLater: [],
+    readStatus: []
+  };
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: readerAuthService(),
+      personalStateRepository: fakePersonalStateRepository({
+        setSavedItem: async (input) => {
+          receivedInput = input;
+          return updatedState;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PUT",
+    url: "/reader/personal-state/saved",
+    headers: readerSessionHeaders,
+    payload: {
+      itemId: 42,
+      active: true
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(receivedInput, { userId: 2, itemId: 42, active: true });
+  assert.deepEqual(response.json(), updatedState);
+});
+
+test("PUT /reader/personal-state/read-later sets read-later state for the current user", async () => {
+  let receivedInput: unknown;
+  const updatedState = {
+    saved: [],
+    readLater: [{ itemId: 42, createdAt: "2026-05-21T01:00:00.000Z" }],
+    readStatus: []
+  };
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: readerAuthService(),
+      personalStateRepository: fakePersonalStateRepository({
+        setReadLaterItem: async (input) => {
+          receivedInput = input;
+          return updatedState;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PUT",
+    url: "/reader/personal-state/read-later",
+    headers: readerSessionHeaders,
+    payload: {
+      itemId: 42,
+      active: true
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(receivedInput, { userId: 2, itemId: 42, active: true });
+  assert.deepEqual(response.json(), updatedState);
+});
+
+test("PUT /reader/personal-state/read-status sets read status for the current user", async () => {
+  let receivedInput: unknown;
+  const updatedState = {
+    saved: [],
+    readLater: [],
+    readStatus: [
+      {
+        itemId: 42,
+        status: "read" as const,
+        updatedAt: "2026-05-21T01:00:00.000Z"
+      }
+    ]
+  };
+  const app = buildApp(
+    { logger: false },
+    {
+      authService: readerAuthService(),
+      personalStateRepository: fakePersonalStateRepository({
+        setReadStatus: async (input) => {
+          receivedInput = input;
+          return updatedState;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "PUT",
+    url: "/reader/personal-state/read-status",
+    headers: readerSessionHeaders,
+    payload: {
+      itemId: 42,
+      status: "read"
+    }
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(receivedInput, { userId: 2, itemId: 42, status: "read" });
+  assert.deepEqual(response.json(), updatedState);
+});
+
+test("personal state mutations reject anonymous writes and client-supplied user ids", async () => {
+  let anonymousRepositoryCalled = false;
+  const anonymousApp = buildApp(
+    { logger: false },
+    {
+      authService: authServiceForCurrentUser(null),
+      personalStateRepository: fakePersonalStateRepository({
+        setSavedItem: async () => {
+          anonymousRepositoryCalled = true;
+          return personalStateResponse;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await anonymousApp.close();
+  });
+
+  const anonymousResponse = await anonymousApp.inject({
+    method: "PUT",
+    url: "/reader/personal-state/saved",
+    payload: {
+      itemId: 42,
+      active: true
+    }
+  });
+
+  assert.equal(anonymousResponse.statusCode, 401);
+  assert.deepEqual(anonymousResponse.json(), { error: "authentication_required" });
+  assert.equal(anonymousRepositoryCalled, false);
+
+  let injectedUserIdRepositoryCalled = false;
+  const injectedUserIdApp = buildApp(
+    { logger: false },
+    {
+      authService: readerAuthService(),
+      personalStateRepository: fakePersonalStateRepository({
+        setSavedItem: async () => {
+          injectedUserIdRepositoryCalled = true;
+          return personalStateResponse;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await injectedUserIdApp.close();
+  });
+
+  const injectedUserIdResponse = await injectedUserIdApp.inject({
+    method: "PUT",
+    url: "/reader/personal-state/saved",
+    headers: readerSessionHeaders,
+    payload: {
+      userId: 999,
+      itemId: 42,
+      active: true
+    }
+  });
+
+  assert.equal(injectedUserIdResponse.statusCode, 400);
+  assert.equal(injectedUserIdRepositoryCalled, false);
 });
 
 test("GET /reader/items passes optional board filter", async () => {

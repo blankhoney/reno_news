@@ -18,7 +18,7 @@ unread
 read
 ```
 
-## Planned Routes
+## Routes
 
 ### `GET /reader/personal-state`
 
@@ -58,6 +58,8 @@ Request:
 }
 ```
 
+Returns the current user's full personal-state response after the mutation.
+
 ### `PUT /reader/personal-state/read-later`
 
 Idempotently adds or removes a read-later item for the current user.
@@ -70,6 +72,8 @@ Request:
   "active": true
 }
 ```
+
+Returns the current user's full personal-state response after the mutation.
 
 ### `PUT /reader/personal-state/read-status`
 
@@ -84,14 +88,16 @@ Request:
 }
 ```
 
+Returns the current user's full personal-state response after the mutation.
+
 ## Authorization
 
 - Requests require an authenticated `reader` or `admin` session.
 - A user can only list or mutate their own rows.
 - Cross-user reads and writes are not exposed by route design.
 - Admin role does not imply access to another reader's personal state through these reader routes.
+- Request bodies reject client-supplied `userId` or other extra fields; user ownership comes only from the session.
 
 ## Non-Goals
 
-- No recommendation, ranking, moderation, digest inclusion, feedback weighting, or public popularity signal is derived from personal state in this task.
-- No API implementation is added in Task 17.
+- No recommendation, ranking, moderation, digest inclusion, feedback weighting, or public popularity signal is derived from personal state in these routes.

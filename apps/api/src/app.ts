@@ -12,6 +12,7 @@ import {
   createAuthRepository,
   createFeedbackRepository,
   createFailureQueueRepository,
+  createPersonalStateRepository,
   createRawEntryRepository,
   createReaderRepository,
   createSourceRepository,
@@ -21,6 +22,7 @@ import {
   type FailureQueueRecord,
   type FeedbackRepository,
   type FailureQueueRepository,
+  type PersonalStateRepository,
   type RawEntryRepository,
   type ReaderRepository,
   type SourceRepository,
@@ -34,6 +36,7 @@ type AppDependencies = {
   sourceRepository?: SourceRepository;
   rawEntryRepository?: RawEntryRepository;
   readerRepository?: ReaderRepository;
+  personalStateRepository?: PersonalStateRepository;
   feedbackRepository?: FeedbackRepository;
   failureQueueRepository?: FailureQueueRepository;
 };
@@ -65,6 +68,16 @@ type ReaderFeedbackBody = {
   message?: string;
 };
 
+type PersonalStateMutationBody = {
+  itemId: number;
+  active: boolean;
+};
+
+type ReadStatusMutationBody = {
+  itemId: number;
+  status: "unread" | "read";
+};
+
 type FeedbackReviewBody = {
   reviewStatus: "open" | "reviewed" | "dismissed" | "resolved";
   reviewNote?: string;
@@ -91,6 +104,10 @@ type AdminRequest = FastifyRequest & {
   adminUser?: AuthUser;
 };
 
+type CurrentUserRequest = FastifyRequest & {
+  currentUser?: AuthUser;
+};
+
 type TraceRequest = FastifyRequest & {
   traceRequestId?: string;
 };
@@ -115,6 +132,7 @@ const translationPolicies = ["none", "private_only", "public_excerpt", "public_f
 const riskLevels = ["low", "medium", "high"];
 const rawEntryLifecycleActions = ["hide", "restore"];
 const feedbackReviewStatuses = ["open", "reviewed", "dismissed", "resolved"];
+const readStatusValues = ["unread", "read"] as const;
 const failureStages = ["source_ingest", "extraction", "model_call"] as const;
 const feedbackTypes = [
   "correction",
@@ -224,6 +242,26 @@ const readerFeedbackBodySchema = {
   }
 };
 
+const personalStateMutationBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["itemId", "active"],
+  properties: {
+    itemId: { type: "integer", minimum: 1 },
+    active: { type: "boolean" }
+  }
+};
+
+const readStatusMutationBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["itemId", "status"],
+  properties: {
+    itemId: { type: "integer", minimum: 1 },
+    status: { type: "string", enum: readStatusValues }
+  }
+};
+
 const feedbackReviewBodySchema = {
   type: "object",
   additionalProperties: false,
@@ -254,7 +292,14 @@ const authLoginBodySchema = {
 };
 
 export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDependencies = {}) {
-  const app = Fastify(options);
+  const app = Fastify({
+    ajv: {
+      customOptions: {
+        removeAdditional: false
+      }
+    },
+    ...options
+  });
   app.register(fastifyCookie);
 
   const authService = dependencies.authService ?? authServiceFromEnvironment(app);
@@ -264,11 +309,14 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   const rawEntryRepository =
     dependencies.rawEntryRepository ?? rawEntryRepositoryFromEnvironment(app);
   const readerRepository = dependencies.readerRepository ?? readerRepositoryFromEnvironment(app);
+  const personalStateRepository =
+    dependencies.personalStateRepository ?? personalStateRepositoryFromEnvironment(app);
   const feedbackRepository =
     dependencies.feedbackRepository ?? feedbackRepositoryFromEnvironment(app);
   const failureQueueRepository =
     dependencies.failureQueueRepository ?? failureQueueRepositoryFromEnvironment(app);
   const requireAdmin = createRequireAdmin(authService);
+  const requireCurrentUser = createRequireCurrentUser(authService);
 
   app.addHook("onRequest", async (request, reply) => {
     const requestId = traceIdFromHeader(request.headers[requestIdHeaderName]) ?? String(request.id);
@@ -653,6 +701,22 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
   });
 
   app.get(
+    "/reader/personal-state",
+    {
+      preValidation: requireCurrentUser
+    },
+    async (request, reply) => {
+      try {
+        return await personalStateRepository.getPersonalState({
+          userId: currentUserFromRequest(request).id
+        });
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.get(
     "/reader/digest",
     {
       schema: {
@@ -667,6 +731,72 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
           limit: query.limit
         });
         return { items };
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.put(
+    "/reader/personal-state/saved",
+    {
+      preValidation: requireCurrentUser,
+      schema: {
+        body: personalStateMutationBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const body = request.body as PersonalStateMutationBody;
+        return await personalStateRepository.setSavedItem({
+          userId: currentUserFromRequest(request).id,
+          itemId: body.itemId,
+          active: body.active
+        });
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.put(
+    "/reader/personal-state/read-later",
+    {
+      preValidation: requireCurrentUser,
+      schema: {
+        body: personalStateMutationBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const body = request.body as PersonalStateMutationBody;
+        return await personalStateRepository.setReadLaterItem({
+          userId: currentUserFromRequest(request).id,
+          itemId: body.itemId,
+          active: body.active
+        });
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
+    }
+  );
+
+  app.put(
+    "/reader/personal-state/read-status",
+    {
+      preValidation: requireCurrentUser,
+      schema: {
+        body: readStatusMutationBodySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const body = request.body as ReadStatusMutationBody;
+        return await personalStateRepository.setReadStatus({
+          userId: currentUserFromRequest(request).id,
+          itemId: body.itemId,
+          status: body.status
+        });
       } catch (error) {
         return sendSourceError(reply, error);
       }
@@ -861,8 +991,36 @@ function createRequireAdmin(authService: AuthService) {
   };
 }
 
+function createRequireCurrentUser(authService: AuthService) {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const sessionToken = request.cookies[authSessionCookieName];
+      const user = await authService.currentUser(sessionToken);
+
+      if (!user) {
+        if (sessionToken) {
+          reply.clearCookie(authSessionCookieName, { path: "/" });
+        }
+        return reply.code(401).send({ error: "authentication_required" });
+      }
+
+      (request as CurrentUserRequest).currentUser = user;
+    } catch (error) {
+      return sendSourceError(reply, error);
+    }
+  };
+}
+
 function adminUserFromRequest(request: FastifyRequest): AuthUser | null {
   return (request as AdminRequest).adminUser ?? null;
+}
+
+function currentUserFromRequest(request: FastifyRequest): AuthUser {
+  const user = (request as CurrentUserRequest).currentUser;
+  if (!user) {
+    throw new Error("Current user is required");
+  }
+  return user;
 }
 
 function traceIdFromRequest(request: FastifyRequest): string {
@@ -972,6 +1130,22 @@ function readerRepositoryFromEnvironment(app: FastifyInstance): ReaderRepository
   return repository;
 }
 
+function personalStateRepositoryFromEnvironment(app: FastifyInstance): PersonalStateRepository {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return unconfiguredPersonalStateRepository;
+  }
+
+  const repository = createPersonalStateRepository(databaseUrl);
+
+  app.addHook("onClose", async () => {
+    await repository.close();
+  });
+
+  return repository;
+}
+
 function feedbackRepositoryFromEnvironment(app: FastifyInstance): FeedbackRepository {
   const databaseUrl = process.env.DATABASE_URL;
 
@@ -1068,6 +1242,22 @@ const unconfiguredReaderRepository: ReaderRepository = {
     throw new DatabaseNotConfiguredError();
   },
   getReaderItemDetail: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  close: async () => undefined
+};
+
+const unconfiguredPersonalStateRepository: PersonalStateRepository = {
+  getPersonalState: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  setSavedItem: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  setReadLaterItem: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  setReadStatus: async () => {
     throw new DatabaseNotConfiguredError();
   },
   close: async () => undefined
