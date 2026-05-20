@@ -144,3 +144,6 @@ jobs:
 
       - name: Verify arXiv source policy contract
         run: node scripts/check-arxiv-source-policy.mjs
+
+      - name: Verify GDELT and RSSHub expansion constraints
+        run: node scripts/check-source-expansion-constraints.mjs

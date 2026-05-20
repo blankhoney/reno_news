@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "adapter": "gdelt",
+  "enabled": false,
+  "mode": "candidate_radar_only",
+  "scope": {
+    "allowedEndpointHost": "api.gdeltproject.org",
+    "allowedEndpoints": [
+      "GET /api/v2/doc/doc"
+    ],
+    "allowedModes": [
+      "artlist",
+      "timelinevolinfo"
+    ],
+    "allowedOutputFormats": [
+      "json"
+    ],
+    "allowedQueryShape": "operator-managed queries only; no open user query input",
+    "forbiddenPatterns": [
+      "full corpus ingest",
+      "event table import",
+      "image mirroring",
+      "automatic publication",
+      "raw article storage",
+      "backfill sweep"
+    ]
+  },
+  "rateLimit": {
+    "concurrency": 1,
+    "maxRecordsPerQuery": 50,
+    "minFetchIntervalMinutes": 60,
+    "maxQueriesPerRun": 5
+  },
+  "outputs": {
+    "writesRawEntries": false,
+    "createsSources": false,
+    "writesCandidateRadarEvents": true,
+    "candidateFields": [
+      "title",
+      "url",
+      "sourceCountry",
+      "language",
+      "seendate",
+      "domain",
+      "tone",
+      "queryName"
+    ]
+  },
+  "reviewGate": {
+    "operatorReviewRequired": true,
+    "promotionTarget": "Source Registry or manually approved raw entry candidate",
+    "autoPublish": false
+  },
+  "references": [
+    "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/",
+    "https://www.gdeltproject.org/"
+  ]
+}

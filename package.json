@@ -22,6 +22,7 @@
     "ai:golden:check": "uv --project services/worker run python -m reno_worker.golden_eval --fixture services/worker/golden/ai_evaluation_golden.jsonl --provider fake",
     "github:source-policy:check": "node scripts/check-github-source-policy.mjs",
     "arxiv:source-policy:check": "node scripts/check-arxiv-source-policy.mjs",
+    "source:expansion:check": "node scripts/check-source-expansion-constraints.mjs",
     "release:audit:local": "node scripts/release-health-audit.mjs",
     "disk:check:local": "node scripts/disk-usage-check.mjs",
     "compose:production:check": "node scripts/check-production-compose.mjs",

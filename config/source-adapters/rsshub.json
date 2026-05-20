@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "adapter": "rsshub",
+  "enabled": false,
+  "scope": {
+    "whitelistOnly": true,
+    "allowedRoutes": [],
+    "allowedOutputFormats": [
+      "rss",
+      "atom"
+    ],
+    "defaultQueryParameters": {
+      "limit": 20,
+      "format": "atom"
+    },
+    "forbiddenPatterns": [
+      "wildcard route expansion",
+      "unsafe user-supplied domains",
+      "fulltext mode by default",
+      "public instance dependency",
+      "route discovery crawl",
+      "debug output exposure"
+    ]
+  },
+  "rateLimit": {
+    "concurrency": 1,
+    "minFetchIntervalMinutes": 60,
+    "maxRoutesPerRun": 10,
+    "requiresCache": true
+  },
+  "outputs": {
+    "usesExistingRssAtomIngest": true,
+    "createsSourcesAutomatically": false,
+    "requiresOperatorSourceRegistryEntry": true
+  },
+  "operations": {
+    "preferSelfHostedInstance": true,
+    "requiredInstanceSettings": [
+      "CACHE_EXPIRE >= 3600",
+      "do not enable unsafe user-supplied domains",
+      "do not expose debug output in production"
+    ]
+  },
+  "references": [
+    "https://docs.rsshub.app/guide/parameters",
+    "https://docs.rsshub.app/deploy/config",
+    "https://docs.rsshub.app/deploy/"
+  ]
+}

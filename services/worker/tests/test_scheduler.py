@@ -15,6 +15,7 @@ class SchedulerTest(unittest.TestCase):
                 self.policy(source_id=3, source_type="github"),
                 self.policy(source_id=4, source_type="arxiv"),
                 self.policy(source_id=5, source_type="gdelt"),
+                self.policy(source_id=6, source_type="rsshub"),
             ]
 
         scheduled = schedule_enabled_sources(

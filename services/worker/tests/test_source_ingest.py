@@ -78,6 +78,15 @@ class SourceIngestTest(unittest.TestCase):
             ],
         )
 
+    def test_ingest_configured_source_rejects_unimplemented_radar_and_whitelist_types(self) -> None:
+        for source_type in ["gdelt", "rsshub"]:
+            with self.assertRaisesRegex(ValueError, f"Unsupported source type for ingest: {source_type}"):
+                ingest_configured_source(
+                    "postgres://example",
+                    99,
+                    read_source_type=lambda _database_url, _source_id, value=source_type: value,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

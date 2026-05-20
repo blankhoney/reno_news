@@ -557,13 +557,24 @@
 
 ## Task 25: GDELT Radar And RSSHub Whitelist Planning
 
-- Status: Pending
+- Status: Completed
 - Objective: Document and configure GDELT as candidate radar only, and RSSHub as explicit whitelist only.
 - TDD/Verification:
   - Failing config/docs check first for radar-only and whitelist-only constraints.
   - Pass criteria: no full GDELT ingest or open RSSHub route expansion is introduced.
 - Completion Record:
-  - Pending.
+  - Checked official GDELT DOC 2.0 and RSSHub docs before setting constraints: GDELT DOC 2.0 has broad global news search/JSON outputs, and RSSHub supports feed formats, route parameters, cache/configuration, and deployment modes.
+  - Red/Green: added `pnpm source:expansion:check` and `scripts/check-source-expansion-constraints.mjs`; it failed before `config/source-adapters/gdelt.json` and `config/source-adapters/rsshub.json`, then passed after adding the policy files and runbook.
+  - Added `config/source-adapters/gdelt.json` as disabled, `candidate_radar_only`, low-concurrency, max-50-record, review-gated radar that writes no raw entries and creates no sources automatically.
+  - Added `config/source-adapters/rsshub.json` as disabled, whitelist-only, empty-route, self-host-preferred RSS/Atom feed conversion policy that creates no Source Registry entries automatically.
+  - Added `docs/ops/gdelt-radar-rsshub-whitelist.md` documenting no full GDELT ingest, no image/event-table/backfill sweep, no RSSHub wildcard route expansion, no unsafe user-supplied domains, no default fulltext, and no public-instance dependency.
+  - Added `GDELT Radar` and `RSSHub Whitelist` terms to `CONTEXT.md`.
+  - Wired the source expansion constraint check into CI and the CI/CD runbook.
+  - Added runtime guard tests proving scheduler skips `gdelt`/`rsshub` policies and dispatcher rejects them as unsupported source types.
+  - Quality review: close-read the source expansion checker, GDELT/RSSHub configs, runbook, glossary additions, and worker scheduler/dispatcher tests.
+  - Verified with `pnpm source:expansion:check`, `pnpm v2:plan:check`, `pnpm --filter @reno-news/db test`, `uv --project services/worker run python -m unittest services.worker.tests.test_scheduler services.worker.tests.test_source_ingest`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `pnpm test`, `pnpm build`, `pnpm lint`, and `git diff --check`.
+  - Note: an initial `pnpm lint` run overlapped with `pnpm build` and hit transient Next `.next/types` churn; rerunning `pnpm lint` after build completed passed cleanly.
+  - Limitations: this task intentionally implements no GDELT runtime adapter, no RSSHub runtime adapter, no live API call, no route allowlist entries, and no candidate radar table.
 
 ## Task 26: PostgreSQL Similarity/Dedup Planning
 

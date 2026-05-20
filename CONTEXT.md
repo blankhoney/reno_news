@@ -40,6 +40,14 @@ _Avoid_: Crawler when the source is structured
 A metadata-only Source Adapter for allowlisted arXiv Atom API category queries. It stores descriptive article metadata and links to the arXiv abstract page; it does not mirror PDFs or source files.
 _Avoid_: arXiv crawler, PDF mirror, full corpus harvester
 
+**GDELT Radar**:
+A future candidate-discovery signal from GDELT that may surface topics, domains, or narratives for Admin review. It is not a Source Adapter that writes raw entries or publishes reader items.
+_Avoid_: GDELT ingest, full corpus import, automatic publisher
+
+**RSSHub Whitelist**:
+A future operator-approved list of RSSHub routes that can be treated as ordinary RSS/Atom sources. It is not route discovery, wildcard route expansion, or a public-instance dependency.
+_Avoid_: RSSHub crawler, route generator, universal feed converter
+
 **Ingest Attempt**:
 A recorded attempt to discover candidate items from a source, including success, skip, or failure outcome.
 _Avoid_: Crawl job when the source is structured RSS/Atom

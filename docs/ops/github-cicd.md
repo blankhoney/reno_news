@@ -36,6 +36,7 @@ Checks:
 - AI provider contract check for MiniMax boundary, schema gate, env names, and no live provider calls by default
 - GitHub source policy contract check for allowlist-only Releases/repository metadata scope and low-concurrency rate-limit handling
 - arXiv source policy contract check for category-query allowlist, Atom pagination, attribution, and 3-second request spacing
+- GDELT/RSSHub source expansion constraints check proving GDELT stays candidate-radar only and RSSHub stays explicit-whitelist only
 
 Configured branch protection for `main`:
 
