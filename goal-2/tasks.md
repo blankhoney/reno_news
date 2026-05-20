@@ -468,12 +468,17 @@
 
 ## Check-Debug Loop 7
 
-- Status: Pending
+- Status: Completed
 - Scope: Tasks 19-21.
 - Verification:
   - Run reader web tests, personal state tests, digest API tests, and browser smoke if UI changed.
 - Completion Record:
-  - Pending.
+  - Verified digest edition API generation/list/detail/replay, invalid date rejection, and admin RBAC with `pnpm --filter @reno-news/api test`.
+  - Verified digest edition repository replay stability, reader-safe snapshots, and date-only preservation with `pnpm --filter @reno-news/db test:integration`.
+  - Verified personal state and digest edition web helpers with `pnpm --filter @reno-news/web test`, and verified the playback route compiles with `pnpm --filter @reno-news/web build`.
+  - Verified V2 planning state with `pnpm v2:plan:check`, workspace quality gates with `pnpm lint`, `pnpm test`, and `pnpm build`, and whitespace safety with `git diff --check`.
+  - Browser smoke opened the local playback route and confirmed the stored edition rendered with the expected heading and item. Local Next dev produced HMR/fav icon noise and a Turbopack write warning on shutdown, but production build and rendered page succeeded.
+  - No blocking defects remain for Tasks 19-21. Real production edition generation and admin review workflow remain future scope.
 
 ## Task 22: GitHub Source Adapter Planning And Policy
 
