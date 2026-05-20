@@ -69,6 +69,7 @@ Local checks:
 
 ```bash
 pnpm ai:provider:check
+pnpm ai:golden:check
 pnpm --filter @reno-news/db test
 uv --project services/worker run python -m unittest discover -s services/worker/tests
 ```
@@ -81,6 +82,8 @@ Expected behavior:
 - no real provider calls by default;
 - all durable attempts are visible through model_calls and failure queue projections;
 - prompt, schema, model, or fallback changes are evaluated through the golden set before production use.
+
+The default golden-set command uses the fake provider and the local `services/worker/golden/ai_evaluation_golden.jsonl` fixture. Live provider regression is blocked unless both `RUN_LIVE_AI_GOLDEN=1` and `MINIMAX_API_KEY` are present. See `docs/ops/golden-set.md` for harness details and limitations.
 
 ## References
 

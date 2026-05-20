@@ -26,7 +26,7 @@ Triggers:
 Checks:
 
 - JavaScript install, lint, tests, and build
-- Python worker lock verification and tests
+- Python worker lock verification, tests, and fake AI golden-set harness
 - PostgreSQL migration, seed, and integration tests
 - Docker Compose config rendering for local development
 - Production Compose public-boundary check proving only Caddy publishes host ports
@@ -139,6 +139,7 @@ Expected behavior:
 - CI verifies both the development Compose render and the production Caddy-only public boundary.
 - CI verifies the production deploy contract, including `scripts/deploy-production.sh`.
 - CI verifies the AI provider documentation contract without requiring a MiniMax key.
+- CI runs the fake AI golden-set harness without requiring provider credentials.
 - Image publishing runs after pushes to `main` and publishes all three GHCR images.
 - Deploy is available manually but fails early until all required deployment secrets are configured.
 

@@ -352,13 +352,21 @@
 
 ## Task 16: Golden Set Regression Harness
 
-- Status: Pending
+- Status: Completed
 - Objective: Create a 50-100 item golden sample evaluation harness for translation, summary, scoring, and fact/opinion/suspicion extraction.
 - TDD/Verification:
   - Failing harness test first proving a small fixture can be evaluated deterministically.
   - Pass criteria: local fake fixtures produce a stable report; real provider execution is gated by env.
 - Completion Record:
-  - Pending.
+  - Red/Green: added a deterministic fake golden harness test; it first failed because `reno_worker.golden_eval` did not exist, then passed after adding the harness module.
+  - Added `services/worker/src/reno_worker/golden_eval.py` with JSONL fixture loading, fake adapter evaluation, schema-gate validation, score comparison, stable JSON reporting, and live-provider gating.
+  - Red/Green: added a fixture-count test; it first failed because no repo fixture existed, then passed after adding `services/worker/golden/ai_evaluation_golden.jsonl` with 50 unique synthetic samples across the MVP boards.
+  - Added a live-provider gate test requiring both `RUN_LIVE_AI_GOLDEN=1` and `MINIMAX_API_KEY`.
+  - Added `pnpm ai:golden:check` and wired the fake golden harness into the Python worker CI job without requiring provider credentials.
+  - Added `docs/ops/golden-set.md`, linked it from the AI provider runbook, updated the CI/CD runbook and production audit, and marked V2.4 completed in `docs/CODEX_MASTER_PLAN.md`.
+  - Quality review: close-read the golden harness, tests, fixture evidence, golden-set runbook, package/CI wiring, and AI provider contract checker.
+  - Verified with `uv --project services/worker run python -m unittest services.worker.tests.test_golden_eval`, `pnpm ai:golden:check` (50 passed, 0 failed), `pnpm ai:provider:check`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `pnpm --filter @reno-news/db test`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Limitations: the current fixture is synthetic and covers AI evaluation scores only; live MiniMax regression, translation fluency, summary style, and human-reviewed production quality expectations remain future work.
 
 ## Task 17: Server-Side Personal State Planning And Schema
 

@@ -12,7 +12,7 @@ This report records the MVP's current production-readiness evidence and Residual
 | Disk guardrails | `pnpm disk:check:local` reports Docker disk usage and local backup artifact size without deleting data. | Evidence exists locally |
 | Log retention | `infra/compose/compose.yml` defines bounded `json-file` log retention for all Compose services. | Evidence exists locally |
 | Identity boundary | API-owned sessions, admin route guards, and audit events are covered by route and migration tests. | Evidence exists locally |
-| AI provider boundary | `docs/ops/ai-provider.md` and `pnpm ai:provider:check` define the MiniMax M2.7 usage boundary, env contract, local schema gate, repair/quarantine policy, and no-live-call default. | Evidence exists locally |
+| AI provider boundary | `docs/ops/ai-provider.md`, `docs/ops/golden-set.md`, `pnpm ai:provider:check`, and `pnpm ai:golden:check` define the MiniMax M2.7 usage boundary, env contract, local schema gate, repair/quarantine policy, fake golden-set harness, and no-live-call default. | Evidence exists locally |
 | GitHub CI/CD | `.github/workflows/ci.yml`, `.github/workflows/docker-publish.yml`, and `.github/workflows/deploy.yml` define CI checks, GHCR image publishing, production boundary checks, deploy contract checks, off-host backup contract checks, alert rule checks, and a manual deployment handoff. | Evidence exists in repo |
 | GitHub repository governance | `blankhoney/reno_news` is public, uses `main` as the default branch, and has branch/environment protection configured in GitHub settings. | Evidence exists on GitHub |
 | Scope control | `docs/CODEX_MASTER_PLAN.md` keeps remote monitoring, alerting, production backup automation, and deferred product features out of the current MVP. | Evidence exists locally |
@@ -28,7 +28,7 @@ This report records the MVP's current production-readiness evidence and Residual
 - No production restore objective or point-in-time recovery target.
 - No security hardening review for container users, daemon access, host filesystem exposure, or network policy.
 - No incident-response process, paging channel, or operational ownership model.
-- No live MiniMax key, provider smoke test, schema repair implementation, fallback provider implementation, or golden-set quality report.
+- No live MiniMax key, provider smoke test, fallback provider implementation, or live MiniMax golden-set quality report.
 
 ## Explicit Non-Goals
 
@@ -45,12 +45,13 @@ This report records the MVP's current production-readiness evidence and Residual
 - `docs/ops/logging-trace.md`: `x-request-id` propagation, safe structured log fields, and logging limitations.
 - `docs/ops/alerts.md`: Prometheus alert runbooks for service, backlog, ingest, model, backup, and disk signals.
 - `docs/ops/ai-provider.md`: MiniMax provider boundary, environment contract, timeout/retry/budget policy, schema gate, and fallback/quarantine rules.
+- `docs/ops/golden-set.md`: fake-provider golden-set fixture, command, live-provider gate, CI boundary, and limitations.
 - `docs/ops/backup-restore.md`: local Backup Snapshot and Restore Drill steps, cleanup, and production backup limitations.
 - `docs/ops/offhost-backup.md`: S3-compatible backup dry-run, required environment, retention policy file, and restore drill flow.
 - `docs/ops/disk-usage.md`: local Disk Usage Guard command, evidence, failure handling, manual cleanup guidance, and limitations.
 
 ## Production Launch Boundary
 
-The current system has local evidence for checks, health probes, basic metrics endpoints, backup/restore drill readiness, off-host backup dry-run contracts, disk guardrails, identity boundaries, AI provider boundary documentation, GitHub CI, GHCR image publishing, production Compose boundary checks, and a manual deployment handoff. That is enough to continue repository and release workflow work. It is not enough to claim production launch approval.
+The current system has local evidence for checks, health probes, basic metrics endpoints, backup/restore drill readiness, off-host backup dry-run contracts, disk guardrails, identity boundaries, AI provider boundary documentation, a fake AI golden-set harness, GitHub CI, GHCR image publishing, production Compose boundary checks, and a manual deployment handoff. That is enough to continue repository and release workflow work. It is not enough to claim production launch approval.
 
 Before a real production launch, a later explicitly scoped issue must decide deployment target, real secret handling, real object-store target, backup schedule, successful off-host restore drill cadence, remote monitoring, alerting, security hardening, rollback ownership, and incident response.

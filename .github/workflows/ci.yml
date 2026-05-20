@@ -65,6 +65,9 @@ jobs:
         working-directory: services/worker
         run: uv run python -m unittest discover -s tests
 
+      - name: Run fake AI golden-set harness
+        run: uv --project services/worker run python -m reno_worker.golden_eval --fixture services/worker/golden/ai_evaluation_golden.jsonl --provider fake
+
   database-integration:
     name: PostgreSQL integration tests
     runs-on: ubuntu-latest

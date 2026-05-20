@@ -19,6 +19,7 @@
     "backup:offhost:check": "node scripts/check-offhost-backup-contract.mjs",
     "alerts:check": "node scripts/check-alert-rules.mjs",
     "ai:provider:check": "node scripts/check-ai-provider-contract.mjs",
+    "ai:golden:check": "uv --project services/worker run python -m reno_worker.golden_eval --fixture services/worker/golden/ai_evaluation_golden.jsonl --provider fake",
     "release:audit:local": "node scripts/release-health-audit.mjs",
     "disk:check:local": "node scripts/disk-usage-check.mjs",
     "compose:production:check": "node scripts/check-production-compose.mjs",
