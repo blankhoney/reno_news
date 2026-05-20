@@ -113,6 +113,8 @@ gh repo edit blankhoney/reno_news --enable-issues=true --enable-wiki=false
 
 Then configure branch protection and the `production` environment in GitHub repository settings.
 
+Private repositories may require a GitHub plan that supports branch protection and environment protection rules. If the plan does not support those controls, keep deploy manual-only, keep the repository private, and treat pull request review plus the required CI checks as the operational gate until the account is upgraded or the repository is intentionally made public.
+
 ## Verification
 
 After pushing to GitHub:
