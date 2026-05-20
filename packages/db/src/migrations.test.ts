@@ -264,6 +264,7 @@ test("production audit report stays evidence-only and non-approving", async () =
     "pnpm disk:check:local",
     "docs/ops/release-health-audit.md",
     "docs/ops/backup-restore.md",
+    "docs/ops/offhost-backup.md",
     "docs/ops/disk-usage.md",
     "branch/environment protection configured",
     "http://localhost:8080/api/healthz"
@@ -276,6 +277,7 @@ test("production audit report stays evidence-only and non-approving", async () =
     "No remote monitoring or alerting",
     "No production backup schedule or PITR",
     "No production secret management",
+    "No real object-store bucket",
     "No production restore objective"
   ]) {
     assert.match(report, new RegExp(residualGap.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));

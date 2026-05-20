@@ -187,13 +187,19 @@
 
 ## Task 9: Off-Host Backup Foundation
 
-- Status: Pending
+- Status: Completed
 - Objective: Implement documented off-host PostgreSQL backup and restore drill flow using `pg_dump -Fc` and S3-compatible storage.
 - TDD/Verification:
   - Failing dry-run or shell contract test first for required env and commands.
   - Pass criteria: backup script has dry-run, retention policy, restore instructions, and no secrets in repo.
 - Completion Record:
-  - Pending.
+  - Red: added `scripts/check-offhost-backup-contract.mjs`; `node scripts/check-offhost-backup-contract.mjs` failed because `scripts/db-backup-offhost.sh` did not exist.
+  - Green: added `scripts/db-backup-offhost.sh`, `pnpm db:backup:offhost`, and `pnpm backup:offhost:check` for a S3-compatible off-host PostgreSQL backup contract.
+  - The off-host script keeps `pg_dump -Fc`, requires real AWS/S3 credentials only outside `DRY_RUN=1`, uploads a manifest, writes a lifecycle retention policy file, and points restore verification back to `scripts/db-restore-drill.sh`.
+  - Added `docs/ops/offhost-backup.md`, linked it from `docs/ops/backup-restore.md`, added the contract check to CI, and updated production audit/CI docs to distinguish local contract evidence from missing real bucket and off-host restore drill verification.
+  - Quality review: close-read the off-host backup script, contract checker, off-host runbook, local backup runbook, CI workflow, CI/CD runbook, production audit report, migration test updates, and V2 plan status.
+  - Verified with `pnpm backup:offhost:check`, `DRY_RUN=1 BACKUP_S3_BUCKET=example-bucket BACKUP_S3_ENDPOINT_URL=https://s3.example.invalid pnpm db:backup:offhost`, `sh -n scripts/db-backup-offhost.sh`, `pnpm --filter @reno-news/db test`, `pnpm deploy:contract:check`, `pnpm compose:production:check`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
+  - Real off-host storage remains unverified because no object-store bucket, endpoint credentials, production schedule, or remote restore target exists in this local session.
 
 ## Check-Debug Loop 3
 

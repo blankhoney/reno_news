@@ -126,3 +126,6 @@ jobs:
 
       - name: Verify production deploy contract
         run: node scripts/check-deploy-contract.mjs
+
+      - name: Verify off-host backup contract
+        run: node scripts/check-offhost-backup-contract.mjs

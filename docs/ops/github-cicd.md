@@ -31,6 +31,7 @@ Checks:
 - Docker Compose config rendering for local development
 - Production Compose public-boundary check proving only Caddy publishes host ports
 - Production deploy contract check for required secrets, health checks, and rollback
+- Off-host backup contract check for S3-compatible dry-run, retention, and restore drill docs
 
 Configured branch protection for `main`:
 

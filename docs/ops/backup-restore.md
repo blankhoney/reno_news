@@ -4,6 +4,8 @@ This runbook covers the MVP local Backup Snapshot and Restore Drill for the Post
 
 It is manual and local. It is not production scheduling, remote storage, WAL archiving, point-in-time recovery, monitoring, alerting, or release automation.
 
+For the V2 off-host S3-compatible backup contract, see `docs/ops/offhost-backup.md`.
+
 ## Prerequisites
 
 - Docker Compose services are running from `infra/compose/compose.yml`.
