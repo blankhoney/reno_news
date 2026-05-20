@@ -10,7 +10,7 @@ Canonical repository:
 https://github.com/blankhoney/reno_news
 ```
 
-The repository should use `main` as the default branch. Keep it private until production access, source licensing, and publication policy are explicitly reviewed.
+The repository uses `main` as the default branch and is public.
 
 ## Workflows
 
@@ -30,7 +30,7 @@ Checks:
 - PostgreSQL migration, seed, and integration tests
 - Docker Compose config rendering
 
-Recommended branch protection for `main`:
+Configured branch protection for `main`:
 
 - require pull request before merge
 - require branch to be up to date before merge
@@ -76,6 +76,11 @@ Environment:
 
 - `production`
 
+Configured environment protection:
+
+- deployment branch policy accepts protected branches only
+- required reviewer: `blankhoney`
+
 Required repository or environment secrets:
 
 - `DEPLOY_HOST`
@@ -102,7 +107,7 @@ Keep the real command in GitHub secrets or environment secrets, not in the repos
 From the repository root:
 
 ```bash
-gh repo create blankhoney/reno_news --private --source=. --remote=origin --push
+gh repo create blankhoney/reno_news --public --source=. --remote=origin --push
 ```
 
 After creation:
@@ -112,8 +117,6 @@ gh repo edit blankhoney/reno_news --enable-issues=true --enable-wiki=false
 ```
 
 Then configure branch protection and the `production` environment in GitHub repository settings.
-
-Private repositories may require a GitHub plan that supports branch protection and environment protection rules. If the plan does not support those controls, keep deploy manual-only, keep the repository private, and treat pull request review plus the required CI checks as the operational gate until the account is upgraded or the repository is intentionally made public.
 
 ## Verification
 

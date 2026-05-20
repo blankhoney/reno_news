@@ -12,13 +12,13 @@ This report records the MVP's current production-readiness evidence and Residual
 | Disk guardrails | `pnpm disk:check:local` reports Docker disk usage and local backup artifact size without deleting data. | Evidence exists locally |
 | Log retention | `infra/compose/compose.yml` defines bounded `json-file` log retention for all Compose services. | Evidence exists locally |
 | GitHub CI/CD | `.github/workflows/ci.yml`, `.github/workflows/docker-publish.yml`, and `.github/workflows/deploy.yml` define CI checks, GHCR image publishing, and a manual deployment handoff. | Evidence exists in repo |
+| GitHub repository governance | `blankhoney/reno_news` is public, uses `main` as the default branch, and has branch/environment protection configured in GitHub settings. | Evidence exists on GitHub |
 | Scope control | `docs/CODEX_MASTER_PLAN.md` keeps remote monitoring, alerting, auth/RBAC, Admin identity, audit logs, production backup automation, and deferred product features out of the current MVP. | Evidence exists locally |
 
 ## Residual Production Gaps
 
 - No production deployment target or server layout.
 - No configured production deployment secrets.
-- No confirmed protected deployment environment policy in GitHub settings.
 - No remote monitoring or alerting.
 - No production backup schedule or PITR.
 - No production secret management.

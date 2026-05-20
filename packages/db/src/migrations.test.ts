@@ -213,6 +213,7 @@ test("production audit report stays evidence-only and non-approving", async () =
     "docs/ops/release-health-audit.md",
     "docs/ops/backup-restore.md",
     "docs/ops/disk-usage.md",
+    "branch/environment protection configured",
     "http://localhost:8080/api/healthz"
   ]) {
     assert.match(report, new RegExp(expectedEvidence.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
@@ -220,7 +221,6 @@ test("production audit report stays evidence-only and non-approving", async () =
 
   for (const residualGap of [
     "No production deployment target",
-    "No confirmed protected deployment environment policy",
     "No remote monitoring or alerting",
     "No production backup schedule or PITR",
     "No production secret management",
@@ -326,7 +326,8 @@ test("GitHub CI/CD workflows define quality gate, image publishing, and manual d
   assert.doesNotMatch(deployWorkflow, /blankhoney\.xyz|\/srv\/reno_news|BEGIN OPENSSH PRIVATE KEY/);
   assert.match(runbook, /blankhoney\/reno_news/);
   assert.match(runbook, /ghcr\.io\/blankhoney\/reno-news-web/);
-  assert.match(runbook, /Recommended branch protection/);
+  assert.match(runbook, /Configured branch protection/);
+  assert.match(runbook, /Configured environment protection/);
   assert.match(runbook, /Required repository or environment secrets/);
   assert.match(adr, /manual SSH deploy/);
   assert.match(adr, /must not hard-code any server/);
