@@ -33,6 +33,9 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     const rawEntries = await pool.query<{ count: string }>(
       "select count(*) from raw_entries where raw_payload_json @> '{\"seed\": true}'::jsonb"
     );
+    const devUsers = await pool.query<{ email: string; role: string; password_hash: string }>(
+      "select email, role, password_hash from users where email in ('admin@example.invalid', 'reader@example.invalid') order by email"
+    );
     const extractionTables = await pool.query<{ count: string }>(
       "select count(*) from information_schema.tables where table_schema = 'public' and table_name in ('raw_entry_extraction_attempts', 'raw_entry_extractions')"
     );
@@ -50,6 +53,17 @@ test("migrations and dev seed can be applied repeatedly", async () => {
     assert.equal(Number(sources.rows[0].count), 5);
     assert.equal(Number(sourcePolicies.rows[0].count), 5);
     assert.equal(Number(rawEntries.rows[0].count), 5);
+    assert.deepEqual(
+      devUsers.rows.map((row) => ({
+        email: row.email,
+        role: row.role,
+        hasArgon2idPassword: row.password_hash.startsWith("$argon2id$")
+      })),
+      [
+        { email: "admin@example.invalid", role: "admin", hasArgon2idPassword: true },
+        { email: "reader@example.invalid", role: "reader", hasArgon2idPassword: true }
+      ]
+    );
     assert.equal(Number(extractionTables.rows[0].count), 2);
     assert.equal(Number(aiTables.rows[0].count), 2);
     assert.equal(Number(translationTables.rows[0].count), 1);

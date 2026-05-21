@@ -141,3 +141,24 @@ set
   translation_policy = excluded.translation_policy,
   risk_level = excluded.risk_level,
   updated_at = now();
+
+insert into users (email, password_hash, role, disabled_at)
+values
+  (
+    'admin@example.invalid',
+    '$argon2id$v=19$m=65536,t=3,p=4$y+My/dqvDfXm8elKRtB4ZQ$Bp5pX2ECeV+wUCnBqJUxKlgn1RjyDKOg3mldYL61Lms',
+    'admin',
+    null
+  ),
+  (
+    'reader@example.invalid',
+    '$argon2id$v=19$m=65536,t=3,p=4$y+My/dqvDfXm8elKRtB4ZQ$Bp5pX2ECeV+wUCnBqJUxKlgn1RjyDKOg3mldYL61Lms',
+    'reader',
+    null
+  )
+on conflict ((lower(email))) do update
+set
+  password_hash = excluded.password_hash,
+  role = excluded.role,
+  disabled_at = null,
+  updated_at = now();

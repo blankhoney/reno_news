@@ -47,10 +47,15 @@
 
 ## Task 4: Local Dev Auth Seed
 
-- Status: Pending
+- Status: Completed
 - Expected result: dev seed idempotently creates local reader/admin accounts with a documented local-only password.
 - Verification: DB integration proves both users exist with expected roles and argon2id password hashes after seed.
 - Completion notes:
+  - Added a failing DB integration assertion that the dev seed creates `admin@example.invalid` and `reader@example.invalid`.
+  - Confirmed the test failed before the seed change because no matching users existed.
+  - Added idempotent dev seed upserts for both local users with the password `reno-news-dev-password` hashed as argon2id.
+  - Verified with `pnpm --filter @reno-news/db test:integration`.
+  - Performed close-reading review of the modified test and seed SQL; no follow-up fix was needed.
 
 ## Task 5: Reader Provenance API
 
