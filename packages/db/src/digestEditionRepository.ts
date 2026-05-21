@@ -11,6 +11,7 @@ export type DigestEditionItemSnapshot = {
   sourceTitle: string;
   title: string;
   summary: string;
+  isDevelopmentSeed: boolean;
   publishedAt: string | null;
   createdAt: string;
 };
@@ -293,7 +294,7 @@ async function hydrateDigestEdition(
     items: itemResult.rows.map((item) => ({
       itemId: item.itemId,
       position: item.position,
-      snapshot: item.snapshot as DigestEditionItemSnapshot
+      snapshot: normalizeDigestEditionItemSnapshot(item.snapshot)
     }))
   };
 }
@@ -325,8 +326,20 @@ function toDigestEditionItemSnapshot(item: ReaderItemCard): DigestEditionItemSna
     sourceTitle: item.sourceTitle,
     title: item.title,
     summary: item.summary,
+    isDevelopmentSeed: item.isDevelopmentSeed,
     publishedAt: item.publishedAt,
     createdAt: item.createdAt
+  };
+}
+
+function normalizeDigestEditionItemSnapshot(snapshot: unknown): DigestEditionItemSnapshot {
+  const item = snapshot as Omit<DigestEditionItemSnapshot, "isDevelopmentSeed"> & {
+    isDevelopmentSeed?: unknown;
+  };
+
+  return {
+    ...item,
+    isDevelopmentSeed: item.isDevelopmentSeed === true
   };
 }
 

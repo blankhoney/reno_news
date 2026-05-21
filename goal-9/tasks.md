@@ -59,10 +59,16 @@
 
 ## Task 5: Reader Provenance API
 
-- Status: Pending
+- Status: Completed
 - Expected result: Reader list/search/digest/detail/related item projections include `isDevelopmentSeed`, and Digest Edition snapshots store/read it safely.
 - Verification: DB integration and API tests cover seed true, non-seed false, and old Digest Edition snapshot fallback.
 - Completion notes:
+  - Added DB integration coverage for `isDevelopmentSeed` across reader list, search, digest, detail, and related projections.
+  - Added Digest Edition coverage for new snapshots preserving `isDevelopmentSeed=true` and legacy snapshots normalizing missing provenance to `false`.
+  - Added `isDevelopmentSeed` to reader repository projections and Digest Edition snapshots without changing filters, ranking, or schema.
+  - Updated API, Web reader types, and contracts fixtures/tests so the response shape is explicit.
+  - Verified with `pnpm --filter @reno-news/db test:integration`, `pnpm --filter @reno-news/api test`, `pnpm --filter @reno-news/web test`, `pnpm --filter @reno-news/web lint`, `pnpm --filter @reno-news/contracts lint`, `pnpm --filter @reno-news/contracts test`, `pnpm --filter @reno-news/api lint`, `pnpm --filter @reno-news/db lint`, and `git diff --check`.
+  - Performed close-reading review of the changed repository, contract, API, Web, and integration-test files; no follow-up fix was needed.
 
 ## Task 6: Reader Provenance UI
 

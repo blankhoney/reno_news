@@ -87,6 +87,7 @@ test("digest edition contract exposes persisted edition request and response sha
             sourceTitle: "OpenAI News",
             title: "Digest item",
             summary: "Digest summary",
+            isDevelopmentSeed: true,
             publishedAt: "2026-05-20T00:00:00.000Z",
             createdAt: "2026-05-20T00:00:00.000Z"
           }

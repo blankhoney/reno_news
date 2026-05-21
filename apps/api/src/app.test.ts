@@ -263,6 +263,7 @@ const readerItem: ReaderItemCard = {
   title: "Sample AI item",
   url: "https://example.invalid/ai/sample-ai-001",
   summary: "Development seed item for the AI board.",
+  isDevelopmentSeed: true,
   publishedAt: "2026-05-20T00:00:00.000Z",
   createdAt: "2026-05-20T00:00:00.000Z"
 };
@@ -2026,6 +2027,7 @@ test("GET /reader/items passes board filter and pagination", async () => {
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(receivedInput, { boardSlug: "ai", limit: 25, offset: 25 });
+  assert.equal(response.json().items[0].isDevelopmentSeed, true);
   assert.deepEqual(response.json(), readerItemPage);
 });
 
@@ -2058,6 +2060,7 @@ test("GET /reader/search passes query, board filter, and pagination", async () =
     limit: 25,
     offset: 25
   });
+  assert.equal(response.json().items[0].isDevelopmentSeed, true);
   assert.deepEqual(response.json(), readerItemPage);
 });
 
@@ -2137,6 +2140,7 @@ test("GET /reader/digest returns digest item cards with optional filters", async
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(receivedInput, { boardSlug: "ai", limit: 5 });
+  assert.equal(response.json().items[0].isDevelopmentSeed, true);
   assert.deepEqual(response.json(), { items: [readerItem] });
 });
 
@@ -2529,6 +2533,7 @@ test("GET /reader/items/:id returns reader item detail", async () => {
 
   assert.equal(response.statusCode, 200);
   assert.equal(receivedId, 1);
+  assert.equal(response.json().item.isDevelopmentSeed, true);
   assert.deepEqual(response.json(), { item: readerItemDetail });
 });
 

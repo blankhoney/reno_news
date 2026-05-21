@@ -12,6 +12,7 @@ export type ReaderItemCard = {
   title: string;
   url: string;
   summary: string;
+  isDevelopmentSeed: boolean;
   publishedAt: string | null;
   createdAt: string;
 };

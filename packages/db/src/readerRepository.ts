@@ -14,6 +14,7 @@ export type ReaderItemCard = {
   title: string;
   url: string;
   summary: string;
+  isDevelopmentSeed: boolean;
   publishedAt: string | null;
   createdAt: string;
 };
@@ -102,6 +103,7 @@ type ReaderItemRow = {
   title: string;
   url: string;
   summary: string | null;
+  isDevelopmentSeed: boolean;
   publishedAt: Date | string | null;
   createdAt: Date | string;
 };
@@ -193,6 +195,7 @@ async function listReaderItemsPage(
       re.title as "title",
       re.url as "url",
       coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
+      coalesce(re.raw_payload_json @> '{"seed": true}'::jsonb, false) as "isDevelopmentSeed",
       re.published_at as "publishedAt",
       re.created_at as "createdAt"
     from raw_entries re
@@ -257,6 +260,7 @@ async function searchReaderItemsPage(
       re.title as "title",
       re.url as "url",
       coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
+      coalesce(re.raw_payload_json @> '{"seed": true}'::jsonb, false) as "isDevelopmentSeed",
       re.published_at as "publishedAt",
       re.created_at as "createdAt"
     from raw_entries re
@@ -377,6 +381,7 @@ async function listRelatedReaderItems(
         re.title,
         re.url,
         coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as summary,
+        coalesce(re.raw_payload_json @> '{"seed": true}'::jsonb, false) as is_development_seed,
         re.published_at,
         re.created_at,
         coalesce(similarity.score, 0) as similarity_score,
@@ -467,6 +472,7 @@ async function listRelatedReaderItems(
       title as "title",
       url as "url",
       summary as "summary",
+      is_development_seed as "isDevelopmentSeed",
       published_at as "publishedAt",
       created_at as "createdAt"
     from folded_candidates
@@ -515,6 +521,7 @@ async function listReaderDigestItems(
       re.title as "title",
       re.url as "url",
       coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
+      coalesce(re.raw_payload_json @> '{"seed": true}'::jsonb, false) as "isDevelopmentSeed",
       re.published_at as "publishedAt",
       re.created_at as "createdAt",
       coalesce(fp.quality_feedback_penalty, 0)::int as "qualityFeedbackPenalty"
@@ -569,6 +576,7 @@ async function getReaderItemDetail(
       re.title as "title",
       re.url as "url",
       coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
+      coalesce(re.raw_payload_json @> '{"seed": true}'::jsonb, false) as "isDevelopmentSeed",
       re.published_at as "publishedAt",
       re.created_at as "createdAt",
       sb.detailed_summary as "detailSummary",
@@ -624,6 +632,7 @@ function mapReaderItemRow(row: ReaderItemRow): ReaderItemCard {
     title: row.title,
     url: row.url,
     summary: normalizeReaderDisplayText(row.summary, readerCardSummaryLength),
+    isDevelopmentSeed: row.isDevelopmentSeed,
     publishedAt: formatNullableDate(row.publishedAt),
     createdAt: formatDate(row.createdAt)
   };

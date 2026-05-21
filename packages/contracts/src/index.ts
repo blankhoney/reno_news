@@ -96,6 +96,7 @@ export type DigestEditionItemSnapshot = {
   sourceTitle: string;
   title: string;
   summary: string;
+  isDevelopmentSeed: boolean;
   publishedAt: string | null;
   createdAt: string;
 };

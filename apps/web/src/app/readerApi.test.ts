@@ -64,6 +64,7 @@ test("getReaderItems serializes board and pagination query", async () => {
             title: "Sample AI item",
             url: "https://example.invalid/ai/sample-ai-001",
             summary: "Summary",
+            isDevelopmentSeed: true,
             publishedAt: "2026-05-20T00:00:00.000Z",
             createdAt: "2026-05-20T00:00:00.000Z"
           }
@@ -82,6 +83,7 @@ test("getReaderItems serializes board and pagination query", async () => {
   try {
     const page = await getReaderItems({ boardSlug: "ai", limit: 25, offset: 25 });
     assert.equal(page.items[0].boardSlug, "ai");
+    assert.equal(page.items[0].isDevelopmentSeed, true);
     assert.deepEqual(page.pagination, {
       limit: 25,
       offset: 25,
@@ -112,6 +114,7 @@ test("getReaderSearchItems serializes query, board, and pagination", async () =>
             title: "Quantum AI item",
             url: "https://example.invalid/ai/quantum-ai-001",
             summary: "Summary",
+            isDevelopmentSeed: false,
             publishedAt: "2026-05-20T00:00:00.000Z",
             createdAt: "2026-05-20T00:00:00.000Z"
           }
@@ -135,6 +138,7 @@ test("getReaderSearchItems serializes query, board, and pagination", async () =>
       offset: 25
     });
     assert.equal(page.items[0].title, "Quantum AI item");
+    assert.equal(page.items[0].isDevelopmentSeed, false);
     assert.deepEqual(page.pagination, {
       limit: 25,
       offset: 25,
@@ -202,6 +206,7 @@ test("getReaderRelatedItems fetches related items with optional limit", async ()
             title: "Related AI item",
             url: "https://example.invalid/ai/related-ai-001",
             summary: "Related summary",
+            isDevelopmentSeed: true,
             publishedAt: "2026-05-20T00:00:00.000Z",
             createdAt: "2026-05-20T00:00:00.000Z"
           }
@@ -215,6 +220,7 @@ test("getReaderRelatedItems fetches related items with optional limit", async ()
     const items = await getReaderRelatedItems(1, 3);
     assert.ok(items);
     assert.equal(items[0].id, 2);
+    assert.equal(items[0].isDevelopmentSeed, true);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -236,6 +242,7 @@ test("getReaderDigestItems fetches digest items with optional filters", async ()
             title: "Digest AI item",
             url: "https://example.invalid/ai/digest-ai-001",
             summary: "Digest summary",
+            isDevelopmentSeed: true,
             publishedAt: "2026-05-20T00:00:00.000Z",
             createdAt: "2026-05-20T00:00:00.000Z"
           }
@@ -248,6 +255,7 @@ test("getReaderDigestItems fetches digest items with optional filters", async ()
   try {
     const items = await getReaderDigestItems({ boardSlug: "ai", limit: 5 });
     assert.equal(items[0].id, 3);
+    assert.equal(items[0].isDevelopmentSeed, true);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -285,6 +293,7 @@ test("getReaderDigestEdition fetches a replay edition by encoded key", async () 
                 sourceTitle: "OpenAI News",
                 title: "Digest AI item",
                 summary: "Stored digest summary",
+                isDevelopmentSeed: true,
                 publishedAt: "2026-05-20T00:00:00.000Z",
                 createdAt: "2026-05-20T00:00:00.000Z"
               }
@@ -300,6 +309,7 @@ test("getReaderDigestEdition fetches a replay edition by encoded key", async () 
     const edition = await getReaderDigestEdition("board:ai:2026-05-21");
     assert.ok(edition);
     assert.equal(edition.items[0].snapshot.title, "Digest AI item");
+    assert.equal(edition.items[0].snapshot.isDevelopmentSeed, true);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -401,6 +411,7 @@ test("getReaderItemDetail fetches reader item detail without caching", async () 
           title: "Sample AI item",
           url: "https://example.invalid/ai/sample-ai-001",
           summary: "Summary",
+          isDevelopmentSeed: true,
           detailSummary: "Detailed summary",
           whyItMatters: "Why it matters",
           sourceNote: "Source note",
@@ -424,6 +435,7 @@ test("getReaderItemDetail fetches reader item detail without caching", async () 
     const item = await getReaderItemDetail(1);
     assert.ok(item);
     assert.equal(item.id, 1);
+    assert.equal(item.isDevelopmentSeed, true);
     assert.equal(item.chineseTextMode, "summary_only");
   } finally {
     globalThis.fetch = originalFetch;

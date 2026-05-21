@@ -887,6 +887,62 @@ test("reader repository lists boards and policy-filtered item cards", async () =
   }
 });
 
+test("reader repository exposes development seed provenance across reader projections", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+
+    const nonSeedId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-provenance-non-seed",
+      title: "Reader Provenance Graph Target",
+      rawSummary: "Reader provenance graph target summary.",
+      sourceUrl: "https://example.invalid/reader-detail-provenance-non-seed.xml",
+      publishedAt: "2099-07-01T00:02:00Z",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const seedId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-provenance-seed",
+      title: "Reader Provenance Graph Seed Sample",
+      rawSummary: "Reader provenance graph seed summary.",
+      sourceUrl: "https://example.invalid/reader-detail-provenance-seed.xml",
+      rawPayloadJson: '{"readerDetailFixture": true, "seed": true}',
+      publishedAt: "2099-07-01T00:01:00Z",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+
+    const listItems = await repository.listReaderItems({ boardSlug: "ai" });
+    const searchItems = await repository.searchReaderItems({
+      query: "Reader Provenance Graph",
+      boardSlug: "ai"
+    });
+    const digestItems = await repository.listReaderDigestItems({ boardSlug: "ai", limit: 20 });
+    const seedDetail = await repository.getReaderItemDetail(seedId);
+    const nonSeedDetail = await repository.getReaderItemDetail(nonSeedId);
+    const relatedItems = await repository.listRelatedReaderItems({ id: nonSeedId, limit: 10 });
+
+    assert.equal(listItems.find((item) => item.id === seedId)?.isDevelopmentSeed, true);
+    assert.equal(listItems.find((item) => item.id === nonSeedId)?.isDevelopmentSeed, false);
+    assert.equal(searchItems.find((item) => item.id === seedId)?.isDevelopmentSeed, true);
+    assert.equal(searchItems.find((item) => item.id === nonSeedId)?.isDevelopmentSeed, false);
+    assert.equal(digestItems.find((item) => item.id === seedId)?.isDevelopmentSeed, true);
+    assert.equal(digestItems.find((item) => item.id === nonSeedId)?.isDevelopmentSeed, false);
+    assert.equal(seedDetail?.isDevelopmentSeed, true);
+    assert.equal(nonSeedDetail?.isDevelopmentSeed, false);
+    assert.equal(relatedItems?.find((item) => item.id === seedId)?.isDevelopmentSeed, true);
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
 test("reader repository pages board item cards with stable pagination metadata", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });
@@ -1806,6 +1862,7 @@ test("digest edition repository replays stored snapshots after source items chan
       title: "Digest Edition Stable Original",
       summaryOneSentence: "Digest edition stable summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-edition-stable.xml",
+      rawPayloadJson: '{"readerDetailFixture": true, "seed": true}',
       publishedAt: "2099-05-20T00:00:00Z",
       rightsStatus: "metadata_only",
       sourceEnabled: true
@@ -1837,10 +1894,12 @@ test("digest edition repository replays stored snapshots after source items chan
 
     assert.equal(created.editionKey, editionKey);
     assert.equal(created.editionDate, editionDate);
+    assert.equal(created.items[0].snapshot.isDevelopmentSeed, true);
     assert.ok(replayed);
     assert.equal(replayed.editionDate, editionDate);
     assert.equal(replayed.items[0].snapshot.title, "Digest Edition Stable Original");
     assert.equal(replayed.items[0].snapshot.summary, "Digest edition stable summary");
+    assert.equal(replayed.items[0].snapshot.isDevelopmentSeed, true);
     assert.equal("url" in replayed.items[0].snapshot, false);
     assert.equal(
       listed.some((edition) => edition.editionKey === editionKey && edition.itemCount === 1),
@@ -1851,6 +1910,58 @@ test("digest edition repository replays stored snapshots after source items chan
     await digestEditionRepository.close();
     await readerRepository.close();
     await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
+test("digest edition repository normalizes legacy snapshots without development seed provenance", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const digestEditionRepository = createDigestEditionRepository(databaseUrl);
+  const editionDate = "2026-05-23";
+  const editionKey = `global:${editionDate}`;
+
+  try {
+    await pool.query("delete from digest_editions where edition_key = $1", [editionKey]);
+    const edition = await pool.query<{ id: number }>(
+      `
+      insert into digest_editions (
+        edition_key,
+        edition_date,
+        window_start_at,
+        window_end_at
+      )
+      values ($1, $2, '2026-05-22T00:00:00.000Z', '2026-05-23T00:00:00.000Z')
+      returning id::int
+      `,
+      [editionKey, editionDate]
+    );
+    await pool.query(
+      `
+      insert into digest_edition_items (
+        digest_edition_id,
+        raw_entry_id,
+        item_position,
+        item_snapshot_json
+      )
+      values (
+        $1,
+        (select id from raw_entries where external_id = 'sample-ai-001'),
+        1,
+        '{"id": 1, "boardSlug": "ai", "boardName": "AI", "sourceTitle": "OpenAI News", "title": "Legacy snapshot", "summary": "Legacy summary", "publishedAt": null, "createdAt": "2026-05-20T00:00:00.000Z"}'::jsonb
+      )
+      `,
+      [edition.rows[0].id]
+    );
+
+    const replayed = await digestEditionRepository.getDigestEditionByKey(editionKey);
+
+    assert.equal(replayed?.items[0].snapshot.isDevelopmentSeed, false);
+  } finally {
+    await pool.query("delete from digest_editions where edition_key = $1", [editionKey]);
+    await digestEditionRepository.close();
     await pool.end();
   }
 });
@@ -2149,6 +2260,7 @@ type ReaderDetailFixtureInput = {
   extractedText?: string;
   translatedTitle?: string;
   translatedText?: string;
+  rawPayloadJson?: string;
 };
 
 async function createReaderDetailFixture(
@@ -2189,7 +2301,7 @@ async function createReaderDetailFixture(
       processing_stage,
       rights_status
     )
-    values ($1, $2, $3, $4, $5, $8, '{"readerDetailFixture": true}'::jsonb, $2, $7, 'extracted', $6)
+    values ($1, $2, $3, $4, $5, $8, $9::jsonb, $2, $7, 'extracted', $6)
     returning id::int
     `,
     [
@@ -2200,7 +2312,8 @@ async function createReaderDetailFixture(
       input.rawSummary ?? "Raw reader detail summary.",
       input.rightsStatus,
       input.lifecycleStatus ?? "ready",
-      input.publishedAt ?? "2026-05-20T00:00:00Z"
+      input.publishedAt ?? "2026-05-20T00:00:00Z",
+      input.rawPayloadJson ?? '{"readerDetailFixture": true}'
     ]
   );
   const rawEntryId = rawEntry.rows[0].id;
