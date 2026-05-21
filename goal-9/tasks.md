@@ -86,9 +86,15 @@
 
 ## Large Check After Task 6
 
-- Status: Pending
+- Status: Completed
 - Expected result: DB/API/Web checks pass before documentation and Chrome acceptance.
 - Completion notes:
+  - Ran `pnpm --filter @reno-news/db test:integration`; all 26 DB integration tests passed.
+  - Ran `pnpm --filter @reno-news/api test`; all 65 API app tests and 4 auth service tests passed.
+  - Ran `pnpm --filter @reno-news/web test`; all 65 Web tests passed.
+  - Ran `pnpm --filter @reno-news/web lint`, `pnpm --filter @reno-news/api lint`, `pnpm --filter @reno-news/db lint`, and `pnpm --filter @reno-news/contracts lint`; all typechecks passed.
+  - Ran `pnpm --filter @reno-news/contracts test`; all 4 contract tests passed.
+  - Ran `git diff --check`; no whitespace errors were reported.
 
 ## Task 7: Documentation Alignment
 
