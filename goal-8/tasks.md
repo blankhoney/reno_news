@@ -22,10 +22,14 @@
 
 ## Task 3: API Documentation Alignment
 
-- Status: Pending
+- Status: Completed
 - Expected result: Reader API docs describe pagination metadata; auth and personal-state docs describe current implemented boundaries and Web BFF proxy notes.
 - Verification: stale API doc searches no longer find outdated personal-state or pagination statements.
 - Completion notes:
+  - Updated `docs/api/reader.md` to document `limit`, `offset`, `pagination.hasMore`, and `pagination.nextOffset` for reader lists and search.
+  - Updated `docs/api/auth.md` so personal-state routes are described as implemented authenticated routes, and added current admin digest edition protected surfaces.
+  - Updated `docs/api/personal-state.md` with the Next.js same-origin BFF proxy routes, including item hydration through `/api/reader/items/:id`.
+  - Closely re-read the three edited API docs and verified the stale API documentation phrase search returns no matches.
 
 ## Large Check After Task 3
 

@@ -25,6 +25,8 @@ Response:
 Returns latest reader item cards. Hidden raw entries are excluded. Optional query:
 
 - `board`: board slug filter.
+- `limit`: item count from 1 to 100. Defaults to 100.
+- `offset`: item offset, minimum 0. Defaults to 0.
 
 Response:
 
@@ -42,7 +44,13 @@ Response:
       "publishedAt": "2026-05-20T00:00:00.000Z",
       "createdAt": "2026-05-20T00:00:00.000Z"
     }
-  ]
+  ],
+  "pagination": {
+    "limit": 100,
+    "offset": 0,
+    "hasMore": false,
+    "nextOffset": null
+  }
 }
 ```
 
@@ -52,6 +60,8 @@ Searches visible reader item cards with PostgreSQL over reader-safe metadata and
 
 - `q`: required non-empty reader search query.
 - `board`: optional board slug filter.
+- `limit`: item count from 1 to 100. Defaults to 100.
+- `offset`: item offset, minimum 0. Defaults to 0.
 
 Searchable fields are limited to raw entry title, URL, source title, board name, raw summary, and summary block fields. The endpoint does not search extracted full text, translation draft full text, private model payloads, or admin-only diagnostics.
 
@@ -71,9 +81,17 @@ Response:
       "publishedAt": "2026-05-20T00:00:00.000Z",
       "createdAt": "2026-05-20T00:00:00.000Z"
     }
-  ]
+  ],
+  "pagination": {
+    "limit": 100,
+    "offset": 0,
+    "hasMore": false,
+    "nextOffset": null
+  }
 }
 ```
+
+`hasMore` is computed by fetching one extra candidate beyond `limit`. When `hasMore` is true, `nextOffset` is `offset + limit`. Clients that only read `items` remain compatible with the response shape.
 
 ## `GET /reader/digest`
 

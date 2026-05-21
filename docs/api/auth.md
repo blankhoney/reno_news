@@ -117,11 +117,14 @@ The protected surfaces are:
 - `GET /admin/audit-events`
 - `GET /admin/feedback`
 - `PATCH /admin/feedback/:id`
+- `GET /admin/digest-editions`
+- `GET /admin/digest-editions/:id`
+- `POST /admin/digest-editions`
 
 Reader-safe routes, including reader item views, digest, search, related items,
 and reader feedback submission, remain public at this stage. Account-bound
-personal-state routes are introduced later and must be scoped to the
-authenticated user.
+personal-state routes are implemented and require an authenticated session; the
+API scopes every personal-state read or mutation to the current session user.
 
 ## Audit Events
 

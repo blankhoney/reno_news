@@ -90,6 +90,18 @@ Request:
 
 Returns the current user's full personal-state response after the mutation.
 
+## Web BFF Proxy
+
+The Next.js web app exposes same-origin proxy routes for browser clients:
+
+- `GET /api/reader/personal-state`
+- `PUT /api/reader/personal-state/saved`
+- `PUT /api/reader/personal-state/read-later`
+- `PUT /api/reader/personal-state/read-status`
+- `GET /api/reader/items/:id`
+
+These routes forward cookies and JSON bodies to the Fastify API. The item-detail proxy exists so personal-state hydration can fetch missing item snapshots without changing the public personal-state response shape.
+
 ## Authorization
 
 - Requests require an authenticated `reader` or `admin` session.
