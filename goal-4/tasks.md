@@ -13,10 +13,12 @@
 
 ## Task 2: Reader Card Overflow Guard
 
-- Status: Pending
+- Status: Completed
 - Expected result: long summaries cannot visually stretch cards beyond a readable preview.
 - Verification: `pnpm --filter @reno-news/web lint` passes; Chrome board/search screenshots show stable cards.
 - Completion notes:
+  - Added four-line overflow protection and long-word wrapping to reader card summaries.
+  - Verified with `pnpm --filter @reno-news/web lint`.
 
 ## Task 3: Explicit Admin Denied Page
 

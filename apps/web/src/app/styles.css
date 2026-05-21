@@ -154,6 +154,13 @@ td span {
 .reader-card p {
   margin: 0 0 0.75rem;
   color: #334155;
+  display: -webkit-box;
+  line-height: 1.5;
+  max-height: 6em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
 }
 
 .personal-actions {
