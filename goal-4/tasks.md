@@ -41,10 +41,13 @@
 
 ## Task 4: Personal-State BFF Proxy
 
-- Status: Pending
+- Status: Completed
 - Expected result: client `/api/reader/personal-state*` requests reach Fastify and anonymous local state remains usable.
 - Verification: route handler tests pass; Chrome personal/detail console shows no `/api/...` 404.
 - Completion notes:
+  - Added route-handler tests for GET and all three PUT mutation routes.
+  - Added Next BFF proxy handlers for `/api/reader/personal-state`, `/saved`, `/read-later`, and `/read-status`.
+  - Verified with `pnpm --filter @reno-news/web test` and `pnpm --filter @reno-news/web lint`.
 
 ## Task 5: Chrome Repair Validation
 
