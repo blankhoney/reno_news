@@ -22,16 +22,22 @@
 
 ## Task 3: Explicit Admin Denied Page
 
-- Status: Pending
+- Status: Completed
 - Expected result: anonymous `/admin` reaches a clear denied page instead of the homepage.
 - Verification: web tests pass; Chrome `/admin` screenshot shows denied state.
 - Completion notes:
+  - Updated the admin denied redirect target to `/admin/denied`.
+  - Added a plain denied page that links back home and states the admin-session requirement.
+  - Verified with `pnpm --filter @reno-news/web test`.
 
 ## Large Check After Task 3
 
-- Status: Pending
+- Status: Completed
 - Expected result: focused DB/web tests and lint pass before continuing.
 - Completion notes:
+  - Passed `pnpm --filter @reno-news/db test:integration`.
+  - Passed `pnpm --filter @reno-news/web test`.
+  - Passed `pnpm --filter @reno-news/web lint`.
 
 ## Task 4: Personal-State BFF Proxy
 

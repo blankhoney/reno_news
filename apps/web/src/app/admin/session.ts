@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser, type AdminApiContext, type AuthUser } from "./api";
 
 export const adminSessionCookieName = "reno_news_session";
-export const adminDeniedRedirectPath = "/";
+export const adminDeniedRedirectPath = "/admin/denied";
 
 export function sessionCookieHeaderFromValue(value: string | undefined): string | undefined {
   if (!value) {

@@ -18,5 +18,5 @@ test("isAdminUser accepts only admin auth users", () => {
   assert.equal(isAdminUser({ id: 1, email: "admin@example.com", role: "admin" }), true);
   assert.equal(isAdminUser({ id: 2, email: "reader@example.com", role: "reader" }), false);
   assert.equal(isAdminUser(null), false);
-  assert.equal(adminDeniedRedirectPath, "/");
+  assert.equal(adminDeniedRedirectPath, "/admin/denied");
 });
