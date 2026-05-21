@@ -5,12 +5,27 @@ import {
   getReaderBoards,
   getReaderItems,
   readerItemPath,
+  readerLoadMorePath,
+  readerPaginationFromSearchParams,
+  type ReaderPagination,
   type ReaderItemCard
 } from "./readerApi";
 import { toPersonalItemSnapshot } from "./personalState";
 
-export default async function Home() {
-  const [boards, items] = await Promise.all([getReaderBoards(), getReaderItems()]);
+type HomeProps = {
+  searchParams: Promise<{
+    limit?: string;
+    offset?: string;
+  }>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  const paginationInput = readerPaginationFromSearchParams(await searchParams);
+  const [boards, itemPage] = await Promise.all([
+    getReaderBoards(),
+    getReaderItems(paginationInput)
+  ]);
+  const loadMorePath = readerLoadMorePath("/", {}, itemPage.pagination);
 
   return (
     <main className="reader-shell">
@@ -39,7 +54,11 @@ export default async function Home() {
 
       <section>
         <h2>Latest items</h2>
-        <ReaderItemList items={items} />
+        <ReaderItemList
+          items={itemPage.items}
+          pagination={itemPage.pagination}
+          loadMorePath={loadMorePath}
+        />
       </section>
     </main>
   );
@@ -47,33 +66,44 @@ export default async function Home() {
 
 export function ReaderItemList({
   items,
-  emptyText = "No reader items are available yet."
+  emptyText = "No reader items are available yet.",
+  pagination,
+  loadMorePath
 }: {
   items: ReaderItemCard[];
   emptyText?: string;
+  pagination?: ReaderPagination;
+  loadMorePath?: string | null;
 }) {
   if (items.length === 0) {
     return <p className="empty-state">{emptyText}</p>;
   }
 
   return (
-    <div className="reader-list">
-      {items.map((item) => (
-        <article key={item.id} className="reader-card">
-          <div>
-            <span>{item.boardName}</span>
-            <span>{item.sourceTitle}</span>
-          </div>
-          <h3>
-            <Link href={readerItemPath(item.id)}>{item.title}</Link>
-          </h3>
-          {item.summary ? <p>{item.summary}</p> : null}
-          <time dateTime={item.publishedAt ?? item.createdAt}>
-            {(item.publishedAt ?? item.createdAt).slice(0, 10)}
-          </time>
-          <PersonalControls item={toPersonalItemSnapshot(item)} />
-        </article>
-      ))}
-    </div>
+    <>
+      <div className="reader-list">
+        {items.map((item) => (
+          <article key={item.id} className="reader-card">
+            <div>
+              <span>{item.boardName}</span>
+              <span>{item.sourceTitle}</span>
+            </div>
+            <h3>
+              <Link href={readerItemPath(item.id)}>{item.title}</Link>
+            </h3>
+            {item.summary ? <p>{item.summary}</p> : null}
+            <time dateTime={item.publishedAt ?? item.createdAt}>
+              {(item.publishedAt ?? item.createdAt).slice(0, 10)}
+            </time>
+            <PersonalControls item={toPersonalItemSnapshot(item)} />
+          </article>
+        ))}
+      </div>
+      {pagination?.hasMore && loadMorePath ? (
+        <Link className="load-more-link" href={loadMorePath}>
+          Load more
+        </Link>
+      ) : null}
+    </>
   );
 }

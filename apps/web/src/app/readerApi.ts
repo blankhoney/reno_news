@@ -16,6 +16,30 @@ export type ReaderItemCard = {
   createdAt: string;
 };
 
+export type ReaderPagination = {
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+  nextOffset: number | null;
+};
+
+export type ReaderItemPage = {
+  items: ReaderItemCard[];
+  pagination: ReaderPagination;
+};
+
+export type ReaderItemsInput = {
+  boardSlug?: string;
+  limit?: number;
+  offset?: number;
+};
+
+export type ReaderSearchItemsInput = ReaderItemsInput & {
+  query: string;
+};
+
+export const readerWebPageSize = 25;
+
 export type DigestEditionItemSnapshot = Omit<ReaderItemCard, "url">;
 
 export type DigestEditionItem = {
@@ -77,6 +101,38 @@ export function apiUrl(path: string): string {
   return joinServiceUrl(process.env.API_BASE_URL ?? "http://localhost:3001", path);
 }
 
+export function readerLoadMorePath(
+  basePath: string,
+  filters: Record<string, string | undefined>,
+  pagination: ReaderPagination
+): string | null {
+  if (!pagination.hasMore || pagination.nextOffset === null) {
+    return null;
+  }
+
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    const normalized = value?.trim();
+    if (normalized) {
+      params.set(key, normalized);
+    }
+  }
+  params.set("limit", String(pagination.limit));
+  params.set("offset", String(pagination.nextOffset));
+
+  return `${basePath}?${params.toString()}`;
+}
+
+export function readerPaginationFromSearchParams(input: {
+  limit?: string;
+  offset?: string;
+}): Pick<ReaderPagination, "limit" | "offset"> {
+  return {
+    limit: boundedInteger(input.limit, readerWebPageSize, 1, 100),
+    offset: boundedInteger(input.offset, 0, 0, Number.MAX_SAFE_INTEGER)
+  };
+}
+
 export async function getReaderBoards(): Promise<ReaderBoard[]> {
   const response = await fetch(apiUrl("/reader/boards"), { cache: "no-store" });
   if (!response.ok) {
@@ -86,16 +142,24 @@ export async function getReaderBoards(): Promise<ReaderBoard[]> {
   return payload.boards;
 }
 
-export async function getReaderItems(boardSlug?: string): Promise<ReaderItemCard[]> {
-  const path = boardSlug
-    ? `/reader/items?${new URLSearchParams({ board: boardSlug }).toString()}`
-    : "/reader/items";
+export async function getReaderItems(input: ReaderItemsInput = {}): Promise<ReaderItemPage> {
+  const params = new URLSearchParams();
+  if (input.boardSlug) {
+    params.set("board", input.boardSlug);
+  }
+  if (input.limit) {
+    params.set("limit", String(input.limit));
+  }
+  if (input.offset) {
+    params.set("offset", String(input.offset));
+  }
+  const query = params.toString();
+  const path = `/reader/items${query ? `?${query}` : ""}`;
   const response = await fetch(apiUrl(path), { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Failed to load reader items: ${response.status}`);
   }
-  const payload = (await response.json()) as { items: ReaderItemCard[] };
-  return payload.items;
+  return (await response.json()) as ReaderItemPage;
 }
 
 export async function getReaderDigestItems(input: {
@@ -140,12 +204,17 @@ export async function getReaderDigestEdition(
 }
 
 export async function getReaderSearchItems(
-  query: string,
-  boardSlug?: string
-): Promise<ReaderItemCard[]> {
-  const params = new URLSearchParams({ q: query });
-  if (boardSlug) {
-    params.set("board", boardSlug);
+  input: ReaderSearchItemsInput
+): Promise<ReaderItemPage> {
+  const params = new URLSearchParams({ q: input.query });
+  if (input.boardSlug) {
+    params.set("board", input.boardSlug);
+  }
+  if (input.limit) {
+    params.set("limit", String(input.limit));
+  }
+  if (input.offset) {
+    params.set("offset", String(input.offset));
   }
 
   const response = await fetch(apiUrl(`/reader/search?${params.toString()}`), {
@@ -154,8 +223,7 @@ export async function getReaderSearchItems(
   if (!response.ok) {
     throw new Error(`Failed to search reader items: ${response.status}`);
   }
-  const payload = (await response.json()) as { items: ReaderItemCard[] };
-  return payload.items;
+  return (await response.json()) as ReaderItemPage;
 }
 
 export async function getReaderRelatedItems(
@@ -241,6 +309,24 @@ function readOptionField<const T extends readonly string[]>(
   }
 
   throw new Error(`${name} has an unsupported value`);
+}
+
+function boundedInteger(
+  value: string | undefined,
+  fallback: number,
+  minimum: number,
+  maximum: number
+): number {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) {
+    return fallback;
+  }
+
+  return parsed;
 }
 
 function readStringField(formData: Pick<FormData, "get">, name: string): string {

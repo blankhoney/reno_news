@@ -163,6 +163,13 @@ td span {
   -webkit-line-clamp: 4;
 }
 
+.load-more-link {
+  border: 1px solid #0f172a;
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.55rem 0.85rem;
+}
+
 .personal-actions {
   display: flex;
   flex-wrap: wrap;

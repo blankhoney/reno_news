@@ -41,10 +41,15 @@
 
 ## Task 4: Web Fetch And Load More
 
-- Status: Pending
+- Status: Completed
 - Expected result: home, board, and search pages request 25 items by default, read URL `limit/offset`, and render a Load more link when `hasMore` is true.
 - Verification: web tests cover query serialization and Load more URL generation.
 - Completion notes:
+  - Added failing Web tests for `getReaderItems`, `getReaderSearchItems`, Load more URL generation, and URL pagination parsing.
+  - Updated Reader Web fetch helpers to request and return `{ items, pagination }` for list/search while leaving digest array responses unchanged.
+  - Updated home, board, and search pages to use URL `limit/offset`, default to 25 items, and render a Load more link when the API page has more results.
+  - Verified `pnpm --filter @reno-news/web test` passes with 55 tests.
+  - Verified `pnpm --filter @reno-news/web lint` passes.
 
 ## Task 5: Local And Chrome Validation
 

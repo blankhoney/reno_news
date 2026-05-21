@@ -9,6 +9,9 @@ import {
   getReaderRelatedItems,
   getReaderSearchItems,
   joinServiceUrl,
+  readerLoadMorePath,
+  readerPaginationFromSearchParams,
+  readerWebPageSize,
   readerFeedbackFromFormData,
   readerItemPath,
   submitReaderFeedback
@@ -42,10 +45,13 @@ test("getReaderBoards fetches reader board payloads without caching", async () =
   }
 });
 
-test("getReaderItems appends board query when provided", async () => {
+test("getReaderItems serializes board and pagination query", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-    assert.equal(String(input), "http://localhost:3001/reader/items?board=ai");
+    assert.equal(
+      String(input),
+      "http://localhost:3001/reader/items?board=ai&limit=25&offset=25"
+    );
     assert.equal(init?.cache, "no-store");
     return new Response(
       JSON.stringify({
@@ -61,26 +67,38 @@ test("getReaderItems appends board query when provided", async () => {
             publishedAt: "2026-05-20T00:00:00.000Z",
             createdAt: "2026-05-20T00:00:00.000Z"
           }
-        ]
+        ],
+        pagination: {
+          limit: 25,
+          offset: 25,
+          hasMore: true,
+          nextOffset: 50
+        }
       }),
       { status: 200, headers: { "content-type": "application/json" } }
     );
   }) as typeof fetch;
 
   try {
-    const items = await getReaderItems("ai");
-    assert.equal(items[0].boardSlug, "ai");
+    const page = await getReaderItems({ boardSlug: "ai", limit: 25, offset: 25 });
+    assert.equal(page.items[0].boardSlug, "ai");
+    assert.deepEqual(page.pagination, {
+      limit: 25,
+      offset: 25,
+      hasMore: true,
+      nextOffset: 50
+    });
   } finally {
     globalThis.fetch = originalFetch;
   }
 });
 
-test("getReaderSearchItems appends query and optional board filter", async () => {
+test("getReaderSearchItems serializes query, board, and pagination", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     assert.equal(
       String(input),
-      "http://localhost:3001/reader/search?q=quantum+ai&board=ai"
+      "http://localhost:3001/reader/search?q=quantum+ai&board=ai&limit=25&offset=25"
     );
     assert.equal(init?.cache, "no-store");
     return new Response(
@@ -97,18 +115,75 @@ test("getReaderSearchItems appends query and optional board filter", async () =>
             publishedAt: "2026-05-20T00:00:00.000Z",
             createdAt: "2026-05-20T00:00:00.000Z"
           }
-        ]
+        ],
+        pagination: {
+          limit: 25,
+          offset: 25,
+          hasMore: true,
+          nextOffset: 50
+        }
       }),
       { status: 200, headers: { "content-type": "application/json" } }
     );
   }) as typeof fetch;
 
   try {
-    const items = await getReaderSearchItems("quantum ai", "ai");
-    assert.equal(items[0].title, "Quantum AI item");
+    const page = await getReaderSearchItems({
+      query: "quantum ai",
+      boardSlug: "ai",
+      limit: 25,
+      offset: 25
+    });
+    assert.equal(page.items[0].title, "Quantum AI item");
+    assert.deepEqual(page.pagination, {
+      limit: 25,
+      offset: 25,
+      hasMore: true,
+      nextOffset: 50
+    });
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("readerLoadMorePath preserves filters and appends the next page", () => {
+  assert.equal(
+    readerLoadMorePath(
+      "/search",
+      { q: "Kubernetes", board: "open-source" },
+      {
+        limit: 25,
+        offset: 25,
+        hasMore: true,
+        nextOffset: 50
+      }
+    ),
+    "/search?q=Kubernetes&board=open-source&limit=25&offset=50"
+  );
+  assert.equal(
+    readerLoadMorePath(
+      "/boards/ai",
+      {},
+      {
+        limit: 25,
+        offset: 0,
+        hasMore: false,
+        nextOffset: null
+      }
+    ),
+    null
+  );
+});
+
+test("readerPaginationFromSearchParams reads URL pagination with web defaults", () => {
+  assert.deepEqual(readerPaginationFromSearchParams({}), {
+    limit: readerWebPageSize,
+    offset: 0
+  });
+  assert.deepEqual(readerPaginationFromSearchParams({ limit: "10", offset: "30" }), {
+    limit: 10,
+    offset: 30
+  });
 });
 
 test("getReaderRelatedItems fetches related items with optional limit", async () => {

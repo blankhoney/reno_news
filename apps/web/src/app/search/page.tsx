@@ -1,24 +1,37 @@
 import Link from "next/link";
 import { ReaderSearchForm } from "../ReaderSearchForm";
 import { ReaderItemList } from "../page";
-import { getReaderBoards, getReaderSearchItems } from "../readerApi";
+import {
+  getReaderBoards,
+  getReaderSearchItems,
+  readerLoadMorePath,
+  readerPaginationFromSearchParams
+} from "../readerApi";
 
 type SearchPageProps = {
   searchParams: Promise<{
     q?: string;
     board?: string;
+    limit?: string;
+    offset?: string;
   }>;
 };
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const { q = "", board } = await searchParams;
+  const { q = "", board, limit, offset } = await searchParams;
   const query = q.trim();
   const boardSlug = board?.trim() || undefined;
+  const paginationInput = readerPaginationFromSearchParams({ limit, offset });
   const boards = await getReaderBoards();
   const selectedBoard = boardSlug
     ? boards.find((candidate) => candidate.slug === boardSlug)
     : undefined;
-  const items = query ? await getReaderSearchItems(query, boardSlug) : [];
+  const itemPage = query
+    ? await getReaderSearchItems({ query, boardSlug, ...paginationInput })
+    : null;
+  const loadMorePath = itemPage
+    ? readerLoadMorePath("/search", { q: query, board: boardSlug }, itemPage.pagination)
+    : null;
   const scopeLabel = selectedBoard?.name ?? boardSlug ?? "All boards";
 
   return (
@@ -41,7 +54,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <h2>{query ? `Results for "${query}"` : "Results"}</h2>
         {query ? (
           <ReaderItemList
-            items={items}
+            items={itemPage?.items ?? []}
+            pagination={itemPage?.pagination}
+            loadMorePath={loadMorePath}
             emptyText={`No reader items match "${query}" in ${scopeLabel}.`}
           />
         ) : (

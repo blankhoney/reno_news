@@ -2,10 +2,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReaderSearchForm } from "../../ReaderSearchForm";
 import { ReaderItemList } from "../../page";
-import { getReaderBoards, getReaderItems } from "../../readerApi";
+import {
+  getReaderBoards,
+  getReaderItems,
+  readerLoadMorePath,
+  readerPaginationFromSearchParams
+} from "../../readerApi";
 
-export default async function BoardPage({ params }: { params: Promise<{ slug: string }> }) {
+type BoardPageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{
+    limit?: string;
+    offset?: string;
+  }>;
+};
+
+export default async function BoardPage({ params, searchParams }: BoardPageProps) {
   const { slug } = await params;
+  const paginationInput = readerPaginationFromSearchParams(await searchParams);
   const boards = await getReaderBoards();
   const board = boards.find((candidate) => candidate.slug === slug);
 
@@ -13,7 +27,8 @@ export default async function BoardPage({ params }: { params: Promise<{ slug: st
     notFound();
   }
 
-  const items = await getReaderItems(slug);
+  const itemPage = await getReaderItems({ boardSlug: slug, ...paginationInput });
+  const loadMorePath = readerLoadMorePath(`/boards/${board.slug}`, {}, itemPage.pagination);
 
   return (
     <main className="reader-shell">
@@ -32,7 +47,11 @@ export default async function BoardPage({ params }: { params: Promise<{ slug: st
 
       <ReaderSearchForm boardSlug={board.slug} lockBoard />
 
-      <ReaderItemList items={items} />
+      <ReaderItemList
+        items={itemPage.items}
+        pagination={itemPage.pagination}
+        loadMorePath={loadMorePath}
+      />
     </main>
   );
 }
