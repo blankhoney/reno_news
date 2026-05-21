@@ -107,6 +107,37 @@ td span {
   padding: 0.55rem;
 }
 
+.login-shell {
+  max-width: 520px;
+}
+
+.login-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.login-form input {
+  border: 1px solid #94a3b8;
+  font: inherit;
+  min-width: 0;
+  padding: 0.55rem;
+}
+
+.login-form button {
+  justify-self: start;
+}
+
+.form-error {
+  color: #b91c1c;
+  margin: 0;
+}
+
 .board-nav {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -325,6 +356,18 @@ td span {
   gap: 0.75rem;
 }
 
+.admin-session-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-session-form span {
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
 .admin-context-links {
   flex-direction: column;
   gap: 0.35rem;
@@ -435,6 +478,7 @@ dd {
   .admin-header,
   .admin-actions,
   .admin-header-links,
+  .admin-session-form,
   .reader-header,
   .reader-header-links {
     align-items: flex-start;

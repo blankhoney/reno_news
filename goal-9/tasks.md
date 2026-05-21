@@ -23,10 +23,16 @@
 
 ## Task 3: Login And Admin UI
 
-- Status: Pending
+- Status: Completed
 - Expected result: `/login` provides a minimal form, `/admin/denied` links to login, and `/admin` exposes current admin email plus logout.
 - Verification: Web tests cover login page state helpers and admin login/logout links; Chrome later confirms the flow.
 - Completion notes:
+  - Added `/login` with email/password form posting to the Web auth BFF and safe `next` handling.
+  - Added login error message mapping for auth failures.
+  - Added `/admin/denied` login link to `/login?next=/admin`.
+  - Added current admin email display and logout form to `/admin`.
+  - Added focused Web tests for login form action, error messages, admin login link, and admin logout action.
+  - Verified with `pnpm --filter @reno-news/web test`, `pnpm --filter @reno-news/web lint`, and `git diff --check -- apps/web/src/app/login apps/web/src/app/admin apps/web/src/app/styles.css goal-9/tasks.md`.
 
 ## Large Check After Task 3
 

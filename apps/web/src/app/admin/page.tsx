@@ -18,6 +18,10 @@ export default async function AdminPage() {
           <Link href="/admin/failures">Failures</Link>
           <Link href="/admin/feedback">Feedback</Link>
         </nav>
+        <form className="admin-session-form" action={adminLogoutAction()} method="post">
+          <span>{adminSession.user.email}</span>
+          <button type="submit">Log out</button>
+        </form>
       </header>
 
       <table>
@@ -47,4 +51,9 @@ export default async function AdminPage() {
       </table>
     </main>
   );
+}
+
+export function adminLogoutAction(): string {
+  const params = new URLSearchParams({ next: "/" });
+  return `/api/auth/logout?${params.toString()}`;
 }
