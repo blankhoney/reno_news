@@ -1,11 +1,12 @@
 import os
 import unittest
+from unittest.mock import patch
 
 import httpx
 import psycopg
 from psycopg.rows import dict_row
 
-from reno_worker.rss_ingest import ingest_source, normalize_entry_url
+from reno_worker.rss_ingest import fetch_feed, ingest_source, normalize_entry_url
 
 
 SAMPLE_FEED = """<?xml version="1.0" encoding="UTF-8"?>
@@ -37,6 +38,20 @@ class RssIngestTest(unittest.TestCase):
         self.assertEqual(
             normalize_entry_url("https://example.invalid/news/1#fragment"),
             "https://example.invalid/news/1",
+        )
+
+    def test_fetch_feed_follows_redirects(self) -> None:
+        url = "https://example.invalid/feed.xml"
+        response = httpx.Response(200, text=SAMPLE_FEED, request=httpx.Request("GET", url))
+
+        with patch("reno_worker.rss_ingest.httpx.get", return_value=response) as http_get:
+            self.assertEqual(fetch_feed(url), SAMPLE_FEED)
+
+        http_get.assert_called_once_with(
+            url,
+            timeout=20.0,
+            headers={"user-agent": "reno-news-worker/0.1"},
+            follow_redirects=True,
         )
 
     @unittest.skipUnless(os.environ.get("DATABASE_URL"), "DATABASE_URL integration target not set")

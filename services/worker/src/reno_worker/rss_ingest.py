@@ -31,7 +31,12 @@ def normalize_entry_url(url: str) -> str:
 
 
 def fetch_feed(url: str) -> str:
-    response = httpx.get(url, timeout=20.0, headers={"user-agent": "reno-news-worker/0.1"})
+    response = httpx.get(
+        url,
+        timeout=20.0,
+        headers={"user-agent": "reno-news-worker/0.1"},
+        follow_redirects=True,
+    )
     response.raise_for_status()
     return response.text
 
