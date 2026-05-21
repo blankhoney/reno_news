@@ -22,16 +22,21 @@
 
 ## Task 3: Global Board Diversity And Fallback
 
-- Status: Pending
+- Status: Completed
 - Expected result: global digest prefers different boards when candidates exist and still fills the requested limit when only one source exists.
 - Verification: DB integration tests cover both behaviors.
 - Completion notes:
+  - Added coverage for all-board digest selection so another board is included instead of allowing one source/board to fill the preview.
+  - Added a temporary empty board fixture to verify single-source fallback still fills the requested `limit`.
+  - Verified `pnpm --filter @reno-news/db test:integration` passes with 22 tests.
 
 ## Large Check After Task 3
 
-- Status: Pending
+- Status: Completed
 - Expected result: focused DB and API checks pass after three tasks.
 - Completion notes:
+  - Passed `pnpm --filter @reno-news/db test:integration`.
+  - Passed `pnpm --filter @reno-news/api test`.
 
 ## Task 4: Documentation And Local API Validation
 

@@ -1494,6 +1494,123 @@ test("reader repository diversifies board digest across sources", async () => {
   }
 });
 
+test("reader repository diversifies global digest across boards", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupDigestDiversityFixtures(pool);
+
+    const dominantSourceId = await createDigestDiversitySource(pool, {
+      boardSlug: "ai",
+      sourceTitle: "Digest Dominant Global Source",
+      sourceUrl: "https://example.invalid/digest-diversity-dominant-global.xml"
+    });
+    const alternateBoardSourceId = await createDigestDiversitySource(pool, {
+      boardSlug: "software-engineering",
+      sourceTitle: "Digest Alternate Board Source",
+      sourceUrl: "https://example.invalid/digest-diversity-alternate-board.xml"
+    });
+    const dominantIds = [
+      await createDigestDiversityEntry(pool, {
+        sourceId: dominantSourceId,
+        externalId: "digest-diversity-dominant-global-1",
+        title: "Dominant Global Digest Item 1",
+        publishedAt: "2099-05-24T00:03:00Z"
+      }),
+      await createDigestDiversityEntry(pool, {
+        sourceId: dominantSourceId,
+        externalId: "digest-diversity-dominant-global-2",
+        title: "Dominant Global Digest Item 2",
+        publishedAt: "2099-05-24T00:02:00Z"
+      }),
+      await createDigestDiversityEntry(pool, {
+        sourceId: dominantSourceId,
+        externalId: "digest-diversity-dominant-global-3",
+        title: "Dominant Global Digest Item 3",
+        publishedAt: "2099-05-24T00:01:00Z"
+      })
+    ];
+    const alternateBoardId = await createDigestDiversityEntry(pool, {
+      sourceId: alternateBoardSourceId,
+      externalId: "digest-diversity-alternate-board-1",
+      title: "Alternate Board Digest Item",
+      publishedAt: "2099-05-24T00:00:00Z"
+    });
+
+    const digestItems = await repository.listReaderDigestItems({ limit: 3 });
+    const digestIds = digestItems.map((item) => item.id);
+    const dominantCount = digestIds.filter((id) => dominantIds.includes(id)).length;
+
+    assert.equal(digestItems.length, 3);
+    assert.equal(digestIds.includes(alternateBoardId), true);
+    assert.ok(dominantCount <= 2);
+  } finally {
+    await repository.close();
+    await cleanupDigestDiversityFixtures(pool);
+    await pool.end();
+  }
+});
+
+test("reader repository fills digest limit when only one source has candidates", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupDigestDiversityFixtures(pool);
+    await pool.query("delete from boards where slug = 'digest-single-source'");
+    await pool.query(
+      "insert into boards (slug, name, description) values ('digest-single-source', 'Digest Single Source', 'Temporary digest diversity test board')"
+    );
+
+    const sourceId = await createDigestDiversitySource(pool, {
+      boardSlug: "digest-single-source",
+      sourceTitle: "Digest Single Source",
+      sourceUrl: "https://example.invalid/digest-diversity-single-source.xml"
+    });
+    const entryIds = [
+      await createDigestDiversityEntry(pool, {
+        sourceId,
+        externalId: "digest-diversity-single-source-1",
+        title: "Single Source Digest Item 1",
+        publishedAt: "2099-05-25T00:03:00Z"
+      }),
+      await createDigestDiversityEntry(pool, {
+        sourceId,
+        externalId: "digest-diversity-single-source-2",
+        title: "Single Source Digest Item 2",
+        publishedAt: "2099-05-25T00:02:00Z"
+      }),
+      await createDigestDiversityEntry(pool, {
+        sourceId,
+        externalId: "digest-diversity-single-source-3",
+        title: "Single Source Digest Item 3",
+        publishedAt: "2099-05-25T00:01:00Z"
+      })
+    ];
+
+    const digestItems = await repository.listReaderDigestItems({
+      boardSlug: "digest-single-source",
+      limit: 3
+    });
+    const digestIds = digestItems.map((item) => item.id);
+
+    assert.equal(digestItems.length, 3);
+    assert.deepEqual(digestIds, entryIds);
+  } finally {
+    await repository.close();
+    await cleanupDigestDiversityFixtures(pool);
+    await pool.query("delete from boards where slug = 'digest-single-source'");
+    await pool.end();
+  }
+});
+
 test("digest edition repository replays stored snapshots after source items change", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });
