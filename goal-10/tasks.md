@@ -30,16 +30,27 @@
 
 ## Task 3: Server And GitHub Deployment Prerequisites
 
-- Status: Pending
+- Status: Completed
 - Expected result: if prerequisites are missing, produce exact non-secret setup checklist for DNS, deploy user, server path, GitHub secrets, and production env; if ready, proceed to deploy.
 - Verification: GitHub secrets exist by name, SSH deploy target is reachable, and `/srv/reno_news` is present before deployment.
 - Completion notes:
+  - Added `goal-10/setup-checklist.md` with only non-secret production values and operator setup steps for DNS, VPS, SSH trust, GitHub production secrets, server env, Cloudflare R2 backup, and Resend alerts.
+  - Found a production Compose defect before deploy: `Caddyfile.production` reads `RENO_NEWS_SITE_ADDRESS`, but the caddy service did not receive that environment value.
+  - Added a failing production Compose contract check for caddy receiving `RENO_NEWS_SITE_ADDRESS`, then fixed `infra/compose/compose.production.yml` to pass the variable into caddy.
+  - Verified rendered production Compose now includes `RENO_NEWS_SITE_ADDRESS` for caddy.
+  - Current deployment remains blocked until the operator configures DNS, GitHub production secrets, SSH trust, server env, R2 credentials, and Resend verification.
 
 ## Large Check After Task 3
 
-- Status: Pending
+- Status: Completed
 - Expected result: local production contracts still pass before any real deploy attempt.
 - Completion notes:
+  - Ran `pnpm compose:production:check`; passed.
+  - Ran `pnpm deploy:contract:check`; passed.
+  - Ran `pnpm backup:offhost:check`; passed.
+  - Ran `pnpm alerts:check`; passed.
+  - Ran `pnpm production:gate:check`; passed.
+  - Ran `git diff --check`; no whitespace errors were reported.
 
 ## Task 4: GitHub Manual Deploy
 

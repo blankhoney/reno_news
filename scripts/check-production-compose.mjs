@@ -81,4 +81,9 @@ if (JSON.stringify(caddyPorts) !== JSON.stringify(["443", "80"])) {
   fail(`caddy must publish 80 and 443, got: ${caddyPorts.join(", ")}`);
 }
 
+const caddyEnvironment = services.caddy.environment ?? {};
+if (caddyEnvironment.RENO_NEWS_SITE_ADDRESS !== "localhost") {
+  fail("caddy must receive RENO_NEWS_SITE_ADDRESS from production Compose");
+}
+
 console.log("Production Compose check OK");
