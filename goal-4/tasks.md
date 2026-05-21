@@ -47,18 +47,28 @@
 - Completion notes:
   - Added route-handler tests for GET and all three PUT mutation routes.
   - Added Next BFF proxy handlers for `/api/reader/personal-state`, `/saved`, `/read-later`, and `/read-status`.
+  - Added personal snapshot summary normalization after Chrome found old localStorage snapshots still rendering pre-fix raw HTML.
   - Verified with `pnpm --filter @reno-news/web test` and `pnpm --filter @reno-news/web lint`.
 
 ## Task 5: Chrome Repair Validation
 
-- Status: Pending
+- Status: Completed
 - Expected result: actual Chrome plugin validates core reader surfaces with screenshots under `/tmp/reno_news_chrome_repair_*`.
 - Verification: screenshots and console observations recorded.
 - Completion notes:
+  - Saved Chrome screenshots and `validation.json` under `/tmp/reno_news_chrome_repair_1779352189794`.
+  - Checked `/boards/ai`, `/search?q=Kubernetes`, `/items/8245`, `/personal`, `/admin`, and `/digest`.
+  - Rechecked `/personal` after the local snapshot fix; visible raw marker count is 0.
+  - Confirmed `/admin` reaches `/admin/denied`.
+  - Confirmed the personal-state proxy via `curl`: `/api/reader/personal-state` returns API 401 JSON instead of 404. Direct Chrome navigation to `/api/...` was blocked by a Chrome client extension.
 
 ## Task 6: Final Review And Commit
 
-- Status: Pending
+- Status: Completed
 - Expected result: scoped changes are reviewed, committed without touching unrelated worktree files, and residual issues are reported.
 - Verification: `git status --short` shows only pre-existing unrelated changes after commit.
 - Completion notes:
+  - Reviewed the reader repository normalizer, personal-state snapshot normalization, personal-state proxy, admin guard/page, and card CSS.
+  - Passed final `pnpm --filter @reno-news/db test:integration`.
+  - Passed final `pnpm --filter @reno-news/web test`.
+  - Passed final `pnpm --filter @reno-news/web lint`.

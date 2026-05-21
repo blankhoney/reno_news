@@ -1,5 +1,6 @@
 export const personalStateStorageKey = "reno-news:personal-state:v1";
 export const personalStateMigrationStorageKey = "reno-news:personal-state:migrated:v1";
+const personalSnapshotSummaryLength = 320;
 
 export type BackendPersonalStateItem = {
   itemId: number;
@@ -275,7 +276,7 @@ export function toPersonalItemSnapshot(item: PersonalItemSnapshot): PersonalItem
     boardName: item.boardName,
     sourceTitle: item.sourceTitle,
     title: item.title,
-    summary: item.summary,
+    summary: normalizePersonalSnapshotSummary(item.summary),
     publishedAt: item.publishedAt,
     createdAt: item.createdAt
   };
@@ -425,6 +426,77 @@ function isPersonalItemSnapshot(value: unknown): value is PersonalItemSnapshot {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function normalizePersonalSnapshotSummary(value: string): string {
+  const decoded = decodePersonalSummaryEntities(
+    value
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+      .replace(/\[([^\]]+)]\([^)]*\)/g, "$1")
+      .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+      .replace(/^\s{0,3}[-*+]\s+/gm, "")
+      .replace(/^\s{0,3}\d+[.)]\s+/gm, "")
+      .replace(/<\/?(?:p|div|section|article|header|footer|main|aside|br|li|ul|ol|h[1-6]|blockquote|pre|table|thead|tbody|tr|td|th)[^>]*>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/[*_`~]{1,3}/g, "")
+      .replace(/[<>]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+  )
+    .replace(/[<>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (decoded.length <= personalSnapshotSummaryLength) {
+    return decoded;
+  }
+
+  return `${decoded.slice(0, personalSnapshotSummaryLength - 3).trimEnd()}...`;
+}
+
+function decodePersonalSummaryEntities(value: string): string {
+  return value.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (match, entity) => {
+    const normalizedEntity = String(entity).toLowerCase();
+    if (normalizedEntity.startsWith("#x")) {
+      return decodePersonalNumericEntity(normalizedEntity.slice(2), 16, match);
+    }
+    if (normalizedEntity.startsWith("#")) {
+      return decodePersonalNumericEntity(normalizedEntity.slice(1), 10, match);
+    }
+
+    switch (normalizedEntity) {
+      case "amp":
+        return "&";
+      case "lt":
+        return "<";
+      case "gt":
+        return ">";
+      case "quot":
+        return "\"";
+      case "apos":
+        return "'";
+      case "nbsp":
+        return " ";
+      default:
+        return match;
+    }
+  });
+}
+
+function decodePersonalNumericEntity(value: string, radix: number, fallback: string): string {
+  const codePoint = Number.parseInt(value, radix);
+  if (!Number.isFinite(codePoint)) {
+    return fallback;
+  }
+
+  try {
+    return String.fromCodePoint(codePoint);
+  } catch {
+    return fallback;
+  }
 }
 
 function personalStateFetch(

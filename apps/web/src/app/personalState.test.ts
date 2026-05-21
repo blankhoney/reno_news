@@ -108,6 +108,29 @@ test("toPersonalItemSnapshot strips detail-only fields", () => {
   assert.equal("chineseText" in snapshot, false);
 });
 
+test("readPersonalState normalizes stored snapshot summaries for display", () => {
+  const storage = new MemoryStorage();
+  storage.setItem(
+    personalStateStorageKey,
+    JSON.stringify({
+      saved: [
+        {
+          ...itemA,
+          summary:
+            '<p>Cloudflare <strong>Workers</strong> &amp; AI</p> [Launch notes](https://example.invalid) ![hero](https://example.invalid/hero.png)'
+        }
+      ],
+      readLater: []
+    })
+  );
+
+  const state = readPersonalState(storage);
+
+  assert.equal(state.saved[0].summary, "Cloudflare Workers & AI Launch notes");
+  assert.equal(state.saved[0].summary.includes("<"), false);
+  assert.equal(state.saved[0].summary.includes("]("), false);
+});
+
 test("fetchBackendPersonalState returns null for anonymous responses and includes credentials", async () => {
   let requestUrl = "";
   let requestInit: RequestInit | undefined;
