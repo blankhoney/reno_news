@@ -96,6 +96,8 @@ type ReaderItemDetailRow = ReaderItemRow & {
 };
 
 const originalExcerptLength = 800;
+const readerCardSummaryLength = 320;
+const readerDetailSummaryLength = 1200;
 
 export function createReaderRepository(databaseUrl: string): ReaderRepository {
   const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
@@ -561,7 +563,7 @@ function mapReaderItemRow(row: ReaderItemRow): ReaderItemCard {
     sourceTitle: row.sourceTitle,
     title: row.title,
     url: row.url,
-    summary: row.summary ?? "",
+    summary: normalizeReaderDisplayText(row.summary, readerCardSummaryLength),
     publishedAt: formatNullableDate(row.publishedAt),
     createdAt: formatDate(row.createdAt)
   };
@@ -569,7 +571,7 @@ function mapReaderItemRow(row: ReaderItemRow): ReaderItemCard {
 
 function mapReaderItemDetailRow(row: ReaderItemDetailRow): ReaderItemDetail {
   const item = mapReaderItemRow(row);
-  const detailSummary = row.detailSummary ?? "";
+  const detailSummary = normalizeReaderDisplayText(row.detailSummary, readerDetailSummaryLength);
   const summary = item.summary || detailSummary;
   const originalText = buildOriginalText(row.rightsStatus, row.extractedText);
 
@@ -588,6 +590,75 @@ function mapReaderItemDetailRow(row: ReaderItemDetailRow): ReaderItemDetail {
     chineseText: detailSummary || summary,
     chineseTextMode: "summary_only"
   };
+}
+
+function normalizeReaderDisplayText(value: string | null | undefined, maxLength: number): string {
+  const decoded = decodeHtmlEntities(
+    value
+      ?.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+      .replace(/\[([^\]]+)]\([^)]*\)/g, "$1")
+      .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+      .replace(/^\s{0,3}[-*+]\s+/gm, "")
+      .replace(/^\s{0,3}\d+[.)]\s+/gm, "")
+      .replace(/<\/?(?:p|div|section|article|header|footer|main|aside|br|li|ul|ol|h[1-6]|blockquote|pre|table|thead|tbody|tr|td|th)[^>]*>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/[*_`~]{1,3}/g, "")
+      .replace(/[<>]/g, "")
+      .replace(/\s+/g, " ")
+      .trim() ?? ""
+  );
+  const normalized = decoded.replace(/[<>]/g, "").replace(/\s+/g, " ").trim();
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (match, entity) => {
+    const normalizedEntity = String(entity).toLowerCase();
+    if (normalizedEntity.startsWith("#x")) {
+      return decodeNumericEntity(normalizedEntity.slice(2), 16, match);
+    }
+    if (normalizedEntity.startsWith("#")) {
+      return decodeNumericEntity(normalizedEntity.slice(1), 10, match);
+    }
+
+    switch (normalizedEntity) {
+      case "amp":
+        return "&";
+      case "lt":
+        return "<";
+      case "gt":
+        return ">";
+      case "quot":
+        return "\"";
+      case "apos":
+        return "'";
+      case "nbsp":
+        return " ";
+      default:
+        return match;
+    }
+  });
+}
+
+function decodeNumericEntity(value: string, radix: number, fallback: string): string {
+  const codePoint = Number.parseInt(value, radix);
+  if (!Number.isFinite(codePoint)) {
+    return fallback;
+  }
+
+  try {
+    return String.fromCodePoint(codePoint);
+  } catch {
+    return fallback;
+  }
 }
 
 function buildOriginalText(

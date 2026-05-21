@@ -1110,6 +1110,72 @@ test("reader repository searches reader-safe visible item fields", async () => {
   }
 });
 
+test("reader repository exposes only cleaned display text for raw summary fallback", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+
+    const rawSummary = [
+      "<p>Cloudflare <strong>Workers</strong> &amp; AI</p>",
+      "![hero](https://example.invalid/hero.png)",
+      "[Launch notes](https://example.invalid/launch)",
+      "### Release Notes",
+      "- item one",
+      `<script>alert("hidden")</script>`,
+      "x".repeat(360)
+    ].join("\n");
+    const rawSummaryId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-raw-summary-display",
+      title: "Raw Summary Display Needle",
+      sourceUrl: "https://example.invalid/reader-detail-raw-summary-display.xml",
+      rawSummary,
+      createSummaryBlock: false,
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+
+    const listItem = (await repository.listReaderItems({ boardSlug: "ai" })).find(
+      (item) => item.id === rawSummaryId
+    );
+    const searchItem = (await repository.searchReaderItems({ query: "Release Notes" })).find(
+      (item) => item.id === rawSummaryId
+    );
+    const digestItem = (await repository.listReaderDigestItems({ limit: 50 })).find(
+      (item) => item.id === rawSummaryId
+    );
+    const detail = await repository.getReaderItemDetail(rawSummaryId);
+
+    assert.ok(listItem);
+    assert.ok(searchItem);
+    assert.ok(digestItem);
+    assert.ok(detail);
+    for (const summary of [
+      listItem.summary,
+      searchItem.summary,
+      digestItem.summary,
+      detail.summary,
+      detail.chineseText
+    ]) {
+      assert.equal(summary.includes("<"), false);
+      assert.equal(summary.includes(">"), false);
+      assert.equal(summary.includes("]("), false);
+      assert.equal(summary.includes("![hero]"), false);
+      assert.equal(summary.includes("alert"), false);
+      assert.equal(summary.length <= 320, true);
+      assert.match(summary, /^Cloudflare Workers & AI Launch notes Release Notes item one/);
+    }
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
 test("reader repository lists related items from the reader-safe visible pool", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });
@@ -1286,12 +1352,14 @@ test("reader repository lists digest items from the reader-safe visible pool", a
     await pool.query(
       "insert into boards (slug, name, description) values ('digest-empty', 'Digest Empty', 'Temporary digest test board')"
     );
+    const digestFixturePublishedAt = "2099-05-20T00:00:00Z";
 
     const aiId = await createReaderDetailFixture(pool, {
       externalId: "reader-detail-digest-ai",
       title: "Digest AI Item",
       summaryOneSentence: "Digest AI summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-ai.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1301,6 +1369,7 @@ test("reader repository lists digest items from the reader-safe visible pool", a
       boardSlug: "software-engineering",
       summaryOneSentence: "Digest software summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-software.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1309,6 +1378,7 @@ test("reader repository lists digest items from the reader-safe visible pool", a
       title: "Digest Hidden Item",
       summaryOneSentence: "Digest hidden summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-hidden.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true,
       lifecycleStatus: "hidden"
@@ -1318,6 +1388,7 @@ test("reader repository lists digest items from the reader-safe visible pool", a
       title: "Digest Blocked Item",
       summaryOneSentence: "Digest blocked summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-blocked.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "blocked",
       sourceEnabled: true
     });
@@ -1326,6 +1397,7 @@ test("reader repository lists digest items from the reader-safe visible pool", a
       title: "Digest Disabled Item",
       summaryOneSentence: "Digest disabled summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-disabled.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: false
     });
@@ -1377,6 +1449,7 @@ test("digest edition repository replays stored snapshots after source items chan
       title: "Digest Edition Stable Original",
       summaryOneSentence: "Digest edition stable summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-edition-stable.xml",
+      publishedAt: "2099-05-20T00:00:00Z",
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1434,12 +1507,14 @@ test("reader repository applies bounded feedback quality penalty to digest order
 
   try {
     await cleanupReaderDetailFixtures(pool);
+    const digestFixturePublishedAt = "2099-05-20T00:00:00Z";
 
     const cleanId = await createReaderDetailFixture(pool, {
       externalId: "reader-detail-digest-feedback-clean",
       title: "Digest Feedback Clean Item",
       summaryOneSentence: "Digest feedback clean summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-feedback-clean.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1448,6 +1523,7 @@ test("reader repository applies bounded feedback quality penalty to digest order
       title: "Digest Feedback All Types Item",
       summaryOneSentence: "Digest feedback all types summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-feedback-all-types.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1456,6 +1532,7 @@ test("reader repository applies bounded feedback quality penalty to digest order
       title: "Digest Feedback Capped Older Item",
       summaryOneSentence: "Digest feedback capped older summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-feedback-capped-older.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1464,6 +1541,7 @@ test("reader repository applies bounded feedback quality penalty to digest order
       title: "Digest Feedback Capped Newer Item",
       summaryOneSentence: "Digest feedback capped newer summary",
       sourceUrl: "https://example.invalid/reader-detail-digest-feedback-capped-newer.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1484,7 +1562,7 @@ test("reader repository applies bounded feedback quality penalty to digest order
 
     const digestItems = await repository.listReaderDigestItems({
       boardSlug: "ai",
-      limit: 20
+      limit: 1000
     });
     const digestIds = digestItems.map((item) => item.id);
 
@@ -1509,12 +1587,14 @@ test("feedback repository reviews feedback and digest ignores dismissed feedback
 
   try {
     await cleanupReaderDetailFixtures(pool);
+    const digestFixturePublishedAt = "2099-05-20T00:00:00Z";
 
     const dismissedItemId = await createReaderDetailFixture(pool, {
       externalId: "reader-detail-feedback-review-dismissed",
       title: "Feedback Review Dismissed Item",
       summaryOneSentence: "Feedback review dismissed summary",
       sourceUrl: "https://example.invalid/reader-detail-feedback-review-dismissed.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1523,6 +1603,7 @@ test("feedback repository reviews feedback and digest ignores dismissed feedback
       title: "Feedback Review Active Item",
       summaryOneSentence: "Feedback review active summary",
       sourceUrl: "https://example.invalid/reader-detail-feedback-review-active.xml",
+      publishedAt: digestFixturePublishedAt,
       rightsStatus: "metadata_only",
       sourceEnabled: true
     });
@@ -1584,7 +1665,7 @@ test("feedback repository reviews feedback and digest ignores dismissed feedback
 
     const digestItems = await readerRepository.listReaderDigestItems({
       boardSlug: "ai",
-      limit: 20
+      limit: 1000
     });
     const digestIds = digestItems.map((item) => item.id);
 
@@ -1701,7 +1782,10 @@ type ReaderDetailFixtureInput = {
   sourceTitle?: string;
   boardSlug?: string;
   sourceUrl: string;
+  rawSummary?: string;
   summaryOneSentence?: string;
+  createSummaryBlock?: boolean;
+  publishedAt?: string;
   rightsStatus: string;
   sourceEnabled: boolean;
   lifecycleStatus?: string;
@@ -1748,7 +1832,7 @@ async function createReaderDetailFixture(
       processing_stage,
       rights_status
     )
-    values ($1, $2, $3, $4, $5, '2026-05-20T00:00:00Z', '{"readerDetailFixture": true}'::jsonb, $2, $7, 'extracted', $6)
+    values ($1, $2, $3, $4, $5, $8, '{"readerDetailFixture": true}'::jsonb, $2, $7, 'extracted', $6)
     returning id::int
     `,
     [
@@ -1756,9 +1840,10 @@ async function createReaderDetailFixture(
       input.externalId,
       `https://example.invalid/items/${input.externalId}`,
       input.title,
-      "Raw reader detail summary.",
+      input.rawSummary ?? "Raw reader detail summary.",
       input.rightsStatus,
-      input.lifecycleStatus ?? "ready"
+      input.lifecycleStatus ?? "ready",
+      input.publishedAt ?? "2026-05-20T00:00:00Z"
     ]
   );
   const rawEntryId = rawEntry.rows[0].id;
@@ -1852,37 +1937,39 @@ async function createReaderDetailFixture(
     translationId = translation.rows[0].id;
   }
 
-  const summaryModelCall = await pool.query<{ id: number }>(
-    "insert into model_calls (provider, model, purpose, schema_version, status) values ('fixture', 'fixture', 'summary_blocks', 'v1', 'success') returning id::int"
-  );
-  await pool.query(
-    `
-    insert into summary_blocks (
-      raw_entry_id,
-      extraction_id,
-      ai_evaluation_id,
-      translation_id,
-      model_call_id,
-      schema_version,
-      status,
-      one_sentence,
-      detailed_summary,
-      why_it_matters,
-      source_note,
-      china_relevance,
-      related_topics_json
-    )
-    values ($1, $2, $3, $4, $5, 'v1', 'draft', $6, 'Detailed reader detail summary.', 'Reader detail why it matters.', 'Reader detail source note.', 'Reader detail China relevance.', '["AI", "Policy"]'::jsonb)
-    `,
-    [
-      rawEntryId,
-      extractionId,
-      evaluation.rows[0].id,
-      translationId,
-      summaryModelCall.rows[0].id,
-      input.summaryOneSentence ?? "One sentence reader detail summary."
-    ]
-  );
+  if (input.createSummaryBlock !== false) {
+    const summaryModelCall = await pool.query<{ id: number }>(
+      "insert into model_calls (provider, model, purpose, schema_version, status) values ('fixture', 'fixture', 'summary_blocks', 'v1', 'success') returning id::int"
+    );
+    await pool.query(
+      `
+      insert into summary_blocks (
+        raw_entry_id,
+        extraction_id,
+        ai_evaluation_id,
+        translation_id,
+        model_call_id,
+        schema_version,
+        status,
+        one_sentence,
+        detailed_summary,
+        why_it_matters,
+        source_note,
+        china_relevance,
+        related_topics_json
+      )
+      values ($1, $2, $3, $4, $5, 'v1', 'draft', $6, 'Detailed reader detail summary.', 'Reader detail why it matters.', 'Reader detail source note.', 'Reader detail China relevance.', '["AI", "Policy"]'::jsonb)
+      `,
+      [
+        rawEntryId,
+        extractionId,
+        evaluation.rows[0].id,
+        translationId,
+        summaryModelCall.rows[0].id,
+        input.summaryOneSentence ?? "One sentence reader detail summary."
+      ]
+    );
+  }
 
   return rawEntryId;
 }
