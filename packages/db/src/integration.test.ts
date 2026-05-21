@@ -1430,6 +1430,70 @@ test("reader repository lists digest items from the reader-safe visible pool", a
   }
 });
 
+test("reader repository diversifies board digest across sources", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupDigestDiversityFixtures(pool);
+
+    const dominantSourceId = await createDigestDiversitySource(pool, {
+      boardSlug: "ai",
+      sourceTitle: "Digest Dominant AI Source",
+      sourceUrl: "https://example.invalid/digest-diversity-dominant-ai.xml"
+    });
+    const alternateSourceId = await createDigestDiversitySource(pool, {
+      boardSlug: "ai",
+      sourceTitle: "Digest Alternate AI Source",
+      sourceUrl: "https://example.invalid/digest-diversity-alternate-ai.xml"
+    });
+    const dominantIds = [
+      await createDigestDiversityEntry(pool, {
+        sourceId: dominantSourceId,
+        externalId: "digest-diversity-dominant-ai-1",
+        title: "Dominant AI Digest Item 1",
+        publishedAt: "2099-05-23T00:03:00Z"
+      }),
+      await createDigestDiversityEntry(pool, {
+        sourceId: dominantSourceId,
+        externalId: "digest-diversity-dominant-ai-2",
+        title: "Dominant AI Digest Item 2",
+        publishedAt: "2099-05-23T00:02:00Z"
+      }),
+      await createDigestDiversityEntry(pool, {
+        sourceId: dominantSourceId,
+        externalId: "digest-diversity-dominant-ai-3",
+        title: "Dominant AI Digest Item 3",
+        publishedAt: "2099-05-23T00:01:00Z"
+      })
+    ];
+    const alternateId = await createDigestDiversityEntry(pool, {
+      sourceId: alternateSourceId,
+      externalId: "digest-diversity-alternate-ai-1",
+      title: "Alternate AI Digest Item",
+      publishedAt: "2099-05-23T00:00:00Z"
+    });
+
+    const digestItems = await repository.listReaderDigestItems({
+      boardSlug: "ai",
+      limit: 3
+    });
+    const digestIds = digestItems.map((item) => item.id);
+    const dominantCount = digestIds.filter((id) => dominantIds.includes(id)).length;
+
+    assert.equal(digestItems.length, 3);
+    assert.equal(digestIds.includes(alternateId), true);
+    assert.ok(dominantCount <= 2);
+  } finally {
+    await repository.close();
+    await cleanupDigestDiversityFixtures(pool);
+    await pool.end();
+  }
+});
+
 test("digest edition repository replays stored snapshots after source items change", async () => {
   await runMigrations({ databaseUrl });
   await runSeed({ databaseUrl });
@@ -1985,6 +2049,78 @@ async function cleanupReaderDetailFixtures(pool: Pool): Promise<void> {
   );
   await pool.query(
     "delete from sources where url like 'https://example.invalid/reader-detail-%'"
+  );
+}
+
+async function createDigestDiversitySource(
+  pool: Pool,
+  input: {
+    boardSlug: string;
+    sourceTitle: string;
+    sourceUrl: string;
+  }
+): Promise<number> {
+  const source = await pool.query<{ id: number }>(
+    `
+    insert into sources (board_id, source_type, title, url, enabled)
+    values ((select id from boards where slug = $1), 'rss', $2, $3, true)
+    returning id::int
+    `,
+    [input.boardSlug, input.sourceTitle, input.sourceUrl]
+  );
+  return source.rows[0].id;
+}
+
+async function createDigestDiversityEntry(
+  pool: Pool,
+  input: {
+    sourceId: number;
+    externalId: string;
+    title: string;
+    publishedAt: string;
+  }
+): Promise<number> {
+  const rawEntry = await pool.query<{ id: number }>(
+    `
+    insert into raw_entries (
+      source_id,
+      external_id,
+      url,
+      title,
+      summary_raw,
+      published_at,
+      raw_payload_json,
+      canonical_hash,
+      lifecycle_status,
+      processing_stage,
+      rights_status
+    )
+    values ($1, $2, $3, $4, $5, $6, '{"digestDiversityFixture": true}'::jsonb, $2, 'ready', 'extracted', 'metadata_only')
+    returning id::int
+    `,
+    [
+      input.sourceId,
+      input.externalId,
+      `https://example.invalid/items/${input.externalId}`,
+      input.title,
+      `${input.title} summary.`,
+      input.publishedAt
+    ]
+  );
+  return rawEntry.rows[0].id;
+}
+
+async function cleanupDigestDiversityFixtures(pool: Pool): Promise<void> {
+  await pool.query(
+    `
+    delete from raw_entries
+    where source_id in (
+      select id from sources where url like 'https://example.invalid/digest-diversity-%'
+    )
+    `
+  );
+  await pool.query(
+    "delete from sources where url like 'https://example.invalid/digest-diversity-%'"
   );
 }
 

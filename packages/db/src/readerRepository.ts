@@ -83,6 +83,11 @@ type ReaderItemRow = {
   createdAt: Date | string;
 };
 
+type ReaderDigestItemRow = ReaderItemRow & {
+  sourceId: number;
+  qualityFeedbackPenalty: number;
+};
+
 type ReaderItemDetailRow = ReaderItemRow & {
   detailSummary: string | null;
   whyItMatters: string | null;
@@ -98,6 +103,10 @@ type ReaderItemDetailRow = ReaderItemRow & {
 const originalExcerptLength = 800;
 const readerCardSummaryLength = 320;
 const readerDetailSummaryLength = 1200;
+const digestSourceItemLimit = 2;
+const digestCandidateMultiplier = 8;
+const digestMinimumCandidateLimit = 60;
+const digestMaximumCandidateLimit = 500;
 
 export function createReaderRepository(databaseUrl: string): ReaderRepository {
   const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
@@ -434,7 +443,8 @@ async function listReaderDigestItems(
   queryable: Queryable,
   input: ListReaderDigestItemsInput = {}
 ): Promise<ReaderItemCard[]> {
-  const values: unknown[] = [input.limit ?? 12];
+  const limit = input.limit ?? 12;
+  const values: unknown[] = [digestCandidateLimit(limit)];
   const filters = [
     "s.enabled = true",
     "re.lifecycle_status != 'hidden'",
@@ -446,18 +456,20 @@ async function listReaderDigestItems(
     filters.push(`b.slug = $${values.length}`);
   }
 
-  const result = await queryable.query<ReaderItemRow>(
+  const result = await queryable.query<ReaderDigestItemRow>(
     `
     select
       re.id::int as "id",
       b.slug as "boardSlug",
       b.name as "boardName",
+      s.id::int as "sourceId",
       s.title as "sourceTitle",
       re.title as "title",
       re.url as "url",
       coalesce(sb.one_sentence, nullif(re.summary_raw, ''), '') as "summary",
       re.published_at as "publishedAt",
-      re.created_at as "createdAt"
+      re.created_at as "createdAt",
+      coalesce(fp.quality_feedback_penalty, 0)::int as "qualityFeedbackPenalty"
     from raw_entries re
     join sources s on s.id = re.source_id
     join boards b on b.id = s.board_id
@@ -487,12 +499,12 @@ async function listReaderDigestItems(
         and rf.review_status != 'dismissed'
     ) fp on true
     where ${filters.join(" and ")}
-    order by fp.quality_feedback_penalty asc, coalesce(re.published_at, re.created_at) desc, re.id desc
+    order by coalesce(fp.quality_feedback_penalty, 0) asc, coalesce(re.published_at, re.created_at) desc, re.id desc
     limit $1
     `,
     values
   );
-  return result.rows.map(mapReaderItemRow);
+  return selectDigestRows(result.rows, limit, !input.boardSlug).map(mapReaderItemRow);
 }
 
 async function getReaderItemDetail(
@@ -590,6 +602,103 @@ function mapReaderItemDetailRow(row: ReaderItemDetailRow): ReaderItemDetail {
     chineseText: detailSummary || summary,
     chineseTextMode: "summary_only"
   };
+}
+
+function selectDigestRows(
+  rows: ReaderDigestItemRow[],
+  limit: number,
+  diversifyBoards: boolean
+): ReaderDigestItemRow[] {
+  const selected: ReaderDigestItemRow[] = [];
+
+  for (const group of digestPenaltyGroups(rows)) {
+    const remaining = limit - selected.length;
+    if (remaining <= 0) {
+      break;
+    }
+    selected.push(...selectDigestRowsFromPenaltyGroup(group, remaining, diversifyBoards));
+  }
+
+  return selected;
+}
+
+function digestPenaltyGroups(rows: ReaderDigestItemRow[]): ReaderDigestItemRow[][] {
+  const groups: ReaderDigestItemRow[][] = [];
+
+  for (const row of rows) {
+    const lastGroup = groups[groups.length - 1];
+    if (!lastGroup || lastGroup[0].qualityFeedbackPenalty !== row.qualityFeedbackPenalty) {
+      groups.push([row]);
+    } else {
+      lastGroup.push(row);
+    }
+  }
+
+  return groups;
+}
+
+function selectDigestRowsFromPenaltyGroup(
+  rows: ReaderDigestItemRow[],
+  limit: number,
+  diversifyBoards: boolean
+): ReaderDigestItemRow[] {
+  const selected: ReaderDigestItemRow[] = [];
+  const selectedIds = new Set<number>();
+  const sourceCounts = new Map<number, number>();
+  const boardCounts = new Map<string, number>();
+
+  const addRow = (row: ReaderDigestItemRow): boolean => {
+    if (selected.length >= limit || selectedIds.has(row.id)) {
+      return false;
+    }
+
+    selected.push(row);
+    selectedIds.add(row.id);
+    sourceCounts.set(row.sourceId, (sourceCounts.get(row.sourceId) ?? 0) + 1);
+    boardCounts.set(row.boardSlug, (boardCounts.get(row.boardSlug) ?? 0) + 1);
+    return true;
+  };
+
+  if (diversifyBoards) {
+    for (const row of rows) {
+      if (
+        !selectedIds.has(row.id) &&
+        !boardCounts.has(row.boardSlug) &&
+        (sourceCounts.get(row.sourceId) ?? 0) < digestSourceItemLimit
+      ) {
+        addRow(row);
+      }
+    }
+  }
+
+  for (const row of rows) {
+    if (
+      !selectedIds.has(row.id) &&
+      (sourceCounts.get(row.sourceId) ?? 0) < digestSourceItemLimit
+    ) {
+      addRow(row);
+    }
+  }
+
+  for (const row of rows) {
+    addRow(row);
+  }
+
+  return selected;
+}
+
+function digestCandidateLimit(limit: number): number {
+  if (limit <= 0) {
+    return 0;
+  }
+
+  return Math.max(
+    limit,
+    Math.min(
+      Math.max(limit * digestCandidateMultiplier, digestMinimumCandidateLimit),
+      digestMaximumCandidateLimit
+    )
+  );
 }
 
 function normalizeReaderDisplayText(value: string | null | undefined, maxLength: number): string {
