@@ -51,7 +51,7 @@ class GoldenEvaluationTest(unittest.TestCase):
         self.assertEqual(first_report["provider"], "fake")
 
     def test_repo_golden_fixture_has_required_sample_count_and_unique_ids(self) -> None:
-        fixture_path = Path("services/worker/golden/ai_evaluation_golden.jsonl")
+        fixture_path = Path(__file__).resolve().parents[1] / "golden" / "ai_evaluation_golden.jsonl"
         samples = load_golden_samples(fixture_path)
         sample_ids = [sample.id for sample in samples]
 
