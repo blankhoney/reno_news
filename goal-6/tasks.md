@@ -40,10 +40,13 @@
 
 ## Task 4: Documentation And Local API Validation
 
-- Status: Pending
+- Status: Completed
 - Expected result: reader API docs state digest diversity behavior and local API curls show source distribution.
 - Verification: doc diff plus curl output.
 - Completion notes:
+  - Updated `docs/api/reader.md` to document best-effort source and board diversity after feedback penalty ordering.
+  - Verified `curl 'http://localhost:3001/reader/digest?limit=12'` returned 12 items across 5 boards and 10 source titles.
+  - Verified `curl 'http://localhost:3001/reader/digest?board=ai&limit=12'` returned 12 AI items across 6 source titles, with source caps relaxed only to fill the limit.
 
 ## Task 5: Chrome Validation And Final Review
 
