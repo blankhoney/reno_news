@@ -873,6 +873,86 @@ test("reader repository lists boards and policy-filtered item cards", async () =
   }
 });
 
+test("reader repository pages board item cards with stable pagination metadata", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from boards where slug = 'reader-pagination'");
+    await pool.query(
+      "insert into boards (slug, name, description) values ('reader-pagination', 'Reader Pagination', 'Temporary reader pagination test board')"
+    );
+
+    const newestId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-pagination-newest",
+      title: "Reader Pagination Newest",
+      boardSlug: "reader-pagination",
+      sourceUrl: "https://example.invalid/reader-detail-pagination-newest.xml",
+      publishedAt: "2099-06-01T00:03:00Z",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const middleId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-pagination-middle",
+      title: "Reader Pagination Middle",
+      boardSlug: "reader-pagination",
+      sourceUrl: "https://example.invalid/reader-detail-pagination-middle.xml",
+      publishedAt: "2099-06-01T00:02:00Z",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const oldestId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-pagination-oldest",
+      title: "Reader Pagination Oldest",
+      boardSlug: "reader-pagination",
+      sourceUrl: "https://example.invalid/reader-detail-pagination-oldest.xml",
+      publishedAt: "2099-06-01T00:01:00Z",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+
+    const firstPage = await repository.listReaderItemsPage({
+      boardSlug: "reader-pagination",
+      limit: 2
+    });
+    const secondPage = await repository.listReaderItemsPage({
+      boardSlug: "reader-pagination",
+      limit: 2,
+      offset: 2
+    });
+
+    assert.deepEqual(
+      firstPage.items.map((item) => item.id),
+      [newestId, middleId]
+    );
+    assert.deepEqual(firstPage.pagination, {
+      limit: 2,
+      offset: 0,
+      hasMore: true,
+      nextOffset: 2
+    });
+    assert.deepEqual(
+      secondPage.items.map((item) => item.id),
+      [oldestId]
+    );
+    assert.deepEqual(secondPage.pagination, {
+      limit: 2,
+      offset: 2,
+      hasMore: false,
+      nextOffset: null
+    });
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from boards where slug = 'reader-pagination'");
+    await pool.end();
+  }
+});
+
 async function cleanupFailureQueueFixture(pool: Pool, sourceUrl: string): Promise<void> {
   await pool.query("delete from model_calls where error_code = 'adapter_error_issue014'");
   await pool.query(
@@ -1106,6 +1186,88 @@ test("reader repository searches reader-safe visible item fields", async () => {
   } finally {
     await repository.close();
     await cleanupReaderDetailFixtures(pool);
+    await pool.end();
+  }
+});
+
+test("reader repository pages search results with board filter", async () => {
+  await runMigrations({ databaseUrl });
+  await runSeed({ databaseUrl });
+
+  const pool = new Pool({ connectionString: databaseUrl, allowExitOnIdle: true });
+  const repository = createReaderRepository(databaseUrl);
+
+  try {
+    await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from boards where slug = 'search-pagination'");
+    await pool.query(
+      "insert into boards (slug, name, description) values ('search-pagination', 'Search Pagination', 'Temporary reader search pagination test board')"
+    );
+
+    const newestId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-pagination-newest",
+      title: "Pageable Needle Newest",
+      boardSlug: "search-pagination",
+      sourceUrl: "https://example.invalid/reader-detail-search-pagination-newest.xml",
+      publishedAt: "2099-06-02T00:03:00Z",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const middleId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-pagination-middle",
+      title: "Pageable Needle Middle",
+      boardSlug: "search-pagination",
+      sourceUrl: "https://example.invalid/reader-detail-search-pagination-middle.xml",
+      publishedAt: "2099-06-02T00:02:00Z",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+    const oldestId = await createReaderDetailFixture(pool, {
+      externalId: "reader-detail-search-pagination-oldest",
+      title: "Pageable Needle Oldest",
+      boardSlug: "search-pagination",
+      sourceUrl: "https://example.invalid/reader-detail-search-pagination-oldest.xml",
+      publishedAt: "2099-06-02T00:01:00Z",
+      rightsStatus: "metadata_only",
+      sourceEnabled: true
+    });
+
+    const firstPage = await repository.searchReaderItemsPage({
+      query: "Pageable Needle",
+      boardSlug: "search-pagination",
+      limit: 2
+    });
+    const secondPage = await repository.searchReaderItemsPage({
+      query: "Pageable Needle",
+      boardSlug: "search-pagination",
+      limit: 2,
+      offset: 2
+    });
+
+    assert.deepEqual(
+      firstPage.items.map((item) => item.id),
+      [newestId, middleId]
+    );
+    assert.deepEqual(firstPage.pagination, {
+      limit: 2,
+      offset: 0,
+      hasMore: true,
+      nextOffset: 2
+    });
+    assert.deepEqual(
+      secondPage.items.map((item) => item.id),
+      [oldestId]
+    );
+    assert.deepEqual(secondPage.pagination, {
+      limit: 2,
+      offset: 2,
+      hasMore: false,
+      nextOffset: null
+    });
+  } finally {
+    await repository.close();
+    await cleanupReaderDetailFixtures(pool);
+    await pool.query("delete from boards where slug = 'search-pagination'");
     await pool.end();
   }
 });

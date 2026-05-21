@@ -39,10 +39,31 @@ export type ListReaderItemsInput = {
   boardSlug?: string;
 };
 
+export type ReaderPaginationInput = {
+  limit?: number;
+  offset?: number;
+};
+
+export type ReaderPagination = {
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+  nextOffset: number | null;
+};
+
+export type ReaderItemPage = {
+  items: ReaderItemCard[];
+  pagination: ReaderPagination;
+};
+
+export type ListReaderItemsPageInput = ListReaderItemsInput & ReaderPaginationInput;
+
 export type SearchReaderItemsInput = {
   query: string;
   boardSlug?: string;
 };
+
+export type SearchReaderItemsPageInput = SearchReaderItemsInput & ReaderPaginationInput;
 
 export type ListRelatedReaderItemsInput = {
   id: number;
@@ -57,7 +78,9 @@ export type ListReaderDigestItemsInput = {
 export type ReaderRepository = {
   listReaderBoards(): Promise<ReaderBoard[]>;
   listReaderItems(input?: ListReaderItemsInput): Promise<ReaderItemCard[]>;
+  listReaderItemsPage(input?: ListReaderItemsPageInput): Promise<ReaderItemPage>;
   searchReaderItems(input: SearchReaderItemsInput): Promise<ReaderItemCard[]>;
+  searchReaderItemsPage(input: SearchReaderItemsPageInput): Promise<ReaderItemPage>;
   listRelatedReaderItems(input: ListRelatedReaderItemsInput): Promise<ReaderItemCard[] | null>;
   listReaderDigestItems(input?: ListReaderDigestItemsInput): Promise<ReaderItemCard[]>;
   getReaderItemDetail(id: number): Promise<ReaderItemDetail | null>;
@@ -101,6 +124,7 @@ type ReaderItemDetailRow = ReaderItemRow & {
 };
 
 const originalExcerptLength = 800;
+const readerDefaultPageLimit = 100;
 const readerCardSummaryLength = 320;
 const readerDetailSummaryLength = 1200;
 const digestSourceItemLimit = 2;
@@ -113,8 +137,10 @@ export function createReaderRepository(databaseUrl: string): ReaderRepository {
 
   return {
     listReaderBoards: async () => listReaderBoards(pool),
-    listReaderItems: async (input) => listReaderItems(pool, input),
-    searchReaderItems: async (input) => searchReaderItems(pool, input),
+    listReaderItems: async (input) => (await listReaderItemsPage(pool, input)).items,
+    listReaderItemsPage: async (input) => listReaderItemsPage(pool, input),
+    searchReaderItems: async (input) => (await searchReaderItemsPage(pool, input)).items,
+    searchReaderItemsPage: async (input) => searchReaderItemsPage(pool, input),
     listRelatedReaderItems: async (input) => listRelatedReaderItems(pool, input),
     listReaderDigestItems: async (input) => listReaderDigestItems(pool, input),
     getReaderItemDetail: async (id) => getReaderItemDetail(pool, id),
@@ -135,7 +161,15 @@ async function listReaderItems(
   queryable: Queryable,
   input: ListReaderItemsInput = {}
 ): Promise<ReaderItemCard[]> {
-  const values: string[] = [];
+  return (await listReaderItemsPage(queryable, input)).items;
+}
+
+async function listReaderItemsPage(
+  queryable: Queryable,
+  input: ListReaderItemsPageInput = {}
+): Promise<ReaderItemPage> {
+  const pagination = readerPagination(input);
+  const values: unknown[] = [];
   const filters = [
     "s.enabled = true",
     "re.lifecycle_status != 'hidden'",
@@ -147,6 +181,8 @@ async function listReaderItems(
     filters.push(`b.slug = $${values.length}`);
   }
 
+  const limitParameter = values.push(pagination.limit + 1);
+  const offsetParameter = values.push(pagination.offset);
   const result = await queryable.query<ReaderItemRow>(
     `
     select
@@ -171,23 +207,32 @@ async function listReaderItems(
     ) sb on true
     where ${filters.join(" and ")}
     order by coalesce(re.published_at, re.created_at) desc, re.id desc
-    limit 100
+    limit $${limitParameter}
+    offset $${offsetParameter}
     `,
     values
   );
-  return result.rows.map(mapReaderItemRow);
+  return mapReaderItemPage(result.rows, pagination);
 }
 
 async function searchReaderItems(
   queryable: Queryable,
   input: SearchReaderItemsInput
 ): Promise<ReaderItemCard[]> {
+  return (await searchReaderItemsPage(queryable, input)).items;
+}
+
+async function searchReaderItemsPage(
+  queryable: Queryable,
+  input: SearchReaderItemsPageInput
+): Promise<ReaderItemPage> {
   const query = input.query.trim();
+  const pagination = readerPagination(input);
   if (query.length === 0) {
-    return [];
+    return emptyReaderItemPage(pagination);
   }
 
-  const values = [query];
+  const values: unknown[] = [query];
   const filters = [
     "s.enabled = true",
     "re.lifecycle_status != 'hidden'",
@@ -200,6 +245,8 @@ async function searchReaderItems(
     filters.push(`b.slug = $${values.length}`);
   }
 
+  const limitParameter = values.push(pagination.limit + 1);
+  const offsetParameter = values.push(pagination.offset);
   const result = await queryable.query<ReaderItemRow>(
     `
     select
@@ -251,11 +298,12 @@ async function searchReaderItems(
     order by ts_rank(search_index.document, search_index.query) desc,
       coalesce(re.published_at, re.created_at) desc,
       re.id desc
-    limit 100
+    limit $${limitParameter}
+    offset $${offsetParameter}
     `,
     values
   );
-  return result.rows.map(mapReaderItemRow);
+  return mapReaderItemPage(result.rows, pagination);
 }
 
 async function listRelatedReaderItems(
@@ -578,6 +626,40 @@ function mapReaderItemRow(row: ReaderItemRow): ReaderItemCard {
     summary: normalizeReaderDisplayText(row.summary, readerCardSummaryLength),
     publishedAt: formatNullableDate(row.publishedAt),
     createdAt: formatDate(row.createdAt)
+  };
+}
+
+function mapReaderItemPage(rows: ReaderItemRow[], pagination: ReaderPagination): ReaderItemPage {
+  const pageRows = rows.slice(0, pagination.limit);
+  const hasMore = rows.length > pagination.limit;
+
+  return {
+    items: pageRows.map(mapReaderItemRow),
+    pagination: {
+      ...pagination,
+      hasMore,
+      nextOffset: hasMore ? pagination.offset + pagination.limit : null
+    }
+  };
+}
+
+function emptyReaderItemPage(pagination: ReaderPagination): ReaderItemPage {
+  return {
+    items: [],
+    pagination: {
+      ...pagination,
+      hasMore: false,
+      nextOffset: null
+    }
+  };
+}
+
+function readerPagination(input: ReaderPaginationInput): ReaderPagination {
+  return {
+    limit: input.limit ?? readerDefaultPageLimit,
+    offset: input.offset ?? 0,
+    hasMore: false,
+    nextOffset: null
   };
 }
 

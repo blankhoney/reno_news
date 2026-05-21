@@ -11,10 +11,14 @@
 
 ## Task 2: DB Pagination
 
-- Status: Pending
+- Status: Completed
 - Expected result: repository page methods return stable `items` and `pagination` for list, board-filtered list, and search.
 - Verification: DB integration tests fail before implementation and pass afterward.
 - Completion notes:
+  - Added a failing DB integration test for `listReaderItemsPage` with board filter, `limit`, `offset`, `hasMore`, and `nextOffset`.
+  - Implemented paginated repository methods while preserving existing array-returning `listReaderItems` and `searchReaderItems`.
+  - Added search pagination coverage with board filter and stable ordering.
+  - Verified `pnpm --filter @reno-news/db test:integration` passes with 24 tests.
 
 ## Task 3: API Pagination Contract
 
