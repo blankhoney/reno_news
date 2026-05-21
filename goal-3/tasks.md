@@ -41,11 +41,25 @@
   - Verified narrow worker RSS test command: `uv run python -m unittest tests/test_rss_ingest.py`.
 
 ## Task 4: Verify Reader API and Local UI
-- Status: pending
+- Status: completed
 - Verify independently with reader API responses and browser checks for the requested board, digest, and search pages.
 - Completion notes:
+  - Started local API and Web services with Compose and verified `/healthz` on ports 3001 and 3000.
+  - Verified API `/reader/items?board=ai`, `software-engineering`, `semiconductor`, `employment-trends`, and `open-source` return real source titles and article/release titles.
+  - Verified API `/reader/search?q=Kubernetes` returns real Kubernetes release results.
+  - Verified API `/reader/digest?limit=8` returns real source-backed digest items.
+  - Browser plugin Node REPL tooling was unavailable in this session, so UI verification used the Playwright CLI fallback.
+  - Verified Web pages `/boards/ai`, `/boards/software-engineering`, `/boards/semiconductor`, `/boards/employment-trends`, `/boards/open-source`, `/digest`, and `/search?q=Kubernetes`.
+  - Noted non-blocking existing Web console noise: client requests to `/api/reader/personal-state` return 404 because no Web `/api` proxy route is present in the local dev surface.
 
 ## Task 5: Final Review and Rollback Record
-- Status: pending
+- Status: completed
 - Verify independently by performing the task quality review, documenting changed local data, and confirming no seed/production defaults were modified.
 - Completion notes:
+  - Re-read modified `rss_ingest.py`, `test_rss_ingest.py`, and this task record during review.
+  - Verified worker test suite: `uv run python -m unittest discover -s tests` passed with 58 tests, 25 skipped.
+  - Verified local DB board raw entry counts: `ai=920`, `software-engineering=430`, `semiconductor=16`, `employment-trends=23`, `open-source=125`.
+  - Verified imported source enablement: 18 enabled, 2 disabled (`arXiv cs.SE`, `CNCF Blog`).
+  - Verified no diff in `infra/db/seeds/dev.sql`, `infra/compose/compose.yml`, or `infra/compose/compose.production.yml`.
+  - Code/test/initial goal files were committed in `a40b410` (`Test local real source ingest`); the final task-record update was committed separately after review.
+  - Rollback is URL-scoped: delete dependent rows for the 20 imported URLs from `raw_entries`, `source_ingest_attempts`, `source_policies`, and `sources`, or keep data and leave poor sources disabled.
