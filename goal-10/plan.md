@@ -2,18 +2,19 @@
 
 ## Requirement
 
-Move the project from local readiness contracts to a real production launch attempt on `news.blankhoney.xyz`, using the prepared VPS, GitHub manual Deploy workflow, Cloudflare R2 backups, and Resend alert email.
+Move the project from local readiness contracts to a real production launch attempt on `news.blankhoney.xyz`, using the prepared IPv4-only VPS, GitHub manual Deploy workflow, Cloudflare R2 backups, and Resend alert email.
 
 ## Current Context
 
 - The repository already has CI, GHCR image publishing, a manual Deploy workflow, production Compose overlays, local release-health audit scripts, off-host backup scripts, alert-rule contracts, and production gate documentation.
 - Current GitHub deploy secrets were previously observed as absent; this must be rechecked before any deploy attempt.
+- The operator corrected the production VPS target after the original request: use IPv4 `43.130.244.175` and do not configure an IPv6 record for this launch.
 - Production secrets must not be written into the repo or chat.
 - Production launch is blocked unless DNS, GitHub secrets, server env, R2, and Resend are all configured and verifiable.
 
 ## Risks
 
-- Public DNS may not yet point to the VPS, so Caddy TLS and production health checks may fail.
+- Public DNS or the local resolver may not yet return `43.130.244.175`, so Caddy TLS and production health checks may fail.
 - SSH access may not exist from GitHub or this local environment until the `deploy` user and key are configured.
 - GitHub Deploy can fail if `DEPLOY_COMMAND` is wrong, the server path is missing, Docker permissions are missing, or GHCR image pulls are unauthorized.
 - Production database migrations are image-level rollback only; destructive migrations remain out of scope.

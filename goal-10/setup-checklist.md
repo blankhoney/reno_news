@@ -7,9 +7,10 @@ This checklist contains only non-secret values and operator steps. Do not paste 
 Configure these records at the DNS provider that controls `blankhoney.xyz`:
 
 ```text
-A     news     205.186.67.177
-AAAA  news     2400:8d60:0003:0000:0000:0001:6661:0ce4
+A     news     43.130.244.175
 ```
+
+Do not configure an AAAA record for this launch; the current VPS target is IPv4-only.
 
 Resend sending domain:
 
@@ -24,7 +25,7 @@ Add the DKIM/SPF/MX records exactly as generated in the Resend dashboard for `se
 Expected host:
 
 ```text
-205.186.67.177
+43.130.244.175
 ```
 
 Expected deployment user:
@@ -53,22 +54,22 @@ The server must have Docker, Docker Compose plugin, Git, curl, and AWS CLI insta
 
 ## SSH Trust
 
-The current preflight saw an SSH host-key mismatch for `205.186.67.177`.
+The current preflight can reach SSH on `43.130.244.175`, but `deploy` public-key authentication is not configured for this local client yet.
 
 Current ED25519 fingerprint observed by `ssh-keyscan`:
 
 ```text
-SHA256:ot9wN93KiyAzDbUeGpwAOw2MzGQNRdTNfmmYLsVsGjA
+SHA256:0zU9NtCHAnPiHhwUoDqAsEENtty7cXDKx3LKKiyvgLY
 ```
 
-Before removing or replacing local `known_hosts` entries, confirm this fingerprint from the VPS provider console or a trusted server session.
+Confirm this fingerprint from the VPS provider console or a trusted server session before trusting new SSH configuration.
 
 ## GitHub Production Secrets
 
 Set these in the GitHub `production` environment:
 
 ```text
-DEPLOY_HOST=205.186.67.177
+DEPLOY_HOST=43.130.244.175
 DEPLOY_USER=deploy
 DEPLOY_SSH_KEY=<deploy private key>
 DEPLOY_COMMAND=cd /srv/reno_news && git fetch origin main && git checkout main && git pull --ff-only origin main && scripts/deploy-production.sh "$RENO_NEWS_IMAGE_TAG"
@@ -83,7 +84,7 @@ Configure these on the server environment used by `docker compose`:
 ```text
 DATABASE_URL=postgres://reno_news:<password>@postgres:5432/reno_news
 POSTGRES_PASSWORD=<password>
-RENO_NEWS_SITE_ADDRESS=news.blankhoney.xyz
+RENO_NEWS_SITE_ADDRESS=https://news.blankhoney.xyz
 RENO_NEWS_HEALTH_BASE_URL=https://news.blankhoney.xyz
 ```
 
