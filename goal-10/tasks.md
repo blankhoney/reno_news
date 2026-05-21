@@ -54,54 +54,68 @@
 
 ## Task 4: GitHub Manual Deploy
 
-- Status: Pending
+- Status: Blocked
 - Expected result: `Deploy` workflow runs against `production` using a concrete image tag and completes successfully.
 - Verification: GitHub Actions run log shows remote SSH command, migration, Compose up, and health checks passing.
 - Completion notes:
+  - Did not trigger `Deploy`; current production prerequisites are missing and the workflow would fail before remote deploy.
+  - GitHub `production` environment secrets currently list no configured values, so `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_COMMAND` are absent.
+  - `news.blankhoney.xyz` still resolves to `198.18.0.54` instead of `205.186.67.177`, so the production hostname is not pointed at the VPS.
+  - Local `main` is ahead of `origin/main` by 37 commits, including Goal 4 through Goal 10 work. A push/PR and successful `CI` plus `Publish Images` are required before the GitHub deploy can use the current code.
+  - Recovery condition: configure DNS, confirm SSH host fingerprint, configure GitHub production secrets, push/merge current code to `main`, wait for `CI` and `Publish Images`, then rerun this task.
 
 ## Task 5: Production Health And Chrome Acceptance
 
-- Status: Pending
+- Status: Blocked
 - Expected result: `https://news.blankhoney.xyz` serves Web/API/worker health and key Reader/Admin pages in Chrome.
 - Verification: curl health probes pass and Chrome screenshots are saved under `/tmp/reno_news_goal10_*`.
 - Completion notes:
+  - Blocked by Task 4. Current HTTPS checks for `news.blankhoney.xyz` fail with TLS internal error and cannot serve Reno News pages.
 
 ## Task 6: R2 Backup Restore Drill
 
-- Status: Pending
+- Status: Blocked
 - Expected result: production backup uploads to Cloudflare R2 and a downloaded dump restores into a disposable database.
 - Verification: backup command output, downloaded object path, and restore drill output are recorded without secrets.
 - Completion notes:
+  - Blocked until server production environment and R2 credentials are configured outside the repository.
 
 ## Large Check After Task 6
 
-- Status: Pending
+- Status: Blocked
 - Expected result: production health, deploy, backup, and local contracts are still consistent.
 - Completion notes:
+  - Blocked because Tasks 4-6 could not run against production.
 
 ## Task 7: Resend Alert Test
 
-- Status: Pending
+- Status: Blocked
 - Expected result: Resend domain is verified and a test alert is sent to `13608729270@163.com`.
 - Verification: record delivery evidence without exposing the Resend API key.
 - Completion notes:
+  - Blocked until Resend dashboard verification for `send.blankhoney.xyz` is confirmed and a Resend API/SMTP key is configured outside the repository.
 
 ## Task 8: Rollback Readiness Drill
 
-- Status: Pending
+- Status: Blocked
 - Expected result: rollback state files exist; if a previous image tag exists, run a controlled rollback drill.
 - Verification: current/previous image tags and health after rollback are recorded; if unavailable, record first-deploy limitation.
 - Completion notes:
+  - Blocked until at least one successful production deploy records `.deploy/current-image-tag`. A previous image tag may not exist on the first launch.
 
 ## Task 9: Production Evidence Documentation
 
-- Status: Pending
+- Status: Blocked
 - Expected result: production runbooks and gate review reflect real evidence and remaining blockers without claiming unverified success.
 - Verification: production docs checks, stale blocker search, and `git diff --check`.
 - Completion notes:
+  - Blocked from converting production runbooks into success evidence because no real deploy, production health, R2 restore drill, Resend alert, or rollback drill has passed.
+  - Do not update `docs/ops/production-audit.md`, `production-deploy.md`, `release-handoff.md`, or `final-production-gate-review.md` to claim launch readiness until Tasks 4-8 pass.
 
 ## Final Review
 
-- Status: Pending
+- Status: Blocked
 - Expected result: production launch status is factually classified as complete or blocked with exact remaining actions.
 - Completion notes:
+  - Current classification: production launch is blocked, not complete.
+  - Remaining required actions are recorded in `goal-10/setup-checklist.md` and Task 4 recovery notes.
