@@ -1,6 +1,8 @@
 # Reno News
 
-Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, admin/debug views with source policy editing, failure inspection, raw-entry hide/restore, feedback review, reader home/board listings, reader item detail pages with related items, reader digest preview, PostgreSQL reader search, item-scoped feedback capture, and local saved/read-later state.
+[中文说明](./README.zh-CN.md)
+
+Reno News is a Chinese-first public intelligence reading system. The current implementation covers infrastructure, SQL migrations, Source Registry, Source Policy, RSS/Atom metadata ingest, extraction, AI draft foundations, API-owned auth sessions and role guards, audit events, admin/debug views with source policy editing, failure inspection, raw-entry hide/restore, feedback review, reader home/board listings with pagination, reader item detail pages with related items, source/board-diverse digest preview, persisted digest editions, PostgreSQL reader search, item-scoped feedback capture, backend personal state for authenticated users, local anonymous saved/read-later state, and Web BFF proxy routes for reader personal-state hydration.
 
 ## Requirements
 
@@ -112,6 +114,8 @@ Admin/debug endpoints:
 - Web raw entry detail and hide/restore form: `http://localhost:3000/admin/raw-entries/1`
 - Web failure queue: `http://localhost:3000/admin/failures`
 - Web feedback queue: `http://localhost:3000/admin/feedback`
+- API auth login: `POST http://localhost:3001/auth/login`
+- API current user: `http://localhost:3001/auth/me`
 - API sources: `http://localhost:3001/sources`
 - API raw entries: `http://localhost:3001/raw-entries`
 - API raw entry hide/restore: `PATCH http://localhost:3001/raw-entries/:id`
@@ -129,13 +133,23 @@ Reader endpoints:
 - Web reader item detail: `http://localhost:3000/items/1`
 - Web reader personal space: `http://localhost:3000/personal`
 - API reader boards: `http://localhost:3001/reader/boards`
-- API reader items: `http://localhost:3001/reader/items`
-- API reader search: `http://localhost:3001/reader/search?q=Sample`
+- API reader items: `http://localhost:3001/reader/items?limit=25&offset=0`
+- API reader search: `http://localhost:3001/reader/search?q=Sample&limit=25&offset=0`
 - API reader digest: `http://localhost:3001/reader/digest`
 - API reader item detail: `http://localhost:3001/reader/items/1`
 - API reader related items: `http://localhost:3001/reader/items/1/related`
 - API reader item feedback: `POST http://localhost:3001/reader/items/1/feedback`
+- API reader personal state: `http://localhost:3001/reader/personal-state`
+- API digest editions: `http://localhost:3001/admin/digest-editions`
+- Web BFF personal state: `http://localhost:3000/api/reader/personal-state`
+- Web BFF item hydration: `http://localhost:3000/api/reader/items/1`
 
 ## Scope Boundary
 
-Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, approval workflow, or auth/RBAC yet. Saved/read-later state is local to the browser and is not synced to a server. Reader feedback is stored as append-only item-scoped events; Digest preview currently consumes eligible feedback as a bounded ordering penalty. Admin feedback review can mark one feedback event as `open`, `reviewed`, `dismissed`, or `resolved`; only `dismissed` changes penalty eligibility, and review does not hide, restore, delete, moderate, personalize, change search order, or mutate raw-entry lifecycle. Local backup/restore support is a manual PostgreSQL dump and disposable restore drill only; it does not add production scheduling, remote storage, monitoring, alerting, WAL archiving, or point-in-time recovery. GitHub CI/CD now provides quality gates, GHCR image publishing, and a manual SSH deployment handoff, but no server, domain, production secrets, monitoring, alerting, backup schedule, or launch approval is encoded in the repo. Local release health audit support is a non-deploying readiness gate only; it does not create GitHub releases, call remote monitors, send alerts, or mutate production state. Local disk usage guard support is read-only except for bounded Compose log retention; it does not prune Docker resources, delete backups, remove volumes, call remote monitors, or send alerts. The production audit report is evidence and residual-gap documentation only; it is not launch approval, remote monitoring, alerting, production backup automation, auth/RBAC, Admin identity, or audit logs. Reader search, related items, and digest preview are PostgreSQL-only over reader-safe metadata and summary fields. The current reader surface does not implement auth, backend personal-state APIs, email delivery, scheduler-driven digest generation, persisted digest tables, editorial digest workflow, public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, moderation workflow, trust weighting, Admin identity, audit logs, reply workflow, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.
+Admin policy edits mutate the current Source Policy only. Raw-entry hide/restore mutates the current raw-entry lifecycle only and does not add moderation history. The failure queue is a read-only projection over existing attempt and model-call logs; there is no retry, acknowledgement, resolution workflow, policy history table, or approval workflow. API-owned auth sessions, role guards, and audit events exist, but there is no public signup, OAuth provider, password reset flow, or full production Admin identity workflow.
+
+Authenticated reader personal state is stored through API routes and proxied by the Web app; anonymous saved/read-later state remains browser-local. Personal state does not affect ranking, digest inclusion, moderation, or public popularity. Reader feedback is stored as append-only item-scoped events; Digest preview consumes eligible feedback only as a bounded ordering penalty. Admin feedback review can mark one feedback event as `open`, `reviewed`, `dismissed`, or `resolved`; only `dismissed` changes penalty eligibility, and review does not hide, restore, delete, moderate, personalize, change search order, or mutate raw-entry lifecycle.
+
+Reader list and search pagination use bounded `limit` and `offset` over PostgreSQL reader-safe metadata and summary fields. Related items, search, and digest preview do not expose extracted full text, translation draft full text, private model payloads, feedback events, or admin diagnostics. Digest preview uses best-effort source and board diversity, while Digest Editions are persisted replay snapshots; neither adds email delivery, scheduler-driven digest generation, editorial publishing workflow, or personalized recommendations.
+
+Local backup/restore support is a manual PostgreSQL dump and disposable restore drill only; it does not add production scheduling, remote storage, monitoring, alerting, WAL archiving, or point-in-time recovery. GitHub CI/CD provides quality gates, GHCR image publishing, and a manual SSH deployment handoff, but no server, domain, production secrets, monitoring, alerting, backup schedule, or launch approval is encoded in the repo. Local release health audit and disk usage guard support remain local readiness tools. The current reader surface still does not implement public publishing workflow, browser automation, semantic/vector search, external search services, search extension deployment, moderation workflow, trust weighting, reader reply workflow, or non-RSS adapters. Translation drafts are not public reader copy. Those remain gated by `docs/CODEX_MASTER_PLAN.md`.

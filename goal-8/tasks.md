@@ -11,10 +11,14 @@
 
 ## Task 2: README Alignment
 
-- Status: Pending
+- Status: Completed
 - Expected result: English and Chinese README describe current auth, admin guard, audit, backend personal-state, pagination, digest diversity, and BFF proxy state without expanding into a full spec.
 - Verification: stale boundary searches no longer find incorrect README claims.
 - Completion notes:
+  - Updated `README.md` to mention API-owned auth sessions, role guards, audit events, backend personal state, reader pagination, digest diversity, persisted Digest Editions, and Web BFF proxy routes.
+  - Updated `README.zh-CN.md` with the same current-state facts and clarified remaining identity/auth boundaries.
+  - Replaced stale README scope text that said auth, backend personal state, persisted digest tables, and audit logs were unimplemented.
+  - Verified stale README searches for incorrect auth/personal-state/audit/persisted-digest claims return no matches.
 
 ## Task 3: API Documentation Alignment
 
