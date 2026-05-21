@@ -12,10 +12,21 @@
 
 ## Task 2: Production Readiness Preflight
 
-- Status: Pending
+- Status: Completed
 - Expected result: current DNS, GitHub secrets, workflow state, SSH reachability, and production health state are known from real checks.
 - Verification: record command evidence for DNS, GitHub, SSH, and HTTPS probes.
 - Completion notes:
+  - Checked `news.blankhoney.xyz` DNS: A currently resolves to `198.18.0.54`, not the target VPS `205.186.67.177`; no AAAA record was returned for the target IPv6.
+  - Checked `blankhoney.xyz` nameservers: Porkbun nameservers are active.
+  - Checked `send.blankhoney.xyz`: MX points to `feedback-smtp.ap-northeast-1.amazonses.com.` and TXT includes `v=spf1 include:amazonses.com ~all`; DKIM-specific CNAME/TXT records still need to be verified from the Resend dashboard values.
+  - Checked GitHub workflows: `CI`, `Deploy`, and `Publish Images` are active.
+  - Checked GitHub secrets: repository secrets and `production` environment secrets currently list no configured values.
+  - Checked recent GitHub runs: latest observed `CI` and `Publish Images` runs on `main` were successful before Goal 10.
+  - Checked VPS ports: `205.186.67.177` has ports 22, 80, and 443 open.
+  - Checked SSH reachability for `deploy@205.186.67.177`: blocked by local SSH host-key mismatch. Existing `known_hosts` entries do not match the current ED25519 fingerprint `SHA256:ot9wN93KiyAzDbUeGpwAOw2MzGQNRdTNfmmYLsVsGjA`; this requires operator confirmation before replacing local known-host data.
+  - Checked production HTTP health by IPv4: `/healthz`, `/api/healthz`, and `/worker/healthz` return empty replies, not Reno News health payloads.
+  - Checked production HTTPS health by domain: `/healthz`, `/api/healthz`, and `/worker/healthz` fail with TLS internal error.
+  - Current status: real production deploy is blocked by DNS, GitHub deploy secrets, SSH trust confirmation, and server-side app/env readiness.
 
 ## Task 3: Server And GitHub Deployment Prerequisites
 
