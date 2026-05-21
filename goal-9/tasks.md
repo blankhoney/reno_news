@@ -36,9 +36,14 @@
 
 ## Large Check After Task 3
 
-- Status: Pending
+- Status: Completed
 - Expected result: Web auth/UI checks pass before DB/API provenance changes.
 - Completion notes:
+  - Ran `pnpm --filter @reno-news/web test`; all 64 Web tests passed.
+  - Ran `pnpm --filter @reno-news/web lint`; lint passed.
+  - Ran `pnpm --filter @reno-news/api test`; all 65 API app tests and 4 auth service tests passed.
+  - Ran `git diff --check`; no whitespace errors were reported.
+  - Confirmed the worktree was otherwise clean before starting DB/API provenance changes.
 
 ## Task 4: Local Dev Auth Seed
 
