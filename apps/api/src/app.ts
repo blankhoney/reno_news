@@ -54,11 +54,15 @@ type DigestEditionKeyParams = {
 
 type ReaderItemsQuery = {
   board?: string;
+  limit?: number;
+  offset?: number;
 };
 
 type ReaderSearchQuery = {
   q: string;
   board?: string;
+  limit?: number;
+  offset?: number;
 };
 
 type ReaderRelatedItemsQuery = {
@@ -235,6 +239,20 @@ const readerDigestQuerySchema = {
   }
 };
 
+const readerPaginationQueryProperties = {
+  limit: { type: "integer", minimum: 1, maximum: 100 },
+  offset: { type: "integer", minimum: 0 }
+};
+
+const readerItemsQuerySchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    board: { type: "string", minLength: 1 },
+    ...readerPaginationQueryProperties
+  }
+};
+
 const digestEditionKeyParamsSchema = {
   type: "object",
   required: ["editionKey"],
@@ -260,7 +278,8 @@ const readerSearchQuerySchema = {
   required: ["q"],
   properties: {
     q: { type: "string", minLength: 1, pattern: "\\S" },
-    board: { type: "string", minLength: 1 }
+    board: { type: "string", minLength: 1 },
+    ...readerPaginationQueryProperties
   }
 };
 
@@ -942,15 +961,26 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     }
   );
 
-  app.get("/reader/items", async (request, reply) => {
-    try {
-      const query = request.query as ReaderItemsQuery;
-      const items = await readerRepository.listReaderItems({ boardSlug: query.board });
-      return { items };
-    } catch (error) {
-      return sendSourceError(reply, error);
+  app.get(
+    "/reader/items",
+    {
+      schema: {
+        querystring: readerItemsQuerySchema
+      }
+    },
+    async (request, reply) => {
+      try {
+        const query = request.query as ReaderItemsQuery;
+        return await readerRepository.listReaderItemsPage({
+          boardSlug: query.board,
+          limit: query.limit,
+          offset: query.offset
+        });
+      } catch (error) {
+        return sendSourceError(reply, error);
+      }
     }
-  });
+  );
 
   app.get(
     "/reader/search",
@@ -962,11 +992,12 @@ export function buildApp(options: FastifyServerOptions = {}, dependencies: AppDe
     async (request, reply) => {
       try {
         const query = request.query as ReaderSearchQuery;
-        const items = await readerRepository.searchReaderItems({
+        return await readerRepository.searchReaderItemsPage({
           query: query.q,
-          boardSlug: query.board
+          boardSlug: query.board,
+          limit: query.limit,
+          offset: query.offset
         });
-        return { items };
       } catch (error) {
         return sendSourceError(reply, error);
       }
@@ -1407,7 +1438,13 @@ const unconfiguredReaderRepository: ReaderRepository = {
   listReaderItems: async () => {
     throw new DatabaseNotConfiguredError();
   },
+  listReaderItemsPage: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
   searchReaderItems: async () => {
+    throw new DatabaseNotConfiguredError();
+  },
+  searchReaderItemsPage: async () => {
     throw new DatabaseNotConfiguredError();
   },
   listRelatedReaderItems: async () => {

@@ -15,6 +15,7 @@ import type {
   ReaderBoard,
   ReaderItemDetail,
   ReaderItemCard,
+  ReaderItemPage,
   ReaderRepository,
   SourceRepository,
   SourceRecord
@@ -266,6 +267,16 @@ const readerItem: ReaderItemCard = {
   createdAt: "2026-05-20T00:00:00.000Z"
 };
 
+const readerItemPage: ReaderItemPage = {
+  items: [readerItem],
+  pagination: {
+    limit: 25,
+    offset: 25,
+    hasMore: true,
+    nextOffset: 50
+  }
+};
+
 const readerItemDetail: ReaderItemDetail = {
   ...readerItem,
   detailSummary: "Detailed reader item summary.",
@@ -285,7 +296,9 @@ function fakeReaderRepository(overrides: Partial<ReaderRepository> = {}): Reader
   return {
     listReaderBoards: async () => [readerBoard],
     listReaderItems: async () => [readerItem],
+    listReaderItemsPage: async () => readerItemPage,
     searchReaderItems: async () => [readerItem],
+    searchReaderItemsPage: async () => readerItemPage,
     listRelatedReaderItems: async () => [readerItem],
     listReaderDigestItems: async () => [readerItem],
     getReaderItemDetail: async () => readerItemDetail,
@@ -1989,42 +2002,15 @@ test("personal state mutations reject anonymous writes and client-supplied user 
   assert.equal(injectedUserIdRepositoryCalled, false);
 });
 
-test("GET /reader/items passes optional board filter", async () => {
-  let receivedBoardSlug: string | undefined;
-  const app = buildApp(
-    { logger: false },
-    {
-      readerRepository: fakeReaderRepository({
-        listReaderItems: async (input) => {
-          receivedBoardSlug = input?.boardSlug;
-          return [readerItem];
-        }
-      })
-    }
-  );
-  test.after(async () => {
-    await app.close();
-  });
-
-  const response = await app.inject({
-    method: "GET",
-    url: "/reader/items?board=ai"
-  });
-
-  assert.equal(response.statusCode, 200);
-  assert.equal(receivedBoardSlug, "ai");
-  assert.deepEqual(response.json(), { items: [readerItem] });
-});
-
-test("GET /reader/search passes query and optional board filter", async () => {
+test("GET /reader/items passes board filter and pagination", async () => {
   let receivedInput: unknown;
   const app = buildApp(
     { logger: false },
     {
       readerRepository: fakeReaderRepository({
-        searchReaderItems: async (input) => {
+        listReaderItemsPage: async (input) => {
           receivedInput = input;
-          return [readerItem];
+          return readerItemPage;
         }
       })
     }
@@ -2035,12 +2021,68 @@ test("GET /reader/search passes query and optional board filter", async () => {
 
   const response = await app.inject({
     method: "GET",
-    url: "/reader/search?q=Sample&board=ai"
+    url: "/reader/items?board=ai&limit=25&offset=25"
   });
 
   assert.equal(response.statusCode, 200);
-  assert.deepEqual(receivedInput, { query: "Sample", boardSlug: "ai" });
-  assert.deepEqual(response.json(), { items: [readerItem] });
+  assert.deepEqual(receivedInput, { boardSlug: "ai", limit: 25, offset: 25 });
+  assert.deepEqual(response.json(), readerItemPage);
+});
+
+test("GET /reader/search passes query, board filter, and pagination", async () => {
+  let receivedInput: unknown;
+  const app = buildApp(
+    { logger: false },
+    {
+      readerRepository: fakeReaderRepository({
+        searchReaderItemsPage: async (input) => {
+          receivedInput = input;
+          return readerItemPage;
+        }
+      })
+    }
+  );
+  test.after(async () => {
+    await app.close();
+  });
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/reader/search?q=Sample&board=ai&limit=25&offset=25"
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(receivedInput, {
+    query: "Sample",
+    boardSlug: "ai",
+    limit: 25,
+    offset: 25
+  });
+  assert.deepEqual(response.json(), readerItemPage);
+});
+
+test("reader pagination routes reject invalid limits and offsets", async () => {
+  const app = buildApp({ logger: false }, { readerRepository: fakeReaderRepository() });
+  test.after(async () => {
+    await app.close();
+  });
+
+  const invalidItemsLimit = await app.inject({
+    method: "GET",
+    url: "/reader/items?limit=0"
+  });
+  const tooLargeItemsLimit = await app.inject({
+    method: "GET",
+    url: "/reader/items?limit=101"
+  });
+  const invalidSearchOffset = await app.inject({
+    method: "GET",
+    url: "/reader/search?q=Sample&offset=-1"
+  });
+
+  assert.equal(invalidItemsLimit.statusCode, 400);
+  assert.equal(tooLargeItemsLimit.statusCode, 400);
+  assert.equal(invalidSearchOffset.statusCode, 400);
 });
 
 test("GET /reader/search rejects missing query", async () => {

@@ -22,16 +22,22 @@
 
 ## Task 3: API Pagination Contract
 
-- Status: Pending
+- Status: Completed
 - Expected result: `/reader/items` and `/reader/search` accept `limit` and `offset`, pass them to the repository, return pagination metadata, and reject invalid values.
 - Verification: API tests fail before implementation and pass afterward.
 - Completion notes:
+  - Added failing API route tests for `/reader/items?board=ai&limit=25&offset=25`, `/reader/search?q=Sample&board=ai&limit=25&offset=25`, and invalid pagination values.
+  - Added reader pagination query schemas with `limit` constrained to `1..100` and `offset` constrained to `>= 0`.
+  - Routed list and search requests through the paginated repository methods and returned `{ items, pagination }` unchanged.
+  - Verified `pnpm --filter @reno-news/api test` passes with 69 tests across app and auth suites.
 
 ## Large Check After Task 3
 
-- Status: Pending
+- Status: Completed
 - Expected result: DB and API checks pass before moving to Web.
 - Completion notes:
+  - Verified `pnpm --filter @reno-news/db test:integration` passes with 24 tests.
+  - Verified `pnpm --filter @reno-news/api test` passes with 69 tests across app and auth suites.
 
 ## Task 4: Web Fetch And Load More
 
