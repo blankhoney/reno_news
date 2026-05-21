@@ -33,9 +33,13 @@
 
 ## Large Check After Task 3
 
-- Status: Pending
+- Status: Completed
 - Expected result: planned checks pass before final cleanup.
 - Completion notes:
+  - `pnpm --filter @reno-news/web lint` passed.
+  - `pnpm --filter @reno-news/web test` passed: 55 tests.
+  - `pnpm --filter @reno-news/api test` passed: 65 API app tests and 4 auth service tests.
+  - `git diff --check` passed.
 
 ## Task 4: Generated File Drift Cleanup
 
