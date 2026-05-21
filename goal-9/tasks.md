@@ -12,10 +12,14 @@
 
 ## Task 2: Web Auth BFF Routes
 
-- Status: Pending
+- Status: Completed
 - Expected result: `/api/auth/me`, `/api/auth/login`, and `/api/auth/logout` proxy to Fastify, preserve JSON responses/cookies, and support safe form redirects.
 - Verification: Web route tests cover JSON forwarding, cookie forwarding, set-cookie copying, success/failure form redirects, and open-redirect rejection.
 - Completion notes:
+  - Added Web BFF route handlers for `/api/auth/me`, `/api/auth/login`, and `/api/auth/logout`.
+  - Added route tests for session-cookie forwarding, JSON login forwarding, `set-cookie` preservation, form login success and failure redirects, unsafe `next` fallback, and logout redirect with cleared cookie.
+  - Kept auth ownership in Fastify: Next routes proxy credentials/cookies and only handle same-origin form redirects.
+  - Verified with `pnpm --filter @reno-news/web test`, `pnpm --filter @reno-news/web lint`, and `git diff --check -- apps/web/src/app/api/auth goal-9/tasks.md`.
 
 ## Task 3: Login And Admin UI
 
