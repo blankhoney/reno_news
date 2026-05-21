@@ -43,10 +43,13 @@
 
 ## Task 4: Generated File Drift Cleanup
 
-- Status: Pending
+- Status: Completed
 - Expected result: `apps/web/next-env.d.ts` generated path drift is absent from the final worktree.
 - Verification: `git status --short` has no `apps/web/next-env.d.ts` entry.
 - Completion notes:
+  - Verified the only `apps/web/next-env.d.ts` diff was `.next/types/routes.d.ts` changing to `.next/dev/types/routes.d.ts`.
+  - Restored `apps/web/next-env.d.ts` to the committed state.
+  - Verified `git status --short` no longer reports generated-file drift.
 
 ## Task 5: Final Review And Commit
 
