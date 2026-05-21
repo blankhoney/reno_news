@@ -50,7 +50,12 @@
 
 ## Task 5: Chrome Validation And Final Review
 
-- Status: Pending
+- Status: Completed
 - Expected result: Chrome `/digest` and board-filtered digest render without obvious single-source domination, screenshots are saved, final review confirms no out-of-scope behavior changed.
 - Verification: Chrome screenshots/log notes, final `git status --short`, and commit.
 - Completion notes:
+  - Verified Chrome `/digest` and `/digest?board=ai`.
+  - Saved screenshots under `/tmp/reno_news_chrome_goal6_1779357014446/`.
+  - Chrome `/digest` rendered 12 cards across 5 boards and 10 source titles, with no relevant console errors.
+  - Chrome `/digest?board=ai` rendered 12 cards across 6 source titles, with no relevant console errors.
+  - Final review confirmed no API shape, schema, personalization, pagination, seed, or UI redesign changes were made.
