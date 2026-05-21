@@ -671,18 +671,28 @@
 
 ## Task 30: Goal Completion Review
 
-- Status: Pending
+- Status: Completed
 - Objective: Mark all tasks complete, perform final evidence review, update goal status, and report what shipped.
 - TDD/Verification:
   - Pass criteria: `tasks.md` has completion records for every task, final checks are recorded, and the active goal is marked complete only after all required work is done.
 - Completion Record:
-  - Pending.
+  - Reviewed `goal-2/tasks.md`; Tasks 0-29 are completed with completion records.
+  - Confirmed local `main` is synchronized with `origin/main` after pushing the V2 commits, except for unrelated user README changes that remain intentionally uncommitted.
+  - Confirmed latest pushed implementation commit `495dbe4` passed GitHub `CI` run `26197245243` and `Publish Images` run `26197245236` on public `main`.
+  - Verified production blockers remain explicit: no deployment secrets, no production server/domain/TLS, no real off-host restore/PITR, no remote monitoring/alert delivery, no live MiniMax smoke, and no incident/privacy/legal approval.
+  - Verified with the Final Review command set below. Active goal completion is performed only after this final task record is committed and the last pushed state is checked.
 
 ## Final Review
 
-- Status: Pending
+- Status: Completed
 - Scope: Full second-version goal.
 - Verification:
   - Run the broadest feasible local test suite, build, migrations, compose config checks, browser smoke for changed UI, docs review, and security route matrix review.
 - Completion Record:
-  - Pending.
+  - User-facing/client review: `pnpm test` and `pnpm build` passed; no frontend UI files changed during Tasks 28-30, so no new browser smoke was required beyond existing digest/personal-state smoke records.
+  - API/security review: `pnpm --filter @reno-news/api test` passed, including auth, RBAC, audit, personal state, digest edition, reader feedback, and reader related-item routes.
+  - Data integrity review: `pnpm --filter @reno-news/db test` and `pnpm --filter @reno-news/db test:integration` passed, including migrations, auth/audit/personal state, digest snapshots, feedback, search, related similarity, and duplicate-group folding.
+  - Worker/source/AI review: worker tests passed from both repo-root and `services/worker` working directories; fake golden-set harness passed 50 samples; source expansion, GitHub, arXiv, GDELT/RSSHub, PostgreSQL similarity, MiniMax provider, and golden-set contracts all passed.
+  - Ops/CI/CD review: production Compose, deploy contract, off-host backup contract, alerts, final production gate, release handoff, development Compose render, and GitHub Actions checks passed; latest public `main` CI and Publish Images succeeded.
+  - Remaining production launch blockers are external and documented; they do not block completion of this second-version repo/design goal.
+  - Final local verification passed: `pnpm source:expansion:check`, `pnpm github:source-policy:check`, `pnpm arxiv:source-policy:check`, `pnpm postgres:similarity:check`, `pnpm release:handoff:check`, `pnpm production:gate:check`, `pnpm compose:production:check`, `pnpm deploy:contract:check`, `pnpm backup:offhost:check`, `pnpm alerts:check`, `pnpm ai:provider:check`, `pnpm ai:golden:check`, `pnpm --filter @reno-news/db test`, `pnpm --filter @reno-news/db test:integration`, `pnpm --filter @reno-news/api test`, `uv --project services/worker run python -m unittest discover -s services/worker/tests`, `uv run python -m unittest discover -s tests` from `services/worker`, `pnpm lint`, `pnpm test`, `pnpm build`, `docker compose -f infra/compose/compose.yml config`, and `git diff --check`.
