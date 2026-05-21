@@ -2,7 +2,7 @@
 
 Reno News 是一个中文优先的公共情报阅读系统。它不是个人 RSS 阅读器，也不是基于个人兴趣的推荐流；它更接近一个公共情报池：由管理员维护来源、策略和质量边界，系统负责采集、抽取、评估、翻译草稿、摘要、检索、读者反馈和发布前的安全展示。
 
-当前仓库已经覆盖基础设施、SQL 迁移、来源注册、来源策略、RSS/Atom 元数据采集、正文抽取、AI 草稿基础、API 侧认证会话和角色守卫、审计事件、Admin 调试视图、失败队列、原始条目隐藏/恢复、反馈审核、带分页的读者首页和板块列表、条目详情、相关文章、来源和板块多样化的 Digest 预览、持久化 Digest Edition、PostgreSQL 读者搜索、条目级反馈、认证用户的后端个人状态、匿名用户的浏览器本地保存/稍后读状态，以及 Web BFF 个人状态代理。
+当前仓库已经覆盖基础设施、SQL 迁移、来源注册、来源策略、RSS/Atom 元数据采集、正文抽取、AI 草稿基础、API 侧认证会话和角色守卫、Web 登录/登出 BFF 入口、审计事件、Admin 调试视图、失败队列、原始条目隐藏/恢复、反馈审核、带分页的读者首页和板块列表、条目详情、相关文章、来源和板块多样化的 Digest 预览、持久化 Digest Edition、PostgreSQL 读者搜索、条目级反馈、认证用户的后端个人状态、匿名用户的浏览器本地保存/稍后读状态、Web BFF 个人状态代理，以及读者界面的开发 seed 样例标记。
 
 ## 项目定位
 
@@ -102,6 +102,14 @@ DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news pnpm db:mig
 DATABASE_URL=postgres://reno_news:reno_news@localhost:5432/reno_news pnpm db:seed
 ```
 
+本地开发 seed 会创建仅供本机验收使用的账号：
+
+- `admin@example.invalid`
+- `reader@example.invalid`
+- 密码：`reno-news-dev-password`
+
+这些账号只是本地 seed 数据，不能视为生产凭据，也不应复制到生产配置。
+
 本地 API 和 worker 进程使用同一个变量：
 
 ```bash
@@ -130,6 +138,7 @@ pnpm db:restore:drill backups/<dump-file>.dump
 
 Admin 调试页面：
 
+- 登录页：`http://localhost:3000/login?next=/admin`
 - Admin 首页：`http://localhost:3000/admin`
 - 来源详情和策略表单：`http://localhost:3000/admin/sources/1`
 - 原始条目详情和隐藏/恢复：`http://localhost:3000/admin/raw-entries/1`
@@ -140,6 +149,9 @@ Admin 调试页面：
 
 - 认证登录：`POST http://localhost:3001/auth/login`
 - 当前用户：`http://localhost:3001/auth/me`
+- Web BFF 认证登录：`POST http://localhost:3000/api/auth/login`
+- Web BFF 认证登出：`POST http://localhost:3000/api/auth/logout`
+- Web BFF 当前用户：`http://localhost:3000/api/auth/me`
 - 来源：`http://localhost:3001/sources`
 - 原始条目：`http://localhost:3001/raw-entries`
 - 读者板块：`http://localhost:3001/reader/boards`
@@ -187,11 +199,11 @@ GitHub Actions 覆盖三类工作流：
 
 ## 范围边界
 
-Admin 策略编辑只修改当前 Source Policy。原始条目隐藏/恢复只修改当前生命周期状态，不增加完整审核历史。失败队列是已有采集、抽取和模型调用记录的只读投影，不包含重试、认领、解决流、策略历史表或审批流。API 侧认证会话、角色守卫和审计事件已经存在，但还没有公开注册、OAuth、密码重置或完整生产 Admin 身份工作流。
+Admin 策略编辑只修改当前 Source Policy。原始条目隐藏/恢复只修改当前生命周期状态，不增加完整审核历史。失败队列是已有采集、抽取和模型调用记录的只读投影，不包含重试、认领、解决流、策略历史表或审批流。API 侧认证会话、角色守卫、Web 登录/登出入口和审计事件已经存在，但还没有公开注册、OAuth、密码重置或完整生产 Admin 身份工作流。
 
 认证用户的个人状态通过 API 存储并由 Web BFF 代理；匿名用户的保存/稍后读仍保存在浏览器本地。个人状态不会影响排序、Digest 纳入、审核或公共热度。读者反馈是追加式条目级事件；Digest 预览只把符合条件的反馈作为有界排序惩罚。反馈审核可把单条反馈标记为 `open`、`reviewed`、`dismissed` 或 `resolved`；只有 `dismissed` 会改变惩罚资格，审核不会隐藏、恢复、删除、审核内容、个性化、改变搜索顺序或修改原始条目生命周期。
 
-读者列表和搜索使用有界 `limit` / `offset` 分页，并只查询 PostgreSQL 中的 reader-safe 元数据和摘要字段。相关文章、搜索和 Digest 预览都不暴露抽取全文、翻译草稿全文、私有模型载荷、反馈事件或 Admin 诊断信息。Digest 预览使用 best-effort 来源和板块多样性；Digest Edition 是持久化回放快照，但不包含邮件投递、定时 Digest 生成、编辑发布流或个性化推荐。
+读者列表和搜索使用有界 `limit` / `offset` 分页，并只查询 PostgreSQL 中的 reader-safe 元数据和摘要字段。Reader 条目卡片和详情会暴露 `isDevelopmentSeed`，用于把本地 seed 样例标记为 `Development sample`；该标记不会隐藏、过滤、排序或提升 seed 数据。相关文章、搜索和 Digest 预览都不暴露抽取全文、翻译草稿全文、私有模型载荷、反馈事件或 Admin 诊断信息。Digest 预览使用 best-effort 来源和板块多样性；Digest Edition 是持久化回放快照，但不包含邮件投递、定时 Digest 生成、编辑发布流或个性化推荐。
 
 本地备份/恢复只是手动 PostgreSQL dump 和一次性恢复演练，不包含生产调度、远程存储、监控、告警、WAL 归档或 PITR。GitHub CI/CD 提供质量门禁、GHCR 镜像发布和手动 SSH 部署交接，但仓库内没有编码服务器、域名、生产 secrets、监控、告警、备份排期或上线批准。当前仍未实现公共发布工作流、浏览器自动化、语义/向量搜索、外部搜索服务、搜索扩展部署、完整审核工作流、信任加权、读者回复工作流或非 RSS 适配器。翻译草稿不是公开读者正文。
 

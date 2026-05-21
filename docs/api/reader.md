@@ -2,6 +2,8 @@
 
 Reader endpoints expose policy-filtered metadata and summary cards for the reader UI. They do not expose extracted full text, translated full text, private model payloads, or admin-only diagnostics.
 
+Reader item cards and details include `isDevelopmentSeed`. The value is `true` only when the source raw entry payload is marked with `{"seed": true}`. Clients may display this as a local development-sample marker, but the field does not filter, rank, hide, or promote items.
+
 ## `GET /reader/boards`
 
 Returns the MVP board list.
@@ -41,6 +43,7 @@ Response:
       "title": "Sample AI item",
       "url": "https://example.invalid/ai/sample-ai-001",
       "summary": "Development seed item for the AI board.",
+      "isDevelopmentSeed": true,
       "publishedAt": "2026-05-20T00:00:00.000Z",
       "createdAt": "2026-05-20T00:00:00.000Z"
     }
@@ -78,6 +81,7 @@ Response:
       "title": "Sample AI item",
       "url": "https://example.invalid/ai/sample-ai-001",
       "summary": "Development seed item for the AI board.",
+      "isDevelopmentSeed": true,
       "publishedAt": "2026-05-20T00:00:00.000Z",
       "createdAt": "2026-05-20T00:00:00.000Z"
     }
@@ -115,6 +119,7 @@ Response:
       "title": "Sample AI item",
       "url": "https://example.invalid/ai/sample-ai-001",
       "summary": "Development seed item for the AI board.",
+      "isDevelopmentSeed": true,
       "publishedAt": "2026-05-20T00:00:00.000Z",
       "createdAt": "2026-05-20T00:00:00.000Z"
     }
@@ -145,6 +150,7 @@ Response:
     "title": "Sample AI item",
     "url": "https://example.invalid/ai/sample-ai-001",
     "summary": "Development seed item for the AI board.",
+    "isDevelopmentSeed": true,
     "detailSummary": "Detailed summary.",
     "whyItMatters": "Why it matters.",
     "sourceNote": "Source note.",
@@ -187,6 +193,7 @@ Response:
       "title": "Related AI item",
       "url": "https://example.invalid/ai/related-ai-001",
       "summary": "Related summary.",
+      "isDevelopmentSeed": false,
       "publishedAt": "2026-05-20T00:00:00.000Z",
       "createdAt": "2026-05-20T00:00:00.000Z"
     }

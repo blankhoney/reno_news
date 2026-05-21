@@ -2,7 +2,7 @@
 
 Task 20 defines the persisted Digest Edition schema and shared contract. Task 21 implements generation, list, detail, and replay routes.
 
-A Digest Edition is a stable replay object. It stores selected item ids plus reader-safe item snapshots so replay does not silently change after source metadata, feedback penalties, or ranking signals change.
+A Digest Edition is a stable replay object. It stores selected item ids plus reader-safe item snapshots so replay does not silently change after source metadata, feedback penalties, or ranking signals change. New snapshots include `isDevelopmentSeed`; old snapshots that predate the field are normalized to `false` when read.
 
 ## Status Values
 
@@ -55,7 +55,7 @@ Returns `404` when the edition key does not exist.
 ## Boundaries
 
 - Digest editions do not create email delivery, push delivery, or external distribution.
-- Item snapshots must contain reader-safe card fields only.
+- Item snapshots must contain reader-safe card fields only, including `isDevelopmentSeed` for local development-sample marking.
 - Feedback events, private extraction text, translation drafts, model payloads, and admin diagnostics must not be stored in `item_snapshot_json`.
 - The existing dynamic `/reader/digest` preview can continue to exist, but it is not the stable replay artifact.
 - Re-generating an existing `editionKey` returns the existing edition rather than rewriting stored item snapshots.

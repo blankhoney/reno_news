@@ -85,6 +85,28 @@ Anonymous response:
 }
 ```
 
+## Web BFF Routes
+
+The Next.js web app exposes same-origin proxy routes for browser clients and forms:
+
+- `GET /api/auth/me`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+
+JSON requests are proxied to the Fastify auth API and preserve status, JSON response bodies, content type, and session `set-cookie` headers. Form login supports `POST /api/auth/login?next=/admin`; successful form login redirects to a safe single-slash relative `next` path, while failures redirect back to `/login` with an error code. Form logout supports `POST /api/auth/logout?next=/` and forwards the current session cookie before redirecting.
+
+The Web BFF is not a separate identity authority. It exists to keep browser auth requests same-origin and to provide a minimal local login/logout entrypoint.
+
+## Local Dev Seed Accounts
+
+The dev seed creates local-only accounts for manual testing:
+
+- `admin@example.invalid`
+- `reader@example.invalid`
+- Password: `reno-news-dev-password`
+
+These are development seed credentials only. They must not be treated as production credentials or copied into production configuration.
+
 ## Authorization Matrix
 
 Admin/source/failure/feedback review workflows require an authenticated `admin`

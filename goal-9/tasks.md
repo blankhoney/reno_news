@@ -98,10 +98,17 @@
 
 ## Task 7: Documentation Alignment
 
-- Status: Pending
+- Status: Completed
 - Expected result: README, Chinese README, and API docs describe Web auth BFF, local dev credentials, and `isDevelopmentSeed`.
 - Verification: stale/omission searches confirm the new public field and local-only credential warning are documented.
 - Completion notes:
+  - Updated `README.md` and `README.zh-CN.md` with Web auth BFF routes, local-only dev seed accounts, and development seed marker scope.
+  - Updated `docs/api/auth.md` with Web auth BFF behavior, safe form redirect semantics, and local dev seed credentials.
+  - Updated `docs/api/reader.md` with `isDevelopmentSeed` in reader item card/detail response examples and mark-only semantics.
+  - Updated `docs/api/digest-editions.md` with snapshot `isDevelopmentSeed` behavior and legacy fallback.
+  - Verified stale/omission searches for auth, dev credentials, pagination, and `isDevelopmentSeed`.
+  - Verified with `pnpm --filter @reno-news/web lint` and `git diff --check -- README.md README.zh-CN.md docs/api/auth.md docs/api/reader.md docs/api/digest-editions.md`.
+  - Performed close-reading review of the changed documentation; no follow-up fix was needed.
 
 ## Task 8: Chrome Acceptance And Final Review
 
