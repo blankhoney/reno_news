@@ -112,7 +112,40 @@
 
 ## Task 8: Chrome Acceptance And Final Review
 
-- Status: Pending
+- Status: Completed
 - Expected result: Chrome verifies login/logout and provenance labels; final checks pass; worktree is clean after commits.
 - Verification: planned commands pass and screenshots are saved under `/tmp/reno_news_goal9_*`.
 - Completion notes:
+  - Applied migrations and dev seed to the local database, refreshed the Web/API compose services, and verified `/healthz` for Web/API.
+  - Chrome plugin direct local navigation was blocked by the local Chrome client for `localhost`/`127.0.0.1`; the acceptance flow used the same Chrome plugin against `http://192.168.5.106:3000`, which loaded the app and allowed plugin-driven clicks, form filling, text checks, console checks, and screenshots.
+  - During Chrome acceptance, `/login` briefly returned 500 because the ignored Next/Turbopack dev cache had a missing `.sst` file. Removed only the ignored generated cache under `apps/web/.next/dev/cache/turbopack`, restarted the Web container, and confirmed `/login?next=/admin` returned 200 afterward.
+  - Verified in Chrome: `/admin` redirects to `/admin/denied`, the denied page shows `Log in`, `/login?next=/admin` accepts `admin@example.invalid` with the local dev password, `/admin` shows `admin@example.invalid` and `Log out`, logout clears the session, and revisiting Admin returns to the denied page.
+  - Verified in Chrome: `/` shows real source items with no development badge on the first page, `/search?q=Sample` shows `Development sample` badges for seed items while also showing real-source matches, seed detail `/items/5` shows the badge on the detail and related seed card, and `/digest` loads with reader cards and provenance badges where applicable.
+  - Chrome console error logs for the final digest page were empty.
+  - Saved screenshots:
+    - `/tmp/reno_news_goal9_admin_denied.png`
+    - `/tmp/reno_news_goal9_login.png`
+    - `/tmp/reno_news_goal9_admin_logged_in.png`
+    - `/tmp/reno_news_goal9_admin_after_logout.png`
+    - `/tmp/reno_news_goal9_home_real_sources.png`
+    - `/tmp/reno_news_goal9_search_sample_badges.png`
+    - `/tmp/reno_news_goal9_seed_detail.png`
+    - `/tmp/reno_news_goal9_digest.png`
+  - Ran `pnpm --filter @reno-news/db test:integration`; all 26 DB integration tests passed.
+  - Ran `pnpm --filter @reno-news/api test`; all 65 API app tests and 4 auth service tests passed.
+  - Ran `pnpm --filter @reno-news/web test`; all 65 Web tests passed.
+  - Ran `pnpm --filter @reno-news/web lint`; typecheck passed.
+  - Ran `git diff --check`; no whitespace errors were reported.
+  - Restored the generated `apps/web/next-env.d.ts` path drift after Web lint so it remains uncommitted.
+
+## Final Review
+
+- Status: Completed
+- Completion notes:
+  - Reviewed the auth BFF route handlers: Next remains a same-origin proxy/form bridge, forwards cookies to Fastify, copies `set-cookie`, and rejects unsafe `next` redirect values.
+  - Reviewed the login/admin UI: `/login` stays minimal, `/admin/denied` explains the permission requirement, and `/admin` remains protected by `requireAdminSession()`.
+  - Reviewed reader provenance data flow: list, search, digest, detail, related items, and Digest Edition snapshots all carry `isDevelopmentSeed` from `raw_entries.raw_payload_json @> '{"seed": true}'::jsonb`.
+  - Reviewed UI surfaces: shared reader cards, item details, related items, digest previews, and Digest Edition replay all render `Development sample` only through the shared badge helper.
+  - Reviewed dev seed scope: example users are only in `infra/db/seeds/dev.sql`; no production compose/env changes were made.
+  - Searched README/API docs for stale auth/personal-state/pagination wording and confirmed `isDevelopmentSeed` is documented where reader responses and Digest Edition snapshots are described.
+  - No additional fixes were required after the final review.
