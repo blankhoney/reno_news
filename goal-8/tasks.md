@@ -53,7 +53,13 @@
 
 ## Task 5: Final Review And Commit
 
-- Status: Pending
+- Status: Completed
 - Expected result: documentation cleanup is reviewed, tests pass, and the goal is committed.
 - Verification: final stale-phrase search, planned checks, `git diff --check`, and final `git status --short`.
 - Completion notes:
+  - Final stale-phrase search over `README.md`, `README.zh-CN.md`, and `docs/api` returned no outdated auth, personal-state, persisted digest, or pagination claims.
+  - `pnpm --filter @reno-news/web lint` passed.
+  - `pnpm --filter @reno-news/web test` passed: 55 tests.
+  - `pnpm --filter @reno-news/api test` passed: 65 API app tests and 4 auth service tests.
+  - `git diff --check` passed.
+  - Confirmed `apps/web/next-env.d.ts` is not dirty and no business code, schema, seed, or runtime behavior was changed in this goal.
