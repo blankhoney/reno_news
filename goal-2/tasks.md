@@ -650,13 +650,22 @@
 
 ## Task 29: Public Repo/CI/CD Verification And Release Handoff
 
-- Status: Pending
+- Status: Completed
 - Objective: Verify public GitHub repo, branch protection, Actions, image publish, deploy workflow contract, and release handoff docs.
 - TDD/Verification:
   - Check actual GitHub workflow status where network/auth allows.
   - Pass criteria: local checks pass, CI/CD expectations are documented, and any remote-only validation gaps are explicit.
 - Completion Record:
-  - Pending.
+  - Red: `node scripts/check-release-handoff.mjs` failed because the release handoff contract did not exist.
+  - Green: added `docs/ops/release-handoff.md`, `scripts/check-release-handoff.mjs`, `pnpm release:handoff:check`, CI wiring, and runbook references.
+  - Verified with GitHub CLI that `blankhoney/reno_news` is public, uses `main` as the default branch, has active `CI`, `Deploy`, and `Publish Images` workflows, and has admin viewer permission from the local account.
+  - Verified `main` branch protection through GitHub API: strict required status checks, required checks for JavaScript, Python worker, PostgreSQL integration, and Docker Compose config, required PR review, conversation resolution, no force pushes, and no branch deletion.
+  - Verified `production` environment protection through GitHub API: required reviewer `blankhoney` and protected-branch deployment policy.
+  - Verified remote limitation evidence: repository secrets count is `0`, production environment secrets count is `0`, `Deploy` has no observed runs, and GHCR package version listing returned 403 because the local token lacks `read:packages`.
+  - Verified latest observed remote `CI` and `Publish Images` runs before the local V2 push were successful on commit `e7b195537f4a242cffe1c75f37ab81002298ed28`.
+  - Documented that deployment remains blocked until GitHub deployment secrets, VPS/domain/TLS/server env, object-store backup target, rollback owner, and incident owner exist.
+  - Quality review: close-read the release handoff doc, release handoff checker, CI workflow addition, CI/CD runbook, production audit reference, and final production gate evidence update.
+  - Verified with `pnpm release:handoff:check`, `pnpm production:gate:check`, `pnpm --filter @reno-news/db test`, `pnpm lint`, `pnpm test`, `pnpm build`, and `git diff --check`.
 
 ## Task 30: Goal Completion Review
 

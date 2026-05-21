@@ -24,6 +24,7 @@
     "arxiv:source-policy:check": "node scripts/check-arxiv-source-policy.mjs",
     "source:expansion:check": "node scripts/check-source-expansion-constraints.mjs",
     "postgres:similarity:check": "node scripts/check-postgres-similarity-contract.mjs",
+    "release:handoff:check": "node scripts/check-release-handoff.mjs",
     "release:audit:local": "node scripts/release-health-audit.mjs",
     "disk:check:local": "node scripts/disk-usage-check.mjs",
     "compose:production:check": "node scripts/check-production-compose.mjs",

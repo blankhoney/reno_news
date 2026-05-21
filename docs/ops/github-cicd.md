@@ -39,6 +39,7 @@ Checks:
 - GDELT/RSSHub source expansion constraints check proving GDELT stays candidate-radar only and RSSHub stays explicit-whitelist only
 - PostgreSQL similarity/dedup contract check proving FTS remains primary while `pg_trgm` and duplicate signal schema stay secondary
 - Final production gate review check proving local evidence is recorded without claiming production launch approval
+- Release handoff contract check proving public repo, branch protection, workflow, secret, package-scope, and deployment-handoff evidence stays explicit
 
 Configured branch protection for `main`:
 
@@ -148,6 +149,7 @@ Expected behavior:
 - CI verifies the GitHub source policy contract without requiring a GitHub token or live API call.
 - CI verifies the PostgreSQL similarity/dedup contract without requiring pgvector or an external search service.
 - CI verifies the Final production gate review check without requiring a VPS, production secrets, live MiniMax key, or object-store credentials.
+- CI verifies the Release handoff contract check without requiring deployment secrets or GHCR package API access.
 - Image publishing runs after pushes to `main` and publishes all three GHCR images.
 - Deploy is available manually but fails early until all required deployment secrets are configured.
 

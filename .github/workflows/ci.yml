@@ -153,3 +153,6 @@ jobs:
 
       - name: Verify final production gate review
         run: node scripts/check-final-production-gate-review.mjs
+
+      - name: Verify release handoff contract
+        run: node scripts/check-release-handoff.mjs

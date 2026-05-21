@@ -73,6 +73,7 @@ for (const expectedEvidence of [
   "pnpm github:source-policy:check",
   "pnpm arxiv:source-policy:check",
   "pnpm postgres:similarity:check",
+  "pnpm release:handoff:check",
   "pnpm compose:production:check",
   "pnpm deploy:contract:check",
   "pnpm backup:offhost:check",

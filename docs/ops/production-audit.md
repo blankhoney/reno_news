@@ -40,6 +40,7 @@ This report records the MVP's current production-readiness evidence and Residual
 ## Runbook References
 
 - `docs/ops/final-production-gate-review.md`: Task 28 Final Production Gate Review, local evidence scope, blocking production gaps, non-blocking deferrals, and non-approval boundary.
+- `docs/ops/release-handoff.md`: Task 29 public repository, CI/CD, branch protection, environment protection, secrets, package-scope, and deployment-handoff evidence.
 - `docs/ops/release-health-audit.md`: local Release Health Audit command, expected evidence, failure handling, rollback references, and limitations.
 - `docs/ops/production-deploy.md`: deployment secret contract, server env contract, health check, and rollback boundary.
 - `docs/ops/metrics.md`: Prometheus-compatible API and worker metrics, metric names, and limitations.
