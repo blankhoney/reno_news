@@ -9,6 +9,7 @@ import {
   getReaderRelatedItems,
   getReaderSearchItems,
   joinServiceUrl,
+  readerProvenanceBadgeLabel,
   readerLoadMorePath,
   readerPaginationFromSearchParams,
   readerWebPageSize,
@@ -188,6 +189,11 @@ test("readerPaginationFromSearchParams reads URL pagination with web defaults", 
     limit: 10,
     offset: 30
   });
+});
+
+test("readerProvenanceBadgeLabel labels only development seed items", () => {
+  assert.equal(readerProvenanceBadgeLabel({ isDevelopmentSeed: true }), "Development sample");
+  assert.equal(readerProvenanceBadgeLabel({ isDevelopmentSeed: false }), null);
 });
 
 test("getReaderRelatedItems fetches related items with optional limit", async () => {

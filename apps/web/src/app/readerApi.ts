@@ -40,6 +40,7 @@ export type ReaderSearchItemsInput = ReaderItemsInput & {
 };
 
 export const readerWebPageSize = 25;
+export const developmentSeedBadgeLabel = "Development sample";
 
 export type DigestEditionItemSnapshot = Omit<ReaderItemCard, "url">;
 
@@ -122,6 +123,10 @@ export function readerLoadMorePath(
   params.set("offset", String(pagination.nextOffset));
 
   return `${basePath}?${params.toString()}`;
+}
+
+export function readerProvenanceBadgeLabel(item: Pick<ReaderItemCard, "isDevelopmentSeed">) {
+  return item.isDevelopmentSeed ? developmentSeedBadgeLabel : null;
 }
 
 export function readerPaginationFromSearchParams(input: {

@@ -178,6 +178,16 @@ td span {
   flex-wrap: wrap;
 }
 
+.provenance-badge {
+  border: 1px solid #f59e0b;
+  color: #92400e;
+  font-size: 0.75rem;
+  font-weight: 650;
+  line-height: 1.2;
+  padding: 0.1rem 0.35rem;
+  white-space: nowrap;
+}
+
 .reader-card h3 {
   margin: 0.5rem 0;
 }

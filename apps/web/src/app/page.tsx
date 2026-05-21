@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PersonalControls } from "./PersonalControls";
+import { ReaderProvenanceBadge } from "./ReaderProvenanceBadge";
 import { ReaderSearchForm } from "./ReaderSearchForm";
 import {
   getReaderBoards,
@@ -87,6 +88,7 @@ export function ReaderItemList({
             <div>
               <span>{item.boardName}</span>
               <span>{item.sourceTitle}</span>
+              <ReaderProvenanceBadge item={item} />
             </div>
             <h3>
               <Link href={readerItemPath(item.id)}>{item.title}</Link>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PersonalControls } from "../../PersonalControls";
+import { ReaderProvenanceBadge } from "../../ReaderProvenanceBadge";
 import { toPersonalItemSnapshot } from "../../personalState";
 import { submitReaderFeedbackAction } from "./actions";
 import {
@@ -43,6 +44,8 @@ export default async function ItemPage({ params, searchParams }: ItemPageProps) 
           <h1>{selectedView === "original" ? item.originalTitle : item.chineseTitle}</h1>
           <p>
             {item.sourceTitle} · {(item.publishedAt ?? item.createdAt).slice(0, 10)}
+            {" "}
+            <ReaderProvenanceBadge item={item} />
           </p>
         </div>
         <nav className="reader-header-links">
@@ -180,6 +183,7 @@ function RelatedItems({ items }: { items: ReaderItemCard[] }) {
             <div>
               <span>{item.boardName}</span>
               <span>{item.sourceTitle}</span>
+              <ReaderProvenanceBadge item={item} />
               <time dateTime={item.publishedAt ?? item.createdAt}>
                 {(item.publishedAt ?? item.createdAt).slice(0, 10)}
               </time>

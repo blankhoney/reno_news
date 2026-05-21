@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ReaderProvenanceBadge } from "../../../ReaderProvenanceBadge";
 import { getReaderDigestEdition, readerItemPath, type DigestEdition } from "../../../readerApi";
 
 type DigestEditionPageProps = {
@@ -50,6 +51,7 @@ function DigestEditionItems({ edition }: { edition: DigestEdition }) {
               <span>#{item.position}</span>
               <span>{item.snapshot.boardName}</span>
               <span>{item.snapshot.sourceTitle}</span>
+              <ReaderProvenanceBadge item={item.snapshot} />
             </div>
             <h3>
               <Link href={readerItemPath(item.itemId)}>{item.snapshot.title}</Link>

@@ -72,10 +72,17 @@
 
 ## Task 6: Reader Provenance UI
 
-- Status: Pending
+- Status: Completed
 - Expected result: Reader cards, details, related items, digest previews, and Digest Edition replays show `Development sample` only for seed items.
 - Verification: Web tests cover badge helper/rendering behavior; browser acceptance confirms visible labels.
 - Completion notes:
+  - Added `readerProvenanceBadgeLabel` with Web test coverage for seed and non-seed items.
+  - Added a reusable `ReaderProvenanceBadge` component.
+  - Rendered `Development sample` on reader list cards, item detail headers, related item cards, and Digest Edition replay cards.
+  - Digest preview is covered through the existing shared `ReaderItemList`.
+  - Added compact badge styling that does not change item filtering or ordering.
+  - Verified with `pnpm --filter @reno-news/web test`, `pnpm --filter @reno-news/web lint`, and `git diff --check`.
+  - Performed close-reading review of the changed UI/helper files; no follow-up fix was needed.
 
 ## Large Check After Task 6
 
