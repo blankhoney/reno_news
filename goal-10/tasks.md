@@ -69,6 +69,28 @@
   - Local `main` is ahead of `origin/main`, including Goal 4 through Goal 10 work. A push/PR and successful `CI` plus `Publish Images` are required before the GitHub deploy can use the current code.
   - Recovery condition: confirm DNS points to `43.130.244.175`, configure deploy SSH key access, configure GitHub production secrets, push/merge current code to `main`, wait for `CI` and `Publish Images`, then rerun this task.
 
+## Task 4A: Existing Edge Caddy Ingress Recovery
+
+- Status: Completed
+- Expected result: Reno News can deploy behind the existing `myrss-edge-caddy-1` public Caddy without binding host ports 80/443 itself.
+- Verification: production compose contracts cover an edge-managed ingress mode; deploy script can skip the Reno-owned Caddy service in that mode; edge Caddy config is documented without secrets.
+- Completion notes:
+  - Operator-side inspection found `myrss-edge-caddy-1` already owns public 80/443 and imports `/srv/caddy-conf.d/*.caddy`.
+  - Existing `blog.blankhoney.xyz` reaches `brianstorm-web:3000` because that app container is also attached to the edge Caddy network `myrss-app`.
+  - Reno News containers currently run only on `compose_default`, so the edge Caddy cannot reach `compose-web-1`, `compose-api-1`, or `compose-worker-1`.
+  - The recovery path is to add an edge-managed ingress mode: connect web/API/worker to `myrss-app` with stable aliases, provide a `news.blankhoney.xyz` edge Caddy snippet, and deploy without starting Reno News' own Caddy service.
+  - Added `infra/compose/compose.edge.yml` to attach web/API/worker to the external edge network with stable aliases and keep the project Caddy behind a disabled profile.
+  - Added `infra/compose/Caddyfile.edge-news` for the existing edge Caddy import directory.
+  - Updated `scripts/deploy-production.sh` with `RENO_NEWS_INGRESS_MODE=edge`, so deploys can skip and remove the project Caddy service while still running migrations, app services, health checks, and rollback.
+  - Updated production compose and deploy contract checks to cover both dedicated and edge-managed ingress modes.
+  - Ran `pnpm compose:production:check`; passed.
+  - Ran `RENO_NEWS_EDGE_NETWORK=myrss-app pnpm compose:production:check`; passed.
+  - Ran `pnpm deploy:contract:check`; passed.
+  - Ran `pnpm production:gate:check`; passed.
+  - Ran edge and dedicated deploy dry-runs with `DRY_RUN=1`; both produced the expected service lists.
+  - Ran `git diff --check`; passed.
+  - Local Caddy syntax validation through Docker could not run because the local Docker daemon is unavailable; validate `infra/compose/Caddyfile.edge-news` inside `myrss-edge-caddy-1` before reloading the edge Caddy.
+
 ## Task 5: Production Health And Chrome Acceptance
 
 - Status: Blocked

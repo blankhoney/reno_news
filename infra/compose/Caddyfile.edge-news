@@ -1,0 +1,15 @@
+news.blankhoney.xyz {
+	encode zstd gzip
+
+	handle_path /api/* {
+		reverse_proxy reno-news-api:3001
+	}
+
+	handle_path /worker/* {
+		reverse_proxy reno-news-worker:3002
+	}
+
+	handle {
+		reverse_proxy reno-news-web:3000
+	}
+}

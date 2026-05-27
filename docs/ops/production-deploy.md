@@ -29,6 +29,8 @@ The server must provide production env values before `DEPLOY_COMMAND` runs:
 Optional env:
 
 - `RENO_NEWS_DEPLOY_STATE_DIR`
+- `RENO_NEWS_INGRESS_MODE`: `dedicated` by default, or `edge` when an existing host-level Caddy owns public ports.
+- `RENO_NEWS_EDGE_NETWORK`: external Docker network name for edge-managed ingress; defaults to `myrss-app`.
 - `RENO_NEWS_HEALTH_RETRIES`
 - `RENO_NEWS_HEALTH_SLEEP_SECONDS`
 - `CADDY_HTTP_PORT`
@@ -42,14 +44,26 @@ Do not commit real env files, passwords, API keys, hostnames, SSH keys, or token
 
 1. Reads the requested `RENO_NEWS_IMAGE_TAG`.
 2. Renders `infra/compose/compose.yml` with `infra/compose/compose.production.yml`.
-3. Pulls GHCR images for web, API, worker, scheduler, Caddy, PostgreSQL, and Redis.
-4. Runs database migrations through the API image with `pnpm db:migrate`.
-5. Starts services with `docker compose up -d --remove-orphans`.
-6. Runs health check probes against:
+3. In `dedicated` ingress mode, starts the project Caddy service as the only public port owner.
+4. In `edge` ingress mode, also renders `infra/compose/compose.edge.yml`, connects web/API/worker to the configured external edge network, and removes the project Caddy service from this Compose project.
+5. Pulls GHCR images for web, API, worker, scheduler, PostgreSQL, Redis, and Caddy when the selected ingress mode uses it.
+6. Runs database migrations through the API image with `pnpm db:migrate`.
+7. Starts selected services with `docker compose up -d --remove-orphans`.
+8. Runs health check probes against:
    - `$RENO_NEWS_HEALTH_BASE_URL/healthz`
    - `$RENO_NEWS_HEALTH_BASE_URL/api/healthz`
    - `$RENO_NEWS_HEALTH_BASE_URL/worker/healthz`
-7. Records the current and previous image tags in the deploy state directory after health checks pass.
+9. Records the current and previous image tags in the deploy state directory after health checks pass.
+
+## Edge-Managed Ingress
+
+Use `RENO_NEWS_INGRESS_MODE=edge` when another Caddy instance already owns host ports 80/443. The server operator must:
+
+1. Ensure the external Docker network named by `RENO_NEWS_EDGE_NETWORK` exists.
+2. Copy `infra/compose/Caddyfile.edge-news` into the host edge Caddy import directory.
+3. Validate and reload the edge Caddy after the Reno News containers are attached to the edge network.
+
+The edge Caddy snippet preserves the same routing semantics as `infra/compose/Caddyfile.production`: `/api/*` goes to API, `/worker/*` goes to worker, and all other paths go to web.
 
 ## Rollback
 

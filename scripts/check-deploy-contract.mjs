@@ -38,6 +38,8 @@ if (packageJson.scripts["deploy:contract:check"] !== "node scripts/check-deploy-
 
 for (const expected of [
   "RENO_NEWS_IMAGE_TAG",
+  "RENO_NEWS_INGRESS_MODE",
+  "infra/compose/compose.edge.yml",
   "infra/compose/compose.yml",
   "infra/compose/compose.production.yml",
   "docker compose",
@@ -68,6 +70,8 @@ for (const envName of [
 requireText(".github/workflows/ci.yml", ciWorkflow, "node scripts/check-deploy-contract.mjs");
 requireText("docs/ops/production-deploy.md", runbook, "rollback");
 requireText("docs/ops/production-deploy.md", runbook, "health check");
+requireText("docs/ops/production-deploy.md", runbook, "edge");
+requireText("docs/ops/production-deploy.md", runbook, "RENO_NEWS_INGRESS_MODE");
 requireText("docs/ops/github-cicd.md", githubRunbook, "scripts/deploy-production.sh");
 
 for (const [label, content] of [

@@ -1,0 +1,31 @@
+services:
+  web:
+    networks:
+      default: {}
+      edge:
+        aliases:
+          - reno-news-web
+
+  api:
+    networks:
+      default: {}
+      edge:
+        aliases:
+          - reno-news-api
+
+  worker:
+    networks:
+      default: {}
+      edge:
+        aliases:
+          - reno-news-worker
+
+  caddy:
+    profiles:
+      - reno-caddy-disabled
+    ports: !reset []
+
+networks:
+  edge:
+    name: ${RENO_NEWS_EDGE_NETWORK:-myrss-app}
+    external: true
