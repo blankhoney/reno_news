@@ -81,10 +81,18 @@
 
 ## Task 6: Production Source Ingest
 
-- Status: Pending
+- Status: Completed
 - Expected result: each imported source has a latest `source_ingest_attempts` row; successful sources add real raw entries.
 - Verification: latest attempt table, per-board raw entry counts, and disabled records for any production failures.
 - Completion notes:
+  - Triggered internal VPS worker ingest in Deploy run `26530118419`, using the worker container loopback endpoint instead of public `/worker/ingest/*`.
+  - Ingest was source-by-source in source id order; arXiv source `4` and source `5` had an explicit 3 second spacing sleep between requests.
+  - Worker responses showed success for all 18 sources. The run returned non-zero only because the follow-up SQL report reused a CTE across statements after the ingest had already completed.
+  - Ran report-only Deploy run `26530231824`; the run passed.
+  - Verified latest attempts: `attempt_success_count=18`, `attempt_failure_count=0`, `attempt_missing_count=0`.
+  - Verified `raw_entries_total=1516`.
+  - Verified raw entries by board: `ai=922`, `software-engineering=433`, `open-source=124`, `employment-trends=22`, `semiconductor=15`.
+  - No production source was disabled.
 
 ## Task 7: Large Check After Ingest
 
