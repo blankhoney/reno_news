@@ -138,10 +138,16 @@
 
 ## Task 10: Resend Alert Test
 
-- Status: Pending
+- Status: Completed
 - Expected result: Resend readiness is either proven by a real test alert or recorded as blocked by missing server-side configuration.
 - Verification: delivery evidence without secrets, or blocker evidence.
 - Completion notes:
+  - Local DNS check found `send.blankhoney.xyz` has SPF/MX-style records, but that alone did not prove Resend verification.
+  - First send attempt in Deploy run `26530631282` found server `.env` and `RESEND_API_KEY`, then failed with HTTP 403.
+  - Re-ran a non-secret report in Deploy run `26530713988`; the run passed and captured the Resend API error without printing the key.
+  - Server env evidence: `RESEND_API_KEY` present; `RESEND_FROM_EMAIL`, `RESEND_ALERT_FROM`, `ALERT_EMAIL_FROM`, `ALERT_EMAIL_TO`, and SMTP variables missing.
+  - Resend send evidence: `goal11-resend-http=403`, `goal11-resend-response-name=validation_error`, message `The send.blankhoney.xyz domain is not verified`.
+  - Alert delivery remains blocked until `send.blankhoney.xyz` is verified in Resend and a sender/recipient config is finalized.
 
 ## Task 11: Rollback Drill
 
