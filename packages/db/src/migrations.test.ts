@@ -432,7 +432,7 @@ test("GitHub CI/CD workflows define quality gate, image publishing, and manual d
     "uv lock --check",
     "uv run python -m unittest discover -s tests",
     "PostgreSQL integration tests",
-    "postgres:18-alpine",
+    "postgres:17-alpine",
     "pnpm db:migrate",
     "pnpm db:seed",
     "pnpm --filter @reno-news/db test:integration",
