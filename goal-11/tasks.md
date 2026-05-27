@@ -39,10 +39,13 @@
 
 ## Task 4: Production Pre-Import Snapshot
 
-- Status: Pending
+- Status: Completed
 - Expected result: production `sources`, `raw_entries`, and `source_ingest_attempts` counts are recorded and a server-local pre-import dump exists.
 - Verification: non-secret command output with counts and dump path.
 - Completion notes:
+  - Ran GitHub Deploy run `26529540432` as a remote operational command, not an app redeploy.
+  - Recorded pre-import counts: `sources=0`, `raw_entries=0`, `source_ingest_attempts=0`.
+  - Created server-local pre-import dump: `backups/goal-11/pre-import-20260527T180736Z.dump` with size `95K`.
 
 ## Task 5: Import 18 Verified Real Sources
 
