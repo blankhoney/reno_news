@@ -25,10 +25,17 @@
 
 ## Task 3: Large Check And Hardened Deploy
 
-- Status: Pending
+- Status: Completed
 - Expected result: local contracts pass, CI and Publish Images pass, and hardened ingress is deployed to production.
 - Verification: GitHub Actions run ids, production health probes, and public worker ingest blocked.
 - Completion notes:
+  - Ran `pnpm compose:production:check && pnpm deploy:contract:check && pnpm production:gate:check && git diff --check`; passed.
+  - Waited for CI run `26529303815`; passed.
+  - Waited for Publish Images run `26529303821`; passed.
+  - Triggered Deploy run `26529386088` with image tag `sha-cd632d9` and approved the `production` environment deployment.
+  - Deploy run `26529386088` passed with `compose.edge.yml`, database migration, service restart, and health check success.
+  - Verified production `/healthz`, `/api/healthz`, and `/worker/healthz` return HTTP 200.
+  - Verified public `/worker/ingest/source/1` returns HTTP 404 and does not expose worker ingest JSON.
 
 ## Task 4: Production Pre-Import Snapshot
 
