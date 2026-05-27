@@ -110,10 +110,18 @@
 
 ## Task 8: Chrome Production Acceptance
 
-- Status: Pending
+- Status: Completed
 - Expected result: Chrome extension validates non-empty reader pages and key admin/personal surfaces.
 - Verification: screenshots under `/tmp/reno_news_goal11_*`, no relevant console errors, and visible real titles.
 - Completion notes:
+  - Used the Chrome extension against production `https://news.blankhoney.xyz`.
+  - Saved screenshots and `acceptance.json` under `/tmp/reno_news_goal11_20260527T182412Z`.
+  - Verified pages: `/`, `/boards/ai`, `/boards/software-engineering`, `/boards/semiconductor`, `/boards/employment-trends`, `/boards/open-source`, `/digest`, `/search?q=Kubernetes`, a real item detail page, `/personal`, and `/admin`.
+  - All reader pages showed real production titles. Examples: `astral-sh/uv`, `ITBench-AA: Frontier Models Score Below 50%...`, `Iran's Internet is partially restored...`, `SoC PLANNER...`, `A Shifting Pipeline...`, and `Kubernetes v1.35.0`.
+  - `/personal` loaded the expected anonymous local empty state.
+  - `/admin` showed the expected `Admin access required` denial page with login link.
+  - Chrome console error count was `0` for every checked page.
+  - Visible text checks found no raw HTML tag markers and no Markdown link syntax.
 
 ## Task 9: Server-Local Backup And Restore Drill
 
