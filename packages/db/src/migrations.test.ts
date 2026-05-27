@@ -372,18 +372,21 @@ test("production audit report stays evidence-only and non-approving", async () =
     "docs/ops/offhost-backup.md",
     "docs/ops/disk-usage.md",
     "branch/environment protection configured",
-    "http://localhost:8080/api/healthz"
+    "news.blankhoney.xyz",
+    "public `/worker/ingest/source/1` returns 404",
+    "raw_entries_total=1516",
+    "server-local backup/restore drill",
+    "rollback drill"
   ]) {
     assert.match(report, new RegExp(expectedEvidence.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 
   for (const residualGap of [
-    "No production deployment target",
-    "No remote monitoring or alerting",
-    "No production backup schedule or PITR",
-    "No production secret management",
+    "No remote Prometheus scrape target",
+    "No verified Resend sending domain",
     "No real object-store bucket",
-    "No production restore objective"
+    "No production backup schedule",
+    "No formal production secret rotation"
   ]) {
     assert.match(report, new RegExp(residualGap.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -391,7 +394,7 @@ test("production audit report stays evidence-only and non-approving", async () =
   assert.match(report, /not a deployment approval/i);
   assert.doesNotMatch(
     report,
-    /docker compose (pull|push|up)|git push|gh release|scp|ssh|webhook|alertmanager|uptime/i
+    /docker compose (pull|push|up)|git push|gh release|scp|BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+/i
   );
 
   for (const scriptName of Object.keys(packageJson.scripts)) {

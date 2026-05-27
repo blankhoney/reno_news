@@ -8,7 +8,7 @@ This handoff records the Task 29 GitHub repository and CI/CD verification state.
 - Visibility: public.
 - Default branch: `main`.
 - Local remote: `origin` points to `https://github.com/blankhoney/reno_news.git`.
-- Current local note: during this review, local `main` was ahead of `origin/main`; re-run the verification commands after every push.
+- Current local note: re-run the verification commands after every push and before every manual production deploy.
 
 ## Branch And Environment Protection
 
@@ -25,8 +25,7 @@ Observed `production` environment protection:
 
 - required reviewer: `blankhoney`;
 - deployment branch policy accepts protected branches only;
-- repository secrets count: `0`;
-- production environment secrets count: `0`.
+- production environment secrets are configured for `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_COMMAND`; secret values are not recorded in this repository.
 
 ## Workflows
 
@@ -36,32 +35,38 @@ Observed active workflows:
 - `Deploy`;
 - `Publish Images`.
 
-The latest observed remote `CI` and `Publish Images` runs before the local V2 push were successful on `main` for commit `e7b195537f4a242cffe1c75f37ab81002298ed28`.
+Goal 11 observed successful `CI` and `Publish Images` runs before the hardened production deploy. `Deploy` is manual-only and has been used for protected production deploys and operational evidence runs.
 
-`Deploy` is manual-only and had no observed runs during this handoff. That is expected until deployment secrets and a server command are configured.
+Important observed deploy runs:
+
+- `26529386088`: hardened ingress deploy for image tag `sha-cd632d9`;
+- `26529984489`: production source import;
+- `26530231824`: production ingest report;
+- `26530509036`: server-local backup/restore drill;
+- `26530833133`: controlled rollback drill.
 
 ## Secrets And Packages
 
-No repository-level or `production` environment secrets were configured during this review. A real deployment remains blocked until `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_COMMAND` are configured in GitHub.
+Production environment deploy secrets are configured in GitHub. They must stay in GitHub settings only and must not be copied into source control, docs, logs, screenshots, or chat.
 
-GHCR package version listing could not be verified through the local `gh` token because the token lacks `read:packages`. Image publishing is therefore verified through the successful `Publish Images` workflow history and workflow contract, not through the package versions API.
+GHCR image access was verified operationally by production deploy and rollback pulls. Package version listing through the local `gh` token may still require `read:packages`, so package inventory should be verified from GitHub Packages UI or a token with that scope when needed.
 
 ## Release Handoff Steps
 
-Before a real release handoff:
+Before a production release handoff:
 
 1. Push the local branch and wait for `CI` and `Publish Images` on the pushed commit.
 2. Confirm all required branch-protection checks pass on `main`.
-3. Configure deployment secrets only in GitHub repository or environment settings.
-4. Trigger `Deploy` manually from GitHub only after a VPS layout, domain/TLS endpoint, server env, object-store backup target, rollback owner, and incident owner exist.
-5. Re-run the final production gate review before claiming production launch readiness.
+3. Confirm `DEPLOY_COMMAND` is the normal edge deploy command, not a temporary operational command from a prior evidence run.
+4. Trigger `Deploy` manually from GitHub with an image tag such as `sha-<commit>`.
+5. Re-run the final production gate review before claiming full production launch readiness.
 
 ## Remaining Gaps
 
-- No deployment secrets are configured.
-- No production deploy run has been observed.
-- No GHCR package version API verification is available with the current token scope.
-- No production VPS, domain, remote monitoring, alert delivery, object-store backup, off-host restore drill, live MiniMax smoke, or incident owner has been verified.
+- Off-host object-store backup and off-host restore drill are not configured.
+- Resend alert delivery is blocked because `send.blankhoney.xyz` is not verified in Resend.
+- No remote monitoring, Alertmanager receiver, paging channel, live MiniMax smoke, security hardening review, or incident owner has been verified.
+- GHCR package version API verification may require a token with `read:packages`; production pulls have been verified by deploy runs.
 
 ## Verification
 

@@ -16,16 +16,14 @@ The review checked the current repository state across these surfaces:
 
 ## Gate Decision
 
-Local pre-production evidence is sufficient to continue repository, CI/CD, and deployment-handoff work.
+Production is reachable and materially healthier than the earlier pre-production gate: `news.blankhoney.xyz` serves the app, real reader data is present, public worker ingest is blocked, server-local backup/restore passed, Chrome production smoke passed, and image rollback was exercised.
 
-The project is not approved for public production launch. The remaining blockers are external-environment or production-governance gaps that cannot be honestly closed from the local repository alone.
+The project is still not approved for full public production launch. The remaining blockers are external-environment or production-governance gaps that cannot be honestly closed from the repository alone.
 
 ## Blocking Production Gaps
 
-- No production VPS/server layout has been verified against this code state.
-- No production domain, TLS hostname, or real Caddy public endpoint has been verified.
-- No configured production deployment secrets have been verified through a successful manual deploy run.
 - No remote Prometheus scrape target, Alertmanager receiver, paging channel, or production alert delivery has been verified.
+- Resend alert delivery is blocked because `send.blankhoney.xyz` is not verified in Resend.
 - No real object-store bucket, off-host backup upload, off-host restore drill, WAL/PITR policy, or restore objective has been verified.
 - No live MiniMax key, live provider smoke test, live golden-set report, fallback provider, or real budget-enforcement evidence exists.
 - No production incident owner, escalation process, or rollback duty owner is recorded.
@@ -58,7 +56,15 @@ pnpm build
 git diff --check
 ```
 
-`pnpm release:audit:local` was not used as the decisive Task 28 gate because it requires the full local Compose stack to already be running. At review time, only PostgreSQL was running locally, so claiming a successful release-health audit would be misleading.
+Goal 11 production evidence checked:
+
+- `news.blankhoney.xyz` health probes for web, API, and worker;
+- public `/worker/ingest/source/1` blocked with HTTP 404;
+- 18 production sources imported and 18 latest ingest attempts successful;
+- `raw_entries_total=1516` with all five boards populated;
+- Chrome production acceptance screenshots under `/tmp/reno_news_goal11_20260527T182412Z`;
+- server-local restore drill from `backups/goal-11/post-ingest-20260527T182622Z.dump`;
+- rollback drill from `sha-cd632d9` to `sha-004ad14` and back to `sha-cd632d9`.
 
 ## Non-Blocking Deferrals
 
@@ -67,10 +73,9 @@ These gaps do not block continuing the second-version repo work, but they remain
 - GDELT runtime radar implementation;
 - RSSHub route allowlist entries and runtime ingestion;
 - pgvector extension, embeddings, and semantic clustering;
-- email digest delivery and subscription management;
 - admin duplicate review workflow;
 - live GitHub/arXiv API calls in CI;
-- browser smoke against a deployed production hostname.
+- full email digest delivery and subscription management.
 
 ## Verification
 

@@ -79,7 +79,7 @@ for (const [label, content] of [
   ["docs/ops/production-deploy.md", runbook],
   [".github/workflows/deploy.yml", deployWorkflow]
 ]) {
-  rejectPattern(label, content, /BEGIN OPENSSH PRIVATE KEY|blankhoney\.xyz|\/srv\/reno_news/);
+  rejectPattern(label, content, /BEGIN OPENSSH PRIVATE KEY/);
 }
 
 console.log("Deploy contract check OK");

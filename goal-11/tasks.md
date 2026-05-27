@@ -165,7 +165,16 @@
 
 ## Task 12: Final Checks And Evidence Docs
 
-- Status: Pending
+- Status: Completed
 - Expected result: Goal 11 and production docs reflect only verified evidence and exact remaining blockers.
 - Verification: local contracts, CI status, production health, Chrome smoke, and `git diff --check`.
 - Completion notes:
+  - Restored GitHub production `DEPLOY_COMMAND` to the normal edge deploy command after temporary operational commands.
+  - Updated `docs/ops/production-audit.md`, `docs/ops/production-deploy.md`, `docs/ops/release-handoff.md`, and `docs/ops/final-production-gate-review.md` from pre-production gap records to current Goal 11 production evidence records.
+  - Updated document contract checks so real production host/path evidence is allowed while private keys, GitHub tokens, and provider secrets remain rejected.
+  - Ran `pnpm deploy:contract:check`, `pnpm release:handoff:check`, and `pnpm production:gate:check`; passed.
+  - Ran `pnpm --filter @reno-news/db test`; passed.
+  - Ran `pnpm compose:production:check && pnpm deploy:contract:check && pnpm backup:offhost:check && pnpm alerts:check && pnpm release:handoff:check && pnpm production:gate:check && git diff --check`; passed.
+  - Verified production after rollback restore: `/healthz=200`, `/api/healthz=200`, `/worker/healthz=200`, `/worker/ingest/source/1=404`, `/api/reader/items?limit=3` returned 3 items, and `/api/reader/digest?limit=6` returned 6 items.
+  - Checked GitHub Actions before final doc commit: `CI` run `26530930939` and `Publish Images` run `26530931007` succeeded for commit `ad41353`.
+  - Remaining blockers are explicit: off-host backup/R2-equivalent storage is not configured, Resend domain `send.blankhoney.xyz` is not verified, remote monitoring/Alertmanager/paging is not configured, and incident/security/privacy/live-provider ownership is not closed.

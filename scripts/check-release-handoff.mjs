@@ -56,7 +56,7 @@ for (const expected of [
   "https://github.com/blankhoney/reno_news",
   "Visibility: public",
   "Default branch: `main`",
-  "local `main` was ahead of `origin/main`",
+  "re-run the verification commands after every push",
   "required status checks are strict",
   "JavaScript lint, test, build",
   "Python worker tests",
@@ -65,18 +65,19 @@ for (const expected of [
   "pull request review is required",
   "force pushes and branch deletion are blocked",
   "required reviewer: `blankhoney`",
-  "repository secrets count: `0`",
-  "production environment secrets count: `0`",
+  "production environment secrets are configured",
   "`CI`",
   "`Deploy`",
   "`Publish Images`",
   "Deploy` is manual-only",
+  "hardened ingress deploy",
+  "controlled rollback drill",
   "DEPLOY_HOST",
   "DEPLOY_USER",
   "DEPLOY_SSH_KEY",
   "DEPLOY_COMMAND",
   "read:packages",
-  "not through the package versions API",
+  "production deploy and rollback pulls",
   "pnpm release:handoff:check",
   "gh repo view blankhoney/reno_news",
   "gh api repos/blankhoney/reno_news/branches/main/protection",
@@ -95,15 +96,14 @@ for (const [label, content] of [
   ["docs/ops/github-cicd.md", ciRunbook],
   ["docs/ops/production-audit.md", productionAudit]
 ]) {
-  rejectPattern(label, content, /BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+|GITHUB_TOKEN=.+[A-Za-z0-9]{8}|MINIMAX_API_KEY=.+[A-Za-z0-9]{8}|blankhoney\.xyz|\/srv\/reno_news/);
+  rejectPattern(label, content, /BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+|GITHUB_TOKEN=.+[A-Za-z0-9]{8}|MINIMAX_API_KEY=.+[A-Za-z0-9]{8}/);
 }
 
 for (const forbidden of [
   /production deployment approved/i,
   /production launch approved/i,
-  /all deployment secrets are configured/i,
   /GHCR package versions verified/i,
-  /production deploy run succeeded/i
+  /full production launch readiness is approved/i
 ]) {
   rejectPattern("docs/ops/release-handoff.md", handoff, forbidden);
 }

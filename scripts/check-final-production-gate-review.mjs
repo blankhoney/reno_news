@@ -55,10 +55,8 @@ for (const heading of [
 }
 
 for (const expectedGap of [
-  "No production VPS/server layout",
-  "No production domain",
-  "No configured production deployment secrets",
   "No remote Prometheus scrape target",
+  "Resend alert delivery is blocked",
   "No real object-store bucket",
   "No live MiniMax key",
   "No production incident owner",
@@ -87,7 +85,10 @@ for (const expectedEvidence of [
   "pnpm test",
   "pnpm build",
   "git diff --check",
-  "only PostgreSQL was running locally"
+  "news.blankhoney.xyz",
+  "public `/worker/ingest/source/1` blocked",
+  "raw_entries_total=1516",
+  "rollback drill"
 ]) {
   requireText("docs/ops/final-production-gate-review.md", report, expectedEvidence);
 }
@@ -99,7 +100,7 @@ for (const expectedDeferral of [
   "email digest delivery",
   "admin duplicate review workflow",
   "live GitHub/arXiv API calls",
-  "browser smoke against a deployed production hostname"
+  "full email digest delivery"
 ]) {
   requireText("docs/ops/final-production-gate-review.md", report, expectedDeferral);
 }
@@ -122,7 +123,7 @@ for (const forbidden of [
 rejectPattern(
   "docs/ops/final-production-gate-review.md",
   report,
-  /BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+|MINIMAX_API_KEY=.+[A-Za-z0-9]{8}|blankhoney\.xyz|\/srv\/reno_news/
+  /BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+|MINIMAX_API_KEY=.+[A-Za-z0-9]{8}/
 );
 
 console.log("Final production gate review check OK");

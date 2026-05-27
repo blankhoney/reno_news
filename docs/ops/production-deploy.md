@@ -1,6 +1,6 @@
 # Production Deploy
 
-This runbook defines the deploy contract for the single-VPS Compose path. It is a contract and operator checklist, not proof that a real VPS or domain is configured.
+This runbook defines the deploy contract for the single-VPS Compose path. Goal 11 used this path for the production service at `news.blankhoney.xyz` on VPS `43.130.244.175`.
 
 ## GitHub Secrets
 
@@ -11,10 +11,10 @@ The manual deploy workflow requires these repository or `production` environment
 - `DEPLOY_SSH_KEY`
 - `DEPLOY_COMMAND`
 
-`DEPLOY_COMMAND` should call the repo script on the server without embedding private values in source control:
+`DEPLOY_COMMAND` should call the repo script on the server without embedding private values in source control. The current production path uses the edge Caddy mode:
 
 ```bash
-cd <repo-on-server> && scripts/deploy-production.sh "$RENO_NEWS_IMAGE_TAG"
+cd /srv/reno_news && git fetch origin main && git checkout main && git pull --ff-only origin main && RENO_NEWS_INGRESS_MODE=edge scripts/deploy-production.sh "$RENO_NEWS_IMAGE_TAG"
 ```
 
 ## Server Environment
@@ -36,7 +36,7 @@ Optional env:
 - `CADDY_HTTP_PORT`
 - `CADDY_HTTPS_PORT`
 
-Do not commit real env files, passwords, API keys, hostnames, SSH keys, or tokens.
+Do not commit real env files, passwords, API keys, SSH keys, or tokens.
 
 ## Deploy Flow
 
@@ -63,7 +63,28 @@ Use `RENO_NEWS_INGRESS_MODE=edge` when another Caddy instance already owns host 
 2. Copy `infra/compose/Caddyfile.edge-news` into the host edge Caddy import directory.
 3. Validate and reload the edge Caddy after the Reno News containers are attached to the edge network.
 
-The edge Caddy snippet preserves the same routing semantics as `infra/compose/Caddyfile.production`: `/api/*` goes to API, `/worker/*` goes to worker, and all other paths go to web.
+The edge Caddy snippet preserves the same routing semantics as `infra/compose/Caddyfile.production`: `/api/*` goes to API, `/worker/healthz` goes to worker `/healthz`, and all other paths go to web. Public worker ingest routes such as `/worker/ingest/source/:id` must remain unreachable from the internet.
+
+Current edge evidence:
+
+- `news.blankhoney.xyz` is routed by the host edge Caddy.
+- The Reno News containers are attached to the external `myrss-app` network through `infra/compose/compose.edge.yml`.
+- Goal 11 verified `/worker/healthz` returns 200 and `/worker/ingest/source/1` returns 404 from the public internet.
+
+## Production Evidence
+
+Goal 11 production runs recorded:
+
+- hardened ingress deploy: Deploy run `26529386088`, image tag `sha-cd632d9`;
+- source import: Deploy run `26529984489`;
+- source ingest report: Deploy run `26530231824`;
+- server-local backup/restore drill: Deploy run `26530509036`;
+- rollback drill: Deploy run `26530833133`.
+
+Current deploy state after the rollback drill:
+
+- current image tag: `sha-cd632d9`;
+- previous image tag: `sha-004ad14`.
 
 ## Rollback
 
@@ -86,4 +107,4 @@ These commands verify the production public boundary and deploy contract without
 
 - This runbook does not create a VPS, DNS record, TLS account, remote backup target, or incident owner.
 - This runbook does not configure GitHub environment secrets automatically.
-- A production launch remains blocked until real server env, off-host backup, monitoring, alerting, and incident-response ownership are configured.
+- Full production readiness remains blocked until off-host backup, monitoring, alert delivery, security hardening, and incident-response ownership are configured.
