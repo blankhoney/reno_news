@@ -49,10 +49,35 @@
 
 ## Task 5: Import 18 Verified Real Sources
 
-- Status: Pending
+- Status: Completed
 - Expected result: only the 18 Goal 3 successful sources exist in production with the requested source policies.
 - Verification: URL/id list, enabled/crawl policy counts, and explicit exclusion record for `arXiv cs.SE` and `CNCF Blog`.
 - Completion notes:
+  - First remote SQL attempt in Deploy run `26529871603` failed before `psql` because a multi-line secret command was parsed by the shell; no import was performed in that attempt.
+  - Retried with a base64-wrapped remote script in Deploy run `26529984489`; the run passed.
+  - Created only the 5 required board metadata rows; did not run the dev seed, create dev users, or insert seed raw entries.
+  - Verified production counts: `boards=5`, `sources=18`, `policies=18`, `enabled_imported_sources=18`.
+  - Imported source ids:
+    - `1` AI RSS Google AI
+    - `2` AI RSS Google DeepMind
+    - `3` AI RSS Hugging Face Blog
+    - `4` AI arXiv cs.AI
+    - `5` AI arXiv cs.LG
+    - `6` Software Engineering RSS Cloudflare Blog
+    - `7` Software Engineering RSS Cloudflare Developer Platform Changelog
+    - `8` Software Engineering RSS Meta Engineering
+    - `9` Software Engineering RSS AWS Architecture Blog
+    - `10` Software Engineering GitHub Fastify
+    - `11` Semiconductor RSS EE Times
+    - `12` Semiconductor RSS SemiWiki
+    - `13` Employment Trends RSS BLS JOLTS
+    - `14` Employment Trends RSS Indeed Hiring Lab
+    - `15` Open Source GitHub Kubernetes
+    - `16` Open Source GitHub Node.js
+    - `17` Open Source GitHub Next.js
+    - `18` Open Source GitHub uv
+  - Verified policies use `save=metadata_only`, `rights=metadata_only`, and `translation=none`; GitHub sources use `interval=360` and `max_rph=2`; BLS JOLTS uses `risk=low`.
+  - Explicitly kept `arXiv cs.SE` and `CNCF Blog` excluded.
 
 ## Task 6: Production Source Ingest
 
