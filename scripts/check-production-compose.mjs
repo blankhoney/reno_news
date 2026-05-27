@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
@@ -15,6 +15,10 @@ const edgeComposeFiles = [
 const expectedEdgeNetwork = process.env.RENO_NEWS_EDGE_NETWORK ?? "myrss-app";
 const requiredServices = ["web", "api", "worker", "scheduler", "postgres", "redis", "caddy"];
 const privateServices = ["web", "api", "worker", "scheduler", "postgres", "redis"];
+const caddyConfigFiles = [
+  "infra/compose/Caddyfile.production",
+  "infra/compose/Caddyfile.edge-news"
+];
 
 function fail(message) {
   console.error(`Production Compose check FAILED: ${message}`);
@@ -91,9 +95,27 @@ function assertPrivateServicesDoNotPublishPorts(services) {
   }
 }
 
+function assertWorkerIngestIsNotPublic() {
+  for (const file of caddyConfigFiles) {
+    const absolutePath = resolve(root, file);
+    if (!existsSync(absolutePath)) {
+      fail(`missing caddy config file: ${file}`);
+    }
+
+    const content = readFileSync(absolutePath, "utf8");
+    if (/handle_path\s+\/worker\/\*/.test(content)) {
+      fail(`${file} must not publicly proxy all /worker/* routes`);
+    }
+    if (!content.includes("/worker/healthz")) {
+      fail(`${file} must publicly proxy /worker/healthz`);
+    }
+  }
+}
+
 const productionProject = renderCompose(productionComposeFiles);
 const services = productionProject.services ?? {};
 
+assertWorkerIngestIsNotPublic();
 assertRequiredServices(services);
 
 if (services.postgres.image !== "postgres:17-alpine") {

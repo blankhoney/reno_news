@@ -12,10 +12,16 @@
 
 ## Task 2: Caddy Ingress Safety TDD
 
-- Status: Pending
+- Status: Completed
 - Expected result: production Caddy config exposes only `/worker/healthz` publicly and blocks worker ingest paths from the public internet.
 - Verification: failing contract first, then `pnpm compose:production:check`, direct config inspection, and production health/blocked-route probes after deploy.
 - Completion notes:
+  - Red: updated `scripts/check-production-compose.mjs` to reject production Caddy configs that publicly proxy `handle_path /worker/*`; `pnpm compose:production:check` failed on the existing config.
+  - Green: changed both production Caddy configs to proxy only `/worker/healthz`, rewriting it to worker `/healthz`.
+  - Ran `pnpm compose:production:check`; passed.
+  - Ran `pnpm deploy:contract:check`; passed.
+  - Ran `git diff --check`; passed.
+  - Production route verification is deferred to Task 3 after the hardened config is deployed.
 
 ## Task 3: Large Check And Hardened Deploy
 

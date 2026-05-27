@@ -5,7 +5,8 @@ news.blankhoney.xyz {
 		reverse_proxy reno-news-api:3001
 	}
 
-	handle_path /worker/* {
+	handle /worker/healthz {
+		rewrite * /healthz
 		reverse_proxy reno-news-worker:3002
 	}
 

@@ -5,7 +5,8 @@
 		reverse_proxy api:3001
 	}
 
-	handle_path /worker/* {
+	handle /worker/healthz {
+		rewrite * /healthz
 		reverse_proxy worker:3002
 	}
 
