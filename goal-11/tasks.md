@@ -151,10 +151,17 @@
 
 ## Task 11: Rollback Drill
 
-- Status: Pending
+- Status: Completed
 - Expected result: controlled rollback is tested when previous image state exists and can be safely restored to current.
 - Verification: current/previous image tags, health after rollback, health after redeploy current.
 - Completion notes:
+  - Ran Deploy run `26530833133` as a controlled rollback drill.
+  - Initial deployment state: `current=sha-cd632d9`, `previous=sha-004ad14`.
+  - Deployed previous tag `sha-004ad14` with `RENO_NEWS_INGRESS_MODE=edge`; deploy health check passed after one transient 502 while services restarted.
+  - Verified previous-tag health: `/healthz=200`, `/api/healthz=200`, `/worker/healthz=200`.
+  - Restored current tag `sha-cd632d9`; deploy health check passed after two transient 502s while services restarted.
+  - Verified restored current health: `/healthz=200`, `/api/healthz=200`, `/worker/healthz=200`.
+  - Final deployment state: `current=sha-cd632d9`, `previous=sha-004ad14`.
 
 ## Task 12: Final Checks And Evidence Docs
 
