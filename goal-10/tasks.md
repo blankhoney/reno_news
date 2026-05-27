@@ -59,15 +59,16 @@
 
 ## Task 4: GitHub Manual Deploy
 
-- Status: Blocked
+- Status: Completed
 - Expected result: `Deploy` workflow runs against `production` using a concrete image tag and completes successfully.
 - Verification: GitHub Actions run log shows remote SSH command, migration, Compose up, and health checks passing.
 - Completion notes:
-  - Did not trigger `Deploy`; current production prerequisites are missing and the workflow would fail before remote deploy.
-  - GitHub `production` environment secrets currently list no configured values, so `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_COMMAND` are absent.
-  - `news.blankhoney.xyz` still resolves to `198.18.0.54` in this local environment instead of the corrected VPS target `43.130.244.175`; verify DNS from the provider panel or a trusted resolver before deploy.
-  - Local `main` is ahead of `origin/main`, including Goal 4 through Goal 10 work. A push/PR and successful `CI` plus `Publish Images` are required before the GitHub deploy can use the current code.
-  - Recovery condition: confirm DNS points to `43.130.244.175`, configure deploy SSH key access, configure GitHub production secrets, push/merge current code to `main`, wait for `CI` and `Publish Images`, then rerun this task.
+  - Initial deploy attempts were blocked by missing prerequisites, PostgreSQL 18 volume behavior, missing migrations in the API image, and then Caddy port ownership on the VPS.
+  - Those blockers were resolved by configuring GitHub production secrets, pinning production PostgreSQL to 17, including migrations in the API image, and adding edge-managed ingress support for the existing VPS Caddy.
+  - After the operator configured the GitHub production secrets and existing edge Caddy route, triggered Deploy run `26528190710` with image tag `sha-004ad14`.
+  - Approved the `production` environment deployment through the GitHub API.
+  - Deploy run `26528190710` passed: SSH command pulled images, ran `pnpm db:migrate`, started `web`, `api`, `worker`, `scheduler`, `postgres`, and `redis` through `compose.edge.yml`, and reported deploy health check passed.
+  - Production deploy now runs in `RENO_NEWS_INGRESS_MODE=edge`; Reno News no longer attempts to bind host ports 80/443 on this VPS.
 
 ## Task 4A: Existing Edge Caddy Ingress Recovery
 
@@ -93,11 +94,17 @@
 
 ## Task 5: Production Health And Chrome Acceptance
 
-- Status: Blocked
+- Status: Completed
 - Expected result: `https://news.blankhoney.xyz` serves Web/API/worker health and key Reader/Admin pages in Chrome.
 - Verification: curl health probes pass and Chrome screenshots are saved under `/tmp/reno_news_goal10_*`.
 - Completion notes:
-  - Blocked by Task 4. Current HTTPS checks for `news.blankhoney.xyz` fail with TLS internal error and cannot serve Reno News pages.
+  - Earlier HTTPS checks failed while the edge Caddy route and Reno News deployment were incomplete.
+  - Verified production health against `43.130.244.175` with TLS SNI and Host `news.blankhoney.xyz`: `/healthz`, `/api/healthz`, and `/worker/healthz` all returned HTTP 200 with the expected service JSON.
+  - Chrome acceptance used the real Chrome extension, not the built-in browser.
+  - Chrome opened `/`, `/digest`, `/search?q=Sample`, `/personal`, `/admin`, and `/login?next=/admin`; all pages loaded without console errors.
+  - `/admin` redirected to `/admin/denied` and showed a clear admin access message with a login link.
+  - Screenshots were saved under `/tmp/reno_news_goal10_2026-05-27T17-43-16-001Z`.
+  - Current production database has no reader items yet: home, digest, and search render valid empty states. Real source data ingestion remains a post-deploy data initialization task.
 
 ## Task 6: R2 Backup Restore Drill
 
