@@ -57,6 +57,12 @@ for (const service of requiredServices) {
   }
 }
 
+if (services.postgres.image !== "postgres:17-alpine") {
+  fail(
+    "postgres image must stay on postgres:17-alpine until the production volume mount is migrated for PostgreSQL 18"
+  );
+}
+
 for (const service of privateServices) {
   const ports = services[service].ports ?? [];
   if (ports.length > 0) {
