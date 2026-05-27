@@ -125,10 +125,16 @@
 
 ## Task 9: Server-Local Backup And Restore Drill
 
-- Status: Pending
+- Status: Completed
 - Expected result: post-ingest local dump restores into a disposable database.
 - Verification: dump path and restore drill output; off-host backup remains blocked.
 - Completion notes:
+  - Ran Deploy run `26530509036` as a remote operational command for backup/restore.
+  - Created server-local post-ingest dump `backups/goal-11/post-ingest-20260527T182622Z.dump` with size `854K`.
+  - Restored that dump into disposable database `reno_news_goal11_restore`.
+  - Restore verification passed: `restore_tables=25`, `restore_sources=18`, `restore_raw_entries=1516`, `restore_attempts=18`, `restore_reader_items=1516`.
+  - Dropped the disposable restore database after verification.
+  - Recorded `goal11-offhost-backup=blocked:not_configured`; this task does not close the off-host backup blocker.
 
 ## Task 10: Resend Alert Test
 
