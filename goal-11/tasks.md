@@ -96,10 +96,17 @@
 
 ## Task 7: Large Check After Ingest
 
-- Status: Pending
+- Status: Completed
 - Expected result: reader APIs return real items for list, digest, search, and board filters.
 - Verification: production API responses and board/source distribution summary.
 - Completion notes:
+  - Verified public production health through `news.blankhoney.xyz` with direct IP/SNI routing: `/healthz=200`, `/api/healthz=200`, `/worker/healthz=200`.
+  - Verified public `/worker/ingest/source/1` remains blocked with HTTP 404.
+  - Verified `/api/reader/items?limit=5` returns 5 real items with pagination `hasMore=true`.
+  - Verified `/api/reader/digest?limit=12` returns 12 real items.
+  - Verified `/api/reader/search?q=Kubernetes&limit=5` returns 5 real Kubernetes results with pagination `hasMore=true`.
+  - Verified all board filters return real items: `ai`, `software-engineering`, `semiconductor`, `employment-trends`, and `open-source`.
+  - Digest distribution for 12 items: boards `open-source=4`, `software-engineering=2`, `ai=1`, `semiconductor=4`, `employment-trends=1`; no source exceeded 2 items.
 
 ## Task 8: Chrome Production Acceptance
 
