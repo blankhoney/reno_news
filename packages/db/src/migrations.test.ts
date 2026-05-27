@@ -408,6 +408,10 @@ test("GitHub CI/CD workflows define quality gate, image publishing, and manual d
     join(process.cwd(), "../../.github/workflows/docker-publish.yml"),
     "utf8"
   );
+  const apiDockerfile = await readFile(
+    join(process.cwd(), "../../apps/api/Dockerfile"),
+    "utf8"
+  );
   const deployWorkflow = await readFile(
     join(process.cwd(), "../../.github/workflows/deploy.yml"),
     "utf8"
@@ -491,6 +495,7 @@ test("GitHub CI/CD workflows define quality gate, image publishing, and manual d
   assert.match(runbook, /Required repository or environment secrets/);
   assert.match(adr, /manual SSH deploy/);
   assert.match(adr, /must not hard-code any server/);
+  assert.match(apiDockerfile, /COPY infra\/db \.\/infra\/db/);
 });
 
 test("compose dev services run current source without image rebuild", async () => {
