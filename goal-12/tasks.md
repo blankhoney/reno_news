@@ -26,9 +26,9 @@
 
 ## Big Check 1
 
-- Status: Pending
-- Commands:
-- Result:
+- Status: Completed
+- Commands: `pnpm backup:local-schedule:check`; `pnpm backup:offhost:check`; `pnpm compose:production:check`; `pnpm deploy:contract:check`; `pnpm production:gate:check`; `git diff --check`.
+- Result: All passed after Task 1-3. Off-host contract remains present and separate from local retained backup.
 
 ## Task 4: Local Backup Manifest
 
