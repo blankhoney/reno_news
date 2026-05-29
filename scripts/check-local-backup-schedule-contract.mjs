@@ -20,6 +20,9 @@ const packageJson = readJson("package.json");
 const retainedBackupScriptPath = "scripts/db-backup-local-retained.sh";
 const systemdServicePath = "infra/systemd/reno-news-db-backup.service";
 const systemdTimerPath = "infra/systemd/reno-news-db-backup.timer";
+const backupRunbookPath = "docs/ops/backup-restore.md";
+const productionAuditPath = "docs/ops/production-audit.md";
+const productionGatePath = "docs/ops/final-production-gate-review.md";
 
 if (packageJson.scripts["backup:local-schedule:check"] !== "node scripts/check-local-backup-schedule-contract.mjs") {
   fail("package.json must define backup:local-schedule:check");
@@ -99,6 +102,27 @@ for (const [label, content] of [
   if (/BEGIN [A-Z ]*PRIVATE KEY|AWS_SECRET_ACCESS_KEY|RESEND_API_KEY|POSTGRES_PASSWORD|DATABASE_URL=/.test(content)) {
     fail(`${label} must not contain secrets`);
   }
+}
+
+const backupRunbook = readFileSync(backupRunbookPath, "utf8");
+const productionAudit = readFileSync(productionAuditPath, "utf8");
+const productionGate = readFileSync(productionGatePath, "utf8");
+
+for (const expected of [
+  "pnpm db:backup:local:retained",
+  "reno-news-db-backup.timer",
+  "LOCAL_BACKUP_RETENTION_DAYS",
+  "This local timer does not replace off-host backup"
+]) {
+  requireText(backupRunbookPath, backupRunbook, expected);
+}
+
+for (const expected of [
+  "local retained backup timer",
+  "off-host backup remains blocked"
+]) {
+  requireText(productionAuditPath, productionAudit, expected);
+  requireText(productionGatePath, productionGate, expected);
 }
 
 console.log("Local backup schedule contract check OK");

@@ -48,11 +48,11 @@
 
 ## Task 6: Documentation And Production Gate
 
-- Status: Pending
-- RED:
-- GREEN:
-- REFACTOR:
-- Completion notes:
+- Status: Completed
+- RED: Extended `pnpm backup:local-schedule:check` to require retained local backup docs, systemd timer docs, and explicit off-host blocker wording; it failed because the docs were not updated.
+- GREEN: Updated `docs/ops/backup-restore.md`, `docs/ops/production-audit.md`, `docs/ops/final-production-gate-review.md`, and `docs/ops/release-handoff.md`; contract check passed.
+- REFACTOR: Removed stale wording that said the backup runbook did not cover production scheduling; re-ran the contract and searched for contradictory phrases.
+- Completion notes: Documentation now distinguishes server-local scheduled dumps from incomplete off-host backup/PITR readiness.
 
 ## Big Check 2
 

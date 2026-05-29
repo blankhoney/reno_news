@@ -63,7 +63,7 @@ Before a production release handoff:
 
 ## Remaining Gaps
 
-- Off-host object-store backup and off-host restore drill are not configured.
+- Local retained backup timer artifacts exist for server-local dumps, but off-host object-store backup and off-host restore drill are not configured.
 - Resend alert delivery is blocked because `send.blankhoney.xyz` is not verified in Resend.
 - No remote monitoring, Alertmanager receiver, paging channel, live MiniMax smoke, security hardening review, or incident owner has been verified.
 - GHCR package version API verification may require a token with `read:packages`; production pulls have been verified by deploy runs.
