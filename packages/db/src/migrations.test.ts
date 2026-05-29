@@ -376,6 +376,7 @@ test("production audit report stays evidence-only and non-approving", async () =
     "public `/worker/ingest/source/1` returns 404",
     "raw_entries_total=1516",
     "server-local backup/restore drill",
+    "local retained backup timer",
     "rollback drill"
   ]) {
     assert.match(report, new RegExp(expectedEvidence.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
@@ -385,7 +386,7 @@ test("production audit report stays evidence-only and non-approving", async () =
     "No remote Prometheus scrape target",
     "No verified Resend sending domain",
     "No real object-store bucket",
-    "No production backup schedule",
+    "off-host backup completion",
     "No formal production secret rotation"
   ]) {
     assert.match(report, new RegExp(residualGap.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
