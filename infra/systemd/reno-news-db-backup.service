@@ -1,0 +1,13 @@
+[Unit]
+Description=Reno News PostgreSQL local retained backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=deploy
+WorkingDirectory=/srv/reno_news
+Environment=BACKUP_DIR=/srv/reno_news/backups/production
+Environment=LOCAL_BACKUP_RETENTION_DAYS=14
+ExecStartPre=/usr/bin/mkdir -p /srv/reno_news/backups/production
+ExecStart=/usr/bin/env pnpm db:backup:local:retained

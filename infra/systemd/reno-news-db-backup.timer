@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Reno News PostgreSQL local retained backup daily
+
+[Timer]
+OnCalendar=*-*-* 03:15:00
+Persistent=true
+Unit=reno-news-db-backup.service
+
+[Install]
+WantedBy=timers.target

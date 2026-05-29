@@ -40,11 +40,11 @@
 
 ## Task 5: systemd Schedule Templates
 
-- Status: Pending
-- RED:
-- GREEN:
-- REFACTOR:
-- Completion notes:
+- Status: Completed
+- RED: Extended `pnpm backup:local-schedule:check` to require systemd service/timer templates, daily 03:15 scheduling, `Persistent=true`, `/srv/reno_news`, deploy user, and no embedded secrets; it failed because templates did not exist.
+- GREEN: Added `infra/systemd/reno-news-db-backup.service` and `infra/systemd/reno-news-db-backup.timer`; contract check passed.
+- REFACTOR: Reviewed templates and retained the minimal oneshot/timer shape; no refactor needed.
+- Completion notes: The templates are installable artifacts only. They do not install themselves or write production secrets.
 
 ## Task 6: Documentation And Production Gate
 

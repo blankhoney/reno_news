@@ -18,6 +18,8 @@ function requireText(label, content, expected) {
 
 const packageJson = readJson("package.json");
 const retainedBackupScriptPath = "scripts/db-backup-local-retained.sh";
+const systemdServicePath = "infra/systemd/reno-news-db-backup.service";
+const systemdTimerPath = "infra/systemd/reno-news-db-backup.timer";
 
 if (packageJson.scripts["backup:local-schedule:check"] !== "node scripts/check-local-backup-schedule-contract.mjs") {
   fail("package.json must define backup:local-schedule:check");
@@ -61,6 +63,42 @@ for (const expected of [
   "scripts/db-restore-drill.sh"
 ]) {
   requireText(retainedBackupScriptPath, retainedBackupScript, expected);
+}
+
+for (const path of [systemdServicePath, systemdTimerPath]) {
+  if (!existsSync(path)) {
+    fail(`${path} must exist`);
+  }
+}
+
+const systemdService = readFileSync(systemdServicePath, "utf8");
+const systemdTimer = readFileSync(systemdTimerPath, "utf8");
+
+for (const expected of [
+  "WorkingDirectory=/srv/reno_news",
+  "User=deploy",
+  "pnpm db:backup:local:retained",
+  "LOCAL_BACKUP_RETENTION_DAYS=14"
+]) {
+  requireText(systemdServicePath, systemdService, expected);
+}
+
+for (const expected of [
+  "OnCalendar=*-*-* 03:15:00",
+  "Persistent=true",
+  "Unit=reno-news-db-backup.service",
+  "WantedBy=timers.target"
+]) {
+  requireText(systemdTimerPath, systemdTimer, expected);
+}
+
+for (const [label, content] of [
+  [systemdServicePath, systemdService],
+  [systemdTimerPath, systemdTimer]
+]) {
+  if (/BEGIN [A-Z ]*PRIVATE KEY|AWS_SECRET_ACCESS_KEY|RESEND_API_KEY|POSTGRES_PASSWORD|DATABASE_URL=/.test(content)) {
+    fail(`${label} must not contain secrets`);
+  }
 }
 
 console.log("Local backup schedule contract check OK");
