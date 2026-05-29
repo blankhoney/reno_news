@@ -14,6 +14,8 @@
     "db:migrate": "pnpm --filter @reno-news/db db:migrate",
     "db:seed": "pnpm --filter @reno-news/db db:seed",
     "db:backup:local": "sh scripts/db-backup.sh",
+    "db:backup:local:retained": "sh scripts/db-backup-local-retained.sh",
+    "backup:local-schedule:check": "node scripts/check-local-backup-schedule-contract.mjs",
     "db:backup:offhost": "sh scripts/db-backup-offhost.sh",
     "db:restore:drill": "sh scripts/db-restore-drill.sh",
     "backup:offhost:check": "node scripts/check-offhost-backup-contract.mjs",
