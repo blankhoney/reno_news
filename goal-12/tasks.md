@@ -18,11 +18,11 @@
 
 ## Task 3: Retention Safety Boundary
 
-- Status: Pending
-- RED:
-- GREEN:
-- REFACTOR:
-- Completion notes:
+- Status: Completed
+- RED: Extended `pnpm backup:local-schedule:check` to require retention configuration, minimum 7-day validation, and a first-level `reno_news-*.dump` cleanup boundary; it failed because retention did not exist.
+- GREEN: Added `LOCAL_BACKUP_RETENTION_DAYS` / `BACKUP_RETENTION_DAYS` parsing, minimum 7-day validation, and post-dump pruning limited to `find "$BACKUP_DIR" -maxdepth 1 -type f -name 'reno_news-*.dump' -exec rm -f {} +`.
+- REFACTOR: Reviewed the script and kept pruning after successful dump creation; no extra refactor was needed. `pnpm backup:local-schedule:check`, `sh -n`, and invalid retention exit-2 smoke passed.
+- Completion notes: Retention is local-only and safe-scoped. Manifest and schedule templates remain unimplemented until later slices.
 
 ## Big Check 1
 
