@@ -56,9 +56,9 @@
 
 ## Big Check 2
 
-- Status: Pending
-- Commands:
-- Result:
+- Status: Completed
+- Commands: `pnpm backup:local-schedule:check`; `pnpm backup:offhost:check`; `pnpm compose:production:check`; `pnpm deploy:contract:check`; `pnpm production:gate:check`; `pnpm release:handoff:check`; `git diff --check`.
+- Result: All passed after Task 4-6. Local schedule docs and contracts are green while off-host remains a separate blocker.
 
 ## Production Verification
 
