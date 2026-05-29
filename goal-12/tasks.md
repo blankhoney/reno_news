@@ -10,11 +10,11 @@
 
 ## Task 2: Retained Backup Creates A Dump
 
-- Status: Pending
-- RED:
-- GREEN:
-- REFACTOR:
-- Completion notes:
+- Status: Completed
+- RED: Extended `pnpm backup:local-schedule:check` to require `scripts/db-backup-local-retained.sh` to call `scripts/db-backup.sh`; it failed against the placeholder.
+- GREEN: Implemented the retained wrapper by setting the production default backup directory and delegating to `scripts/db-backup.sh`; contract check passed.
+- REFACTOR: Removed duplicate timestamp/database default parsing from the wrapper and let `scripts/db-backup.sh` keep owning dump creation; contract check and `sh -n` passed.
+- Completion notes: Task 2 creates the retained dump path only. Retention pruning and manifests remain unimplemented until later slices.
 
 ## Task 3: Retention Safety Boundary
 
