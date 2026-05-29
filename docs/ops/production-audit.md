@@ -10,7 +10,7 @@ This report records the MVP's current production-readiness evidence and Residual
 | Runtime health | `news.blankhoney.xyz` is served from VPS `43.130.244.175` through the existing edge Caddy. Goal 11 verified `/healthz`, `/api/healthz`, and `/worker/healthz` return 200 after deploy and rollback. | Production evidence exists |
 | Public ingress boundary | Goal 11 hardened production Caddy to expose only `/worker/healthz`; public `/worker/ingest/source/1` returns 404. `pnpm compose:production:check` rejects `handle_path /worker/*`. | Production evidence exists |
 | Production reader data | Goal 11 imported 18 verified real sources, ingested all 18 successfully, and verified `raw_entries_total=1516` with all five boards populated. Chrome screenshots are under `/tmp/reno_news_goal11_20260527T182412Z`. | Production evidence exists |
-| Data safety | `docs/ops/backup-restore.md` defines local Backup Snapshot and Restore Drill steps. Goal 11 created server-local dumps before and after import, then restored `backups/goal-11/post-ingest-20260527T182622Z.dump` into a disposable database. Goal 12 adds a local retained backup timer contract for daily server-local dumps. `docs/ops/offhost-backup.md` and `pnpm backup:offhost:check` define the S3-compatible off-host backup contract. | Local/server evidence exists; off-host backup remains blocked |
+| Data safety | `docs/ops/backup-restore.md` defines local Backup Snapshot and Restore Drill steps. Goal 11 created server-local dumps before and after import, then restored `backups/goal-11/post-ingest-20260527T182622Z.dump` into a disposable database. Goal 12 adds a local retained backup timer contract and proved a production retained dump plus restore drill in Deploy run `26650499263`. System-level timer installation is still blocked because the `deploy` user cannot run passwordless sudo. `docs/ops/offhost-backup.md` and `pnpm backup:offhost:check` define the S3-compatible off-host backup contract. | Local/server evidence exists; timer install and off-host backup remain blocked |
 | Disk guardrails | `pnpm disk:check:local` reports Docker disk usage and local backup artifact size without deleting data. | Evidence exists locally |
 | Log retention | `infra/compose/compose.yml` defines bounded `json-file` log retention for all Compose services. | Evidence exists locally |
 | Identity boundary | API-owned sessions, admin route guards, and audit events are covered by route and migration tests. | Evidence exists locally |
@@ -26,7 +26,8 @@ This report records the MVP's current production-readiness evidence and Residual
 - No remote Prometheus scrape target, Alertmanager receiver, paging channel, or production alert delivery.
 - No verified Resend sending domain for `send.blankhoney.xyz`.
 - No real object-store bucket, off-host backup upload, or successful restore drill from an off-host object.
-- No PITR policy, restore objective, remote backup retention ownership, or off-host backup completion. The Goal 12 local retained backup timer is server-local only.
+- No installed production systemd backup timer; Deploy run `26650255337` failed at `sudo cp` / `sudo systemctl` because the `deploy` user requires a sudo password.
+- No PITR policy, restore objective, remote backup retention ownership, or off-host backup completion. The Goal 12 local retained backup timer is server-local only; off-host backup remains blocked.
 - No formal production secret rotation, access-review, or incident ownership model.
 - No security hardening review for container users, daemon access, host filesystem exposure, or network policy.
 - No incident-response process, paging channel, or operational ownership model.
@@ -56,6 +57,6 @@ This report records the MVP's current production-readiness evidence and Residual
 
 ## Production Launch Boundary
 
-The current system is publicly reachable at `https://news.blankhoney.xyz/`, has production reader data, has a hardened worker ingress boundary, has a successful server-local backup/restore drill, has a local retained backup timer contract, and has a successful image rollback drill. That is enough to continue production hardening and user acceptance work. It is not enough to claim full production launch approval.
+The current system is publicly reachable at `https://news.blankhoney.xyz/`, has production reader data, has a hardened worker ingress boundary, has successful server-local backup/restore drills, has a local retained backup timer contract, and has a successful image rollback drill. That is enough to continue production hardening and user acceptance work. It is not enough to claim full production launch approval.
 
 Before a full production launch claim, a later explicitly scoped issue must finish off-host backup, Resend domain verification and alert delivery, remote monitoring, security hardening, secret rotation/ownership, live provider validation, and incident response.

@@ -68,6 +68,13 @@ systemctl list-timers reno-news-db-backup.timer
 journalctl -u reno-news-db-backup.service -n 80 --no-pager
 ```
 
+Goal 12 production evidence:
+
+- Deploy run `26650255337` proved the `deploy` user cannot install the system-level timer through GitHub Actions because `sudo` requires a password.
+- Deploy run `26650499263` ran the retained backup command directly without sudo, created `/srv/reno_news/backups/production/reno_news-20260529T165554Z.dump`, wrote the local manifest, and restored the dump successfully into `reno_news_restore_drill`.
+
+Until a root operator installs the timer, the retained backup script and restore drill are production-proven, but the daily systemd schedule is not active.
+
 ## Run Restore Drill
 
 ```bash

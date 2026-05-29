@@ -62,15 +62,18 @@
 
 ## Production Verification
 
-- Status: Pending
-- Timer/service:
-- Backup:
-- Restore drill:
-- Health:
-- Chrome:
+- Status: Partially completed; timer install blocked by VPS sudo policy.
+- Timer/service: Deploy run `26650255337` deployed `sha-b435860` and then failed at `sudo cp` / `sudo systemctl` because the `deploy` user requires a password for sudo. The normal `DEPLOY_COMMAND` was restored afterward.
+- Backup: Deploy run `26650499263` ran `sh scripts/db-backup-local-retained.sh` without sudo and created `/srv/reno_news/backups/production/reno_news-20260529T165554Z.dump`; manifest recorded `retentionDays: 14`.
+- Restore drill: Deploy run `26650499263` restored the dump into disposable database `reno_news_restore_drill` and printed `Restore Drill OK`.
+- Health: Remote GET health checks in run `26650499263` passed; local GET checks returned `/healthz=200`, `/api/healthz=200`, `/worker/healthz=200`, and `/worker/ingest/source/1=404`.
+- Chrome: Chrome smoke passed for `/`, `/digest`, and `/admin`; screenshots saved to `/tmp/reno_news_goal12_20260529T170008Z`; console error count was 0.
 
 ## Final Review
 
-- Status: Pending
+- Status: Completed with one external production blocker.
 - Result:
   - CI debug note: first pushed Goal 12 run failed because the existing production audit contract still required `No production backup schedule`. Updated the contract to recognize the new local retained backup timer while still requiring off-host backup completion as a residual gap.
+  - Local code, docs, contracts, CI, image publish, production deploy, manual retained backup, restore drill, health checks, and Chrome smoke were verified.
+  - Final local checks passed: `pnpm backup:local-schedule:check`, `pnpm backup:offhost:check`, `pnpm compose:production:check`, `pnpm deploy:contract:check`, `pnpm production:gate:check`, `pnpm release:handoff:check`, `pnpm --filter @reno-news/db test`, and `git diff --check`.
+  - Remaining blocker: installing the system-level timer requires VPS root or passwordless sudo for `deploy`.

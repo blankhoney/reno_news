@@ -16,7 +16,7 @@ The review checked the current repository state across these surfaces:
 
 ## Gate Decision
 
-Production is reachable and materially healthier than the earlier pre-production gate: `news.blankhoney.xyz` serves the app, real reader data is present, public worker ingest is blocked, server-local backup/restore passed, a local retained backup timer contract exists, Chrome production smoke passed, and image rollback was exercised.
+Production is reachable and materially healthier than the earlier pre-production gate: `news.blankhoney.xyz` serves the app, real reader data is present, public worker ingest is blocked, server-local backup/restore passed, a local retained backup timer contract exists, Chrome production smoke passed, and image rollback was exercised. Goal 12 additionally proved the retained backup script and restore drill on production, but did not install the systemd timer because the `deploy` user cannot run passwordless sudo.
 
 The project is still not approved for full public production launch. The remaining blockers are external-environment or production-governance gaps that cannot be honestly closed from the repository alone.
 
@@ -25,6 +25,7 @@ The project is still not approved for full public production launch. The remaini
 - No remote Prometheus scrape target, Alertmanager receiver, paging channel, or production alert delivery has been verified.
 - Resend alert delivery is blocked because `send.blankhoney.xyz` is not verified in Resend.
 - No real object-store bucket, off-host backup upload, off-host restore drill, WAL/PITR policy, or restore objective has been verified; off-host backup remains blocked even though the local retained backup timer exists.
+- No installed production systemd backup timer has been verified; Deploy run `26650255337` failed at the sudo installation step.
 - No live MiniMax key, live provider smoke test, live golden-set report, fallback provider, or real budget-enforcement evidence exists.
 - No production incident owner, escalation process, or rollback duty owner is recorded.
 - No host/container hardening review has been completed for non-root containers, host filesystem exposure, Docker daemon access, network policy, and secret storage.
@@ -65,6 +66,8 @@ Goal 11 production evidence checked:
 - Chrome production acceptance screenshots under `/tmp/reno_news_goal11_20260527T182412Z`;
 - server-local restore drill from `backups/goal-11/post-ingest-20260527T182622Z.dump`;
 - Goal 12 local retained backup timer contract for daily server-local dumps;
+- Goal 12 production retained backup `/srv/reno_news/backups/production/reno_news-20260529T165554Z.dump` and restore drill from Deploy run `26650499263`;
+- Goal 12 Chrome smoke screenshots under `/tmp/reno_news_goal12_20260529T170008Z`;
 - rollback drill from `sha-cd632d9` to `sha-004ad14` and back to `sha-cd632d9`.
 
 ## Non-Blocking Deferrals
