@@ -51,4 +51,16 @@ for (const expected of [
   requireText(retainedBackupScriptPath, retainedBackupScript, expected);
 }
 
+for (const expected of [
+  "LOCAL_BACKUP_MANIFEST_FILE",
+  "latest-local-backup-manifest.json",
+  "\"createdAt\"",
+  "\"dumpFile\"",
+  "\"retentionDays\"",
+  "\"restoreCommand\"",
+  "scripts/db-restore-drill.sh"
+]) {
+  requireText(retainedBackupScriptPath, retainedBackupScript, expected);
+}
+
 console.log("Local backup schedule contract check OK");

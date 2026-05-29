@@ -3,6 +3,7 @@ set -eu
 
 BACKUP_DIR=${BACKUP_DIR:-/srv/reno_news/backups/production}
 RETENTION_DAYS=${LOCAL_BACKUP_RETENTION_DAYS:-${BACKUP_RETENTION_DAYS:-14}}
+BACKUP_MANIFEST_FILE=${LOCAL_BACKUP_MANIFEST_FILE:-"$BACKUP_DIR/latest-local-backup-manifest.json"}
 
 case "$RETENTION_DAYS" in
   ''|*[!0-9]*)
@@ -19,6 +20,16 @@ fi
 export BACKUP_DIR
 
 backup_file=$(sh scripts/db-backup.sh)
+created_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+cat > "$BACKUP_MANIFEST_FILE" <<EOF
+{
+  "createdAt": "$created_at",
+  "dumpFile": "$backup_file",
+  "retentionDays": $RETENTION_DAYS,
+  "restoreCommand": "sh scripts/db-restore-drill.sh $backup_file"
+}
+EOF
 
 find "$BACKUP_DIR" -maxdepth 1 -type f -name 'reno_news-*.dump' -mtime +"$RETENTION_DAYS" -exec rm -f {} +
 

@@ -32,11 +32,11 @@
 
 ## Task 4: Local Backup Manifest
 
-- Status: Pending
-- RED:
-- GREEN:
-- REFACTOR:
-- Completion notes:
+- Status: Completed
+- RED: Extended `pnpm backup:local-schedule:check` to require a local manifest path and `createdAt`, `dumpFile`, `retentionDays`, and `restoreCommand` fields; it failed because no manifest existed.
+- GREEN: Added `LOCAL_BACKUP_MANIFEST_FILE` defaulting to `latest-local-backup-manifest.json` under the backup directory and wrote the manifest after successful dump creation.
+- REFACTOR: Reviewed manifest contents and kept only non-secret evidence fields. `pnpm backup:local-schedule:check` and `sh -n` passed after review.
+- Completion notes: Manifest records the local restore drill command but does not upload data or claim off-host backup readiness.
 
 ## Task 5: systemd Schedule Templates
 
